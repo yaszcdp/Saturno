@@ -1,0 +1,24 @@
+{% extends "main/base.html" %}
+
+{% block title %} Saturno | Log In {% endblock title %}
+
+{% block main %}
+
+<section class="page-section">
+    <div class="container text-white text-center">
+        <h1 class="pb-4">INICIAR SESIÓN</h1>
+        <br>
+        <hr>
+        <form action="" method="POST">
+            {% csrf_token %}
+            <table class="m-auto">
+                {{form.as_table}}
+            </table>
+            <input type="submit" class="btn btn-dark" value="Iniciar Sesión">
+            <a href="{% url 'index' %}" class="btn btn-dark">Cancelar</a>
+        </form>
+        <p>{{msg_login}}</p>
+    </div>
+</section>    
+
+{% endblock %}

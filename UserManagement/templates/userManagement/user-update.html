@@ -1,0 +1,26 @@
+{% extends "main/base.html" %}
+
+{% block title %} Saturno | Editar Perfil {% endblock title %}
+
+{% block main %}
+
+<section class="page-section">
+    <div class="container text-white text-center">
+        <h1 class="pb-4">EDITAR PERFIL</h1>
+        <br>
+        <hr>
+        <form action="" method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <img src="{{avatar}}" alt="Avatar" style="max-width: 100px;">
+            <table class="m-auto">
+                {{form.as_table}}
+            </table> 
+
+            <input type="submit" class="btn btn-dark" value="Actualizar">
+            <a href="{% url 'Profile' %}" class="btn btn-dark">Cancelar</a>
+        </form>
+        <a href="{% url 'PasswordUpdate' %}" class="btn btn-dark">Editar Contraseña</a>
+    </div>
+</section>    
+
+{% endblock %}

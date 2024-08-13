@@ -1,0 +1,26 @@
+{% extends "main/base.html" %}
+
+{% block title %} Saturno | Perfil {% endblock title %}
+
+{% block main %}
+
+<section class="page-section">
+    <div class="container text-white text-center">
+        <h1 class="pb-4">PERFIL DE USUARIO</h1>
+        <br>
+        <hr>
+        <div>   
+            <img src="{{avatar}}" alt="Avatar" style="max-width: 50px">
+            <h2>{{user.username}}</h2>
+            <p>Nombre: {{user.first_name}}</p>
+            <p>Apellido: {{user.last_name}}</p>
+            <p>Email: {{user.email}}</p>
+            <p>Puesto: {{user.role}}</p>
+            <div class="container-buttons">
+                <a href="{% url 'Update' %}" class="btn btn-dark">Editar</a>
+                <a href="{% url 'index' %}" class="btn btn-dark">Volver</a>
+            </div>
+        </div>
+</section>    
+
+{% endblock %}
