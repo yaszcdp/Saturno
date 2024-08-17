@@ -1,0 +1,54 @@
+{% extends 'main/base.html'  %}
+
+{% block title %} Saturno | Nuevo {{ form_type }} {% endblock title %}
+
+{% block main %}
+
+<section class="page-section">
+    <div class="container text-white text-center justify-content-center">
+        <h1 class="pb-4">NUEVO {{ form_type }}</h1>
+        <br>
+        <hr>
+        <form class="formulario" action="" method="POST">
+            {% csrf_token %}
+            {{form.as_table}}
+            <table id="item-table" class="m-auto">
+                {{ formset.management_form }}
+                {% for form in formset %}
+                    <tr class="item-form">
+                        {{ form.as_table }}
+                    </tr>
+                {% endfor %}
+            </table>
+            <button id="add-item-btn" class="btn btn-dark" type="button">Agregar Item</button>
+            <input type="submit" class="btn btn-dark" value="Guardar">
+            <a href="{% url 'Tickets' %}" class="btn btn-dark">Cancelar</a>
+        </form>
+    </div>
+</section>    
+
+<script>
+    document.getElementById('add-item-btn').addEventListener('click', function(){
+        var formsetPrefix = '{{ formset.prefix }}';
+        var totalForms = document.getElementById('id_' + formsetPrefix + '-TOTAL_FORMS');
+        var currentFormCount = parseInt(totalForms.value);
+        var newFormCount = currentFormCount + 1;
+    
+        var itemForms = document.querySelectorAll('.item-form');
+        var lastForm = itemForms[itemForms.length - 1];
+        var newForm = lastForm.cloneNode(true);
+        
+        newForm.querySelectorAll('input, select, textarea').forEach(function(element) {
+            var name = element.name.replace(`-${currentFormCount - 1}-`, `-${currentFormCount}-`);
+            var id = element.id.replace(`_${currentFormCount - 1}_`, `_${currentFormCount}_`);
+            element.name = name;
+            element.id = id;
+            element.value = '';
+        });
+    
+        document.getElementById('item-table').appendChild(newForm);
+        totalForms.value = newFormCount;
+    });
+</script>
+
+{% endblock %}

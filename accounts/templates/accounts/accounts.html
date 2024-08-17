@@ -1,0 +1,22 @@
+{% extends 'main/base.html'  %}
+
+{% block title %} Saturno | Cuentas {% endblock title %}
+
+{% block main %}
+
+    <div class="page-section">
+        <div class="container text-white text-center justify-content-center">
+            <h1 class="pb-4">CUENTAS</h1>
+            <br>
+            <hr>
+            <div class="container-buttons">
+                <a class="btn btn-dark" href="{% url 'Clients' %}">Clientes</a>
+                <a class="btn btn-dark" href="{% url 'Suppliers' %}">Proveedores</a>
+            </div>
+            <a class="btn btn-dark" href="{% url 'index' %}">Volver</a>
+        </div>
+    </div>
+
+
+
+{% endblock main %}

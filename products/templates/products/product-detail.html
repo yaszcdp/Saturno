@@ -1,0 +1,27 @@
+{% extends 'main/base.html' %}
+
+{% block title %} Saturno | Ficha Producto {% endblock title %}
+
+{% block main %}
+
+<section class="page-section">
+    <div class="container text-white text-center justify-content-center">
+        <h1 class="pb-4">FICHA PRODUCTO</h1>
+        <br>
+        <hr>
+        <div class="pb-4">
+            <h2>{{product.name}}</h2>
+            <h5>Precio: ${{product.price}}</h5>
+        </div>
+        {% if request.user.is_superuser %}
+            <div>
+                <a class="btn btn-dark" href="{% url 'UpdateProduct' product.pk %}">Editar</a>
+                <a class="btn btn-dark" href="{% url 'DeleteProduct' product.pk %}">Eliminar</a>
+            </div>
+        {% endif %}
+        <a class="btn btn-dark mt-5" href="{% url 'Products' %}">Volver</a>
+    </div>
+    
+</section>    
+
+{% endblock %}

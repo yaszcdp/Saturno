@@ -1,0 +1,32 @@
+{% extends 'main/base.html' %}
+
+{% block title %} Saturno | Productos {% endblock title %}
+
+{% block main %}
+<section class="page-section">
+    <div class="container text-white text-center">
+        <h1 class="pb-4">LISTADO PRODUCTOS</h1>
+        <hr>
+        <br>
+        {% for product in products %}
+            <p>Producto: {{product.name}}</p>
+            <p>Precio: {{product.price}}</p>
+            <br>
+            <p class="botones">
+                <a class="btn btn-dark" href="{% url 'DetailProduct' product.pk %}">Detalle</a>
+                {% if request.user.is_superuser %}
+                    <a class="btn btn-dark" href="{% url 'UpdateProduct' product.pk %}">Editar</a>
+                    <a class="btn btn-dark" href="{% url 'DeleteProduct' product.pk %}">Eliminar</a>
+                {% endif %}
+            </p>
+            <hr>
+        {% endfor %}
+        
+        {% if request.user.is_superuser %}
+            <a class="btn btn-dark" href="{% url 'CreateProduct' %}">Nuevo Producto</a>
+        {% endif %}
+        <a class="btn btn-dark" href="{% url 'index' %}">Volver</a>
+    </div>
+</section>    
+
+{% endblock %}

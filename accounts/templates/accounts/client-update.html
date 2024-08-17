@@ -1,0 +1,23 @@
+{% extends 'main/base.html'  %}
+
+{% block title %} Saturno | Editar Cliente {% endblock title %}
+
+{% block main %}
+
+<section class="page-section">
+    <div class="container text-white text-center">
+        <h1 class="pb-4">EDITAR CLIENTE</h1>
+        <br>
+        <hr>
+        <form action="" method="POST">
+            {% csrf_token %}
+            <table class="m-auto">
+                {{form.as_table}}
+            </table>
+            <input type="submit" class="btn btn-dark" value="Guardar">
+            <a href="{% url 'Clients' %}" class="btn btn-dark">Cancelar</a>
+        </form>
+    </div>
+</section>    
+
+{% endblock %}

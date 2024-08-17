@@ -1,0 +1,21 @@
+{% extends 'main/base.html'  %}
+
+{% block title %} Saturno | Eliminar Proveedor {% endblock title %}
+
+{% block main %}
+
+<section class="page-section">
+    <div class="container text-white text-center">
+        <h1 class="pb-4">ELIMINAR PROVEEDOR</h1>
+        <br>
+        <hr>
+        <form action="" method="POST">
+            {% csrf_token %}
+            <h2>¿Seguro deseas eliminar a {{ supplier.company }}?</h2>
+            <input type="submit" class="btn btn-dark" value="Eliminar">
+            <a href="{% url 'Suppliers' %}" class="btn btn-dark">Cancelar</a>
+        </form>
+    </div>
+</section>    
+
+{% endblock %}
