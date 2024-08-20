@@ -1,37 +1,63 @@
 {% extends 'main/base.html' %}
+{% load static %}
+
 
 {% block title %} Saturno | Clientes {% endblock title %}
 
 {% block main %}
-<section class="page-section">
-    <div class="container text-white text-center">
-        <h1 class="pb-4">LISTADO CLIENTES</h1>
-        <hr>
-        <br>
-        {% for client in clients %}
-            <p>Cliente: {{client.first_name}} {{client.last_name}}</p>
-            <p>Cuit: {{client.cuit}}</p>
-            <p>Teléfono: {{client.phone}}
-            <br>
-            <p class="botones">
-                <a class="btn btn-dark" href="{% url 'DetailClient' client.pk %}">Detalle</a>
-                {% if request.user.is_superuser %}
-                    <a class="btn btn-dark" href="{% url 'UpdateClient' client.pk %}">Editar</a>
-                    <a class="btn btn-dark" href="{% url 'DeleteClient' client.pk %}">Eliminar</a>
-                {% endif %}
-            </p>
-            <hr>
-            
-        {% endfor %}
-        
-        {% if request.user.is_superuser %}
-            <a class="btn btn-dark" href="{% url 'CreateClient' %}">Nuevo Cliente</a>
-        {% endif %}
-        <a class="btn btn-dark" href="{% url 'Accounts' %}">Volver</a>
-    </div>
-</section>    
 
-{% endblock %}
+<main class="container-list">
+    <section class="page-section">
+        <div class="row align-items-center mt-5">
+            <h1 class="text-center text-white">LISTADO CLIENTES</h1>
+            <hr class="text-white">
+        </div>
+        <div class="row align-items-center mt-5">
+            <div class="col-md-4">
+                <div class="row">
+                    {% block search %}
+                        {% include 'accounts/search.html' with page='Clients' %}
+                    {% endblock search %}
 
+                    {% if request.user.is_superuser %}
+                        <a class="btn btn-dark" href="{% url 'CreateClient' %}">Nuevo Cliente</a>
+                    {% endif %}
+                </div>
+            </div>
 
+            <div class="col-md-8">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Apellido</th>
+                            <th>Cuit</th>
+                            <th>Teléfono</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for client in clients %}
+                        <tr>
+                            <td>{{ client.first_name }}</td>
+                            <td>{{ client.last_name }}</td>
+                            <td>{{ client.cuit }}</td>
+                            <td>{{ client.phone }}</td>
+                            <td>
+                                <a href="{% url 'DetailClient' client.pk %}">
+                                    <i class="bi bi-person-lines-fill"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+</section>
+</main>
+
+{% endblock main %}
 
