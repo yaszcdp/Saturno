@@ -12,8 +12,8 @@
             <h1 class="text-center text-white">LISTADO CLIENTES</h1>
             <hr class="text-white">
         </div>
-        <div class="row align-items-center mt-5">
-            <div class="col-md-4">
+        <div class="row gx-5 mx-5 align-items-center justify-content-around">
+            <div class="col-12 col-lg-4 container-panel">
                 <div class="row">
                     {% block search %}
                         {% include 'accounts/search.html' with page='Clients' %}
@@ -25,30 +25,30 @@
                 </div>
             </div>
 
-            <div class="col-md-8">
+            <div class="col-12 col-lg-7 mt-4 container-table">
                 <table>
                     <thead>
                         <tr>
+                            <th></th>
                             <th>Nombre</th>
                             <th>Apellido</th>
                             <th>Cuit</th>
                             <th>Teléfono</th>
-                            <th></th>
                         </tr>
                     </thead>
 
                     <tbody>
                         {% for client in clients %}
                         <tr>
-                            <td>{{ client.first_name }}</td>
-                            <td>{{ client.last_name }}</td>
-                            <td>{{ client.cuit }}</td>
-                            <td>{{ client.phone }}</td>
                             <td>
                                 <a href="{% url 'DetailClient' client.pk %}">
                                     <i class="bi bi-person-lines-fill"></i>
                                 </a>
                             </td>
+                            <td>{{ client.first_name }}</td>
+                            <td>{{ client.last_name }}</td>
+                            <td>{{ client.cuit }}</td>
+                            <td>{{ client.phone }}</td>
                         </tr>
                         {% endfor %}
                     </tbody>

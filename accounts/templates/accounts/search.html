@@ -2,11 +2,13 @@
 
 {% block search %}
 <form class="form-search" method="GET" action="{% url 'Search' %}">
-        <input type="hidden" name="page" value="{{page}}">
-        <input type="text" name="query" placeholder="Buscar...">
-        <a class="btn btn-social" type='submit'>
+    <input type="hidden" name="page" value="{{page}}">
+    <input type="text" name="query" placeholder="Buscar...">
+    <a>
+        <button class="btn" type="submit">
             <i class="bi bi-search-heart"></i>
-        </a>
+        </button>
+    </a>
 </form>
 
 {% endblock search %}
