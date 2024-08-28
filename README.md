@@ -5,13 +5,12 @@ Saturno es un sistema de gestión comercial que permite la administración de Co
 Este proyecto está construido usando Django, con una arquitectura modular que facilita la expansión y el mantenimiento.
  
 ## Tabla de Contenidos
-- [Características](#características)
+- [Características Principales](#características-principales)
 - [Tecnologías Utilizadas](#tecnologías-utilizadas)
-- [Instalación y Configuración](#instalación-y-configuración)
+- [Configuración del proyecto](#configuración-del-proyecto)
 - [Uso](#uso)
-- [Licencia](#licencia)
-
-## Características principales
+  
+## Características Principales
 
 - **Gestión de Usuarios**: Administración de roles y permisos (Vendedor, Cajero, SuperAdmin).
 - **Comprobantes/Tickets**: Creación y manejo de tickets para ventas, compras y pagos, con la posibilidad de agregar múltiples ítems.
