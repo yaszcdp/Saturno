@@ -12010,6 +12010,7 @@ header {
   margin-top: 0.5rem;
   margin-bottom: 0.5rem;
   height: 3rem;
+  margin: 1rem;
 }
 
 .nav-item {
@@ -12021,36 +12022,61 @@ header {
   font-family: "Zen Kaku Gothic New", sans-serif;
   color: rgba(194, 194, 194, 0.9019607843);
 }
-
 .nav-link:hover {
-  color: #ffffff;
+  color: white;
 }
-
-.dropdown-toggle {
+.nav-link:focus {
   color: rgba(194, 194, 194, 0.9019607843);
-  padding-left: 1rem;
+}
+.nav-link.show {
+  color: white !important;
 }
 
-.dropdown-toggle:hover {
-  color: #ffffff;
+.nav-link img {
+  box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.631372549) !important;
 }
-
-.nav-item .btn.show {
-  border: none;
-  color: #ffffff;
+.nav-link img:hover {
+  filter: brightness(1.1);
 }
-
-.dropdown-menu {
-  background-color: rgba(0, 0, 0, 0.631372549);
-}
-
-.dropdown-menu a {
-  color: #c2c2c2;
-  font-size: 1.4rem;
+.nav-link img:active {
+  filter: brightness(0.8);
 }
 
 .avatar-circle {
   border-radius: 4rem;
+}
+
+.full-dropdown {
+  display: none;
+  height: auto;
+  background-color: rgba(0, 0, 0, 0.1019607843) !important;
+  box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.631372549);
+  border-radius: 0;
+  border: 0.1rem solid black;
+  overflow-y: auto;
+}
+
+.dropdown-menu.show {
+  margin-top: 0.6rem;
+  display: block;
+}
+
+@media (max-width: 990px) {
+  .dropdown-menu {
+    width: 100%;
+    position: static;
+  }
+  .dropdown-item {
+    text-align: start;
+  }
+}
+.dropdown-item {
+  color: #c2c2c2;
+  font-size: 1.5rem;
+}
+.dropdown-item:hover {
+  color: #ffffff;
+  background: rgba(0, 0, 0, 0.631372549);
 }
 
 /*--------------[ FOOTER ]-------------*/
@@ -12090,7 +12116,7 @@ header {
 
 .masthead .container-buttons {
   background: rgba(0, 0, 0, 0.1529411765);
-  box-shadow: 0 0.1875rem 0.1875rem 0 rgba(0, 0, 0, 0.1019607843);
+  box-shadow: 0 0.2rem 0.2rem 0 rgba(0, 0, 0, 0.1019607843);
   margin-top: 10rem;
   border: 0.1rem solid rgba(255, 255, 255, 0.6862745098);
   padding: 2rem;
@@ -12155,7 +12181,6 @@ header {
   letter-spacing: 0.15rem;
   border: 0;
 }
-
 .btn-dark:hover {
   background: #14ae2e;
 }
@@ -12174,13 +12199,12 @@ header {
   box-shadow: 0 0.2rem 0.2rem 0 rgba(0, 0, 0, 0.1019607843);
 }
 .btn-outline-light:focus {
-  outline: none; /* Eliminar el borde de enfoque predeterminado */
+  outline: none;
   border: 0.1rem solid #ffa755;
   color: #ffa755;
   background: rgba(0, 0, 0, 0.2823529412);
-  box-shadow: 0 0.2rem 0.2rem 0 rgba(0, 0, 0, 0.1019607843); /* Sombra alrededor del botón cuando está enfocado */
+  box-shadow: 0 0.2rem 0.2rem 0 rgba(0, 0, 0, 0.1019607843);
 }
-
 .btn-outline-light:active {
   color: #ffa755 !important;
   border-color: #ffa755 !important; /* #da7a21; */
