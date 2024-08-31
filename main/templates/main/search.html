@@ -1,7 +1,7 @@
 {% load static %}
 
 {% block search %}
-<form class="form-search" method="GET" action="{% url 'Search' %}">
+<form class="form-search mb-4" method="GET" action="{% url 'Search' %}">
     <input type="hidden" name="page" value="{{page}}">
     <input type="text" name="query" placeholder="Buscar...">
     <a>

@@ -5,21 +5,48 @@
 {% block main %}
 
 <section class="page-section">
-    <div class="container text-white text-center">
-        <h1 class="pb-4">EDITAR PERFIL</h1>
-        <br>
+    <div class="container container-box py-4 px-lg-5 text-white text-center">
+        <h1>EDITAR PERFIL</h1>
         <hr>
-        <form action="" method="POST" enctype="multipart/form-data">
-            {% csrf_token %}
-            <img src="{{avatar}}" alt="Avatar" style="max-width: 100px;">
-            <table class="m-auto">
-                {{form.as_table}}
-            </table> 
+        <div class="row gx-4 gx-lg mx-2 custom-card justify-content-center">
+            <form action="" method="POST" enctype="multipart/form-data" class="col-12">
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-12 col-md-4 mb-3">
+                        <img class="avatar-profile col-12" src="{{avatar}}" alt="Avatar" style="width: 140px">
+                    </div>
 
-            <input type="submit" class="btn btn-dark" value="Actualizar">
-            <a href="{% url 'Profile' %}" class="btn btn-dark">Cancelar</a>
-        </form>
-        <a href="{% url 'PasswordUpdate' %}" class="btn btn-dark">Editar Contraseña</a>
+                    <div class="col-12 col-md-8 info-card pb-2">
+                        <table class="col-12 mb-3">
+                            <tr>
+                                <td>{{ form.first_name.label_tag }}</td>
+                                <td>{{ form.first_name }}</td>
+                            </tr>
+                            <tr>
+                                <td>{{ form.last_name.label_tag }}</td>
+                                <td>{{ form.last_name }}</td>
+                            </tr>
+                            <tr>
+                                <td>{{ form.email.label_tag }}</td>
+                                <td>{{ form.email }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="col-12 py-4 text-center">
+                    {{ form.avatar }}
+                </div>
+
+                <div class="col-12 text-center">
+                    <input type="submit" class="btn btn-outline-green col-8 mt-3" value="Actualizar">
+                </div>
+            </form>
+        </div>
+        <div class="mt-4 justify-content-around">
+            <a href="{% url 'PasswordUpdate' %}" class="btn btn-outline-orange col-12 col-md-5 me-lg-2 m-1">Editar Contraseña</a>
+            <a href="{% url 'Profile' %}" class="btn btn-outline-orange col-12 col-md-5 ms-lg-2 m-1">Cancelar</a>
+        </div>
     </div>
 </section>    
 

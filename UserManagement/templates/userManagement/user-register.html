@@ -3,21 +3,37 @@
 {% block title %} Saturno | Registro {% endblock title %}
 
 {% block main %}
-
 <section class="page-section">
-    <div class="container text-white text-center">
-        <h1 class="pb-4">REGISTRO</h1>
-        <br>
+    <div class="container container-box py-4 px-lg-5 text-white text-center">
+        <h1>REGISTRO</h1>
         <hr>
-        <p>{{msg_register}}</p>
-        <form action="" method="POST">
+        <form class="form-group custom-card" method="POST">
             {% csrf_token %}
-            {{form.as_p}}
+            <div class="box py-2">
+            {% for field in form %}
+                <div class="row gx-4 gx-lg-5 my-4 justify-content-center">
+                    <div class="col-12 col-md-5">{{ field.label_tag }}</div>
+                    <div class="col-10 col-md-6 align-items-center me-1">
+                        {{ field }}
+                        {% if field.errors %}
+                        <div class="invalid-feedback">
+                            {% for error in field.errors %}
+                                <div>{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+            </div>
 
-            <input type="submit" class="btn btn-dark" value="Enviar">
-            <a href="{% url 'index' %}" class="btn btn-dark">Cancelar</a>
+            <div class="col-12 mt-4">
+                <input type="submit" class="btn btn-outline-green col-12 col-md-5 me-lg-2 m-2" value="Guardar">
+                <a href="{% url 'index' %}" class="btn btn-outline-orange col-12 col-md-5 ms-lg-2 m-2">Cancelar</a>
+            </div>
         </form>
     </div>
 </section>    
-
 {% endblock %}
+
+

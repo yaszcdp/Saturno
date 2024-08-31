@@ -16,7 +16,7 @@
             <div class="col-12 col-lg-4 container-panel">
                 <div class="row">
                     {% block search %}
-                        {% include 'accounts/search.html' with page='Clients' %}
+                        {% include 'main/search.html' with page='Clients' %}
                     {% endblock search %}
 
                     {% if request.user.is_superuser %}
@@ -29,26 +29,26 @@
                 <table>
                     <thead>
                         <tr>
-                            <th></th>
                             <th>Nombre</th>
                             <th>Apellido</th>
                             <th>Cuit</th>
                             <th>Teléfono</th>
+                            <th></th>
                         </tr>
                     </thead>
 
                     <tbody>
                         {% for client in clients %}
                         <tr>
-                            <td>
-                                <a href="{% url 'DetailClient' client.pk %}">
-                                    <i class="bi bi-person-lines-fill"></i>
-                                </a>
-                            </td>
                             <td>{{ client.first_name }}</td>
                             <td>{{ client.last_name }}</td>
                             <td>{{ client.cuit }}</td>
                             <td>{{ client.phone }}</td>
+                            <td>
+                                <a href="{% url 'DetailClient' client.pk %}">
+                                    <i class="bi bi-pen"></i>
+                                </a>
+                            </td>
                         </tr>
                         {% endfor %}
                     </tbody>

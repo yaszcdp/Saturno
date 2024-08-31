@@ -1,24 +1,45 @@
 {% extends "main/base.html" %}
+{% load static %}
 
 {% block title %} Saturno | Log In {% endblock title %}
 
 {% block main %}
 
 <section class="page-section">
-    <div class="container text-white text-center">
-        <h1 class="pb-4">INICIAR SESIÓN</h1>
-        <br>
+    <div class="container container-box py-4 px-lg-5 text-white text-center">
+        <h1>INICIO DE SESIÓN</h1>
         <hr>
-        <form action="" method="POST">
+        <form class="row gx-4 gx-lg mx-2 custom-card justify-content-center" action="" method="POST">
+            {% if messages %}
+            <div class="alert alert-info">
+                {% for message in messages %}
+                <div class="{{ message.tags }}">{{ message }}</div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            
             {% csrf_token %}
-            <table class="m-auto">
-                {{form.as_table}}
+            <table class="col-12">
+                <tr class="row gx-4 justify-content-center">
+                    <td class="col-12 col-md-5">{{ form.username.label_tag }}</td>
+                    <td class="col-12 col-md-5 pt-lg-3">
+                        {{ form.username }}
+                    </td>
+                </tr>
+                <tr class="row gx-4 justify-content-center pb-2">
+                    <td class="col-12 col-md-5">{{ form.password.label_tag }}</td>
+                    <td class="col-12 col-md-5 pt-lg-3">
+                        {{ form.password }}
+                    </td>
+                </tr>
             </table>
-            <input type="submit" class="btn btn-dark" value="Iniciar Sesión">
-            <a href="{% url 'index' %}" class="btn btn-dark">Cancelar</a>
+
+            <div class="col-12 mt-4">
+                <input type="submit" class="btn btn-outline-green col-12 col-md-5 me-lg-2 m-2" value="Iniciar Sesión">
+                <a href="{% url 'index' %}" class="btn btn-outline-orange col-12 col-md-5 ms-lg-2 m-2">Cancelar</a>
+            </div>
         </form>
-        <p>{{msg_login}}</p>
     </div>
 </section>    
 
-{% endblock %}
+{% endblock %} 

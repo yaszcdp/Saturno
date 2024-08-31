@@ -17,17 +17,17 @@
                     {% if request.user.is_authenticated %} 
                     <h1 class="mx-auto">Bienvenido, {{request.user.username}}</h1>
                     {% else %}
-                    <a class="btn btn-outline-light col-12 col-md-4" href="{% url 'Login' %}">Iniciar Sesión</a>
-                    <a class="btn btn-outline-light col-12 col-md-4" href="{% url 'Register' %}">Registrarse</a>
+                    <a class="btn btn-outline-orange col-12 col-md-4" href="{% url 'Login' %}">Iniciar Sesión</a>
+                    <a class="btn btn-outline-orange col-12 col-md-4" href="{% url 'Register' %}">Registrarse</a>
                     {% endif %}
                 </div>
 
                 {% if request.user.is_authenticated %}
                 <div class="container-buttons row gy-3 justify-content-around">
-                    <a class="btn btn-outline-light col-12 col-md-2" aria-current="page" href="{% url 'Accounts' %}">CUENTAS</a> 
-                    <a class="btn btn-outline-light col-12 col-md-3" aria-current="page" href="{% url 'Products' %}">PRODUCTOS</a>
-                    <a class="btn btn-outline-light col-12 col-md-3" aria-current="page" href="{% url 'Tickets' %}">COMPROBANTES</a>
-                    <a class="btn btn-outline-light col-12 col-md-2" aria-current="page" href="{% url 'CashRegister' %}">CAJA</a>
+                    <a class="btn btn-outline-orange col-12 col-md-2" aria-current="page" href="{% url 'Accounts' %}">Cuentas</a> 
+                    <a class="btn btn-outline-orange col-12 col-md-3" aria-current="page" href="{% url 'Products' %}">Productos</a>
+                    <a class="btn btn-outline-orange col-12 col-md-3" aria-current="page" href="{% url 'Tickets' %}">Comprobantes</a>
+                    <a class="btn btn-outline-orange col-12 col-md-2" aria-current="page" href="{% url 'CashRegister' %}">Caja</a>
                 </div>
                 {% endif %} 
             </div>

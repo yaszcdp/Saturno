@@ -18,6 +18,9 @@ html {
 
 body{
     background-color: #4d4d4d;
+    background-image: url('../assets/img/background.jpg');
+    background-blend-mode: multiply;
+    background-size: cover;
 }
 
 header {
@@ -25,6 +28,44 @@ header {
     width: 100%;
     height: auto;
     padding: 0;
+}
+
+
+/*---------------[ MENSAJES ERROR ]---------------*/
+.form-group{
+    margin-bottom: 1rem;
+}
+
+.form-control{
+    width: 100%;
+    padding: 0.5rem;
+    border-radius: 0.25rem;
+}
+
+.form-control.is-invalid:focus {
+    outline: none;
+    box-shadow: none;
+    border-color: none;
+}
+
+.invalid-feedback{
+    color: #a10202;
+    font-size: 1.1rem;
+    margin-top: 0.25rem;
+}
+
+.formtext {
+    font-size: 0.875rem;
+    font-family: "Zen Kaku Gothic New", sans-serif;
+    color: #6c757d;
+    margin-top: 0.25rem;
+}
+
+.alert, .alert-info{
+    background-color: transparent;
+    color: #a10202;
+    font-size: 1.3rem;
+    border: .1rem solid #a10202;
 }
 
 /*--------------[ NAVBAR ]-------------*/
@@ -166,7 +207,7 @@ header {
     width: 60%;
 }
 
-.masthead .container-buttons{
+.container-buttons{
     background: #00000027;
     box-shadow: 0 0.2rem 0.2rem 0 #0000001a;
     margin-top: 10rem;
@@ -245,15 +286,16 @@ header {
 }
 
 
-.btn-outline-light {
+.btn-outline-orange {
     font-size: 1.6rem;
+    color: white !important;
     font-family: "Zen Kaku Gothic New", sans-serif;
     letter-spacing: 0.2rem;
     padding: 1rem;
     border: .1rem solid white;
 
     &:hover {
-        color: #ffa755;
+        color: #ffa755 !important;
         border-color:#ffa755; /* #da7a21; */
         background: #00000048;
         box-shadow: 0 0.2rem 0.2rem 0 #0000001a;
@@ -262,7 +304,7 @@ header {
     &:focus {
         outline: none; 
         border: .1rem solid #ffa755;
-        color: #ffa755;
+        color: #ffa755 !important;
         background: #00000048;
         box-shadow: 0 0.2rem 0.2rem 0 #0000001a; 
     }
@@ -275,6 +317,37 @@ header {
     }
 }
 
+
+.btn-outline-green {
+    color: white !important;
+    font-size: 1.6rem;
+    font-family: "Zen Kaku Gothic New", sans-serif;
+    letter-spacing: 0.2rem;
+    padding: 1rem;
+    border: .1rem solid white;
+
+    &:hover {
+        color: #14ae2e !important;
+        border-color:#14ae2e; /* #da7a21; */
+        background: #00000048;
+        box-shadow: 0 0.2rem 0.2rem 0 #0000001a;
+    }
+
+    &:focus {
+        outline: none; 
+        border: .1rem solid #14ae2e;
+        color: #14ae2e !important;
+        background: #00000048;
+        box-shadow: 0 0.2rem 0.2rem 0 #0000001a; 
+    }
+    
+    &:active {
+        color: #14ae2e !important;
+        border-color:#14ae2e !important; /* #da7a21; */
+        background: #0000008e !important;
+        box-shadow: 0 0.2rem 0.2rem 0 #0000001a !important;
+    }
+}
 
 
 a i{
@@ -296,7 +369,35 @@ a i:hover{
 
 
 
-/*--------------[ FORMS, INPUT ]-------------*/
+/*--------------[ FORMS, INPUTS, LABELS ]-------------*/
+
+label{
+    color: white;
+    font-family: "Cutive Mono", monospace;
+    font-size: 1.8rem;
+    padding-top: .5rem;
+}
+
+input,
+input[type="text"],
+input[type="email"],
+input[type="password"],
+select {
+    border: none;
+    border-bottom: .1rem solid white;
+    background-color: #00000000 !important;
+    color: white !important;
+    font-family: "Cutive Mono", monospace;
+    font-size: 1.6rem;
+    width: 100%;
+
+    &:focus{
+        outline: none;
+        box-shadow: none;
+        border: none;
+        border-bottom: .2rem solid #ffa755; 
+    }
+}
 
 form.form-search{
     width: 100%;
@@ -305,11 +406,6 @@ form.form-search{
 
 form.form-search input{
     width: 80%;
-    background-color: #00000000;
-    color: white;
-    font-size: 1.6rem;
-    border: none;
-    border-bottom: .1rem solid white;
 }
 
 .form-search input:hover{
@@ -332,17 +428,15 @@ form.form-search input{
 .page-section{
     width: 100%;
     padding-top: 8rem;
-    background: linear-gradient(to bottom, #0000004d 0%, #000000b3 60%, #000 100%);
+    background: linear-gradient(to bottom, #0000004d 0%, #000000b3 60%, #000 100%); 
     min-height: 90vh;
 }
 
 .page-section h1{
-    margin-bottom: 2rem;
-}
-
-.page-section .container{
-    background-color: #1b1b1bc7;
-    box-shadow: 0 0.2rem 0.2rem 0 #0000001a !important;
+    margin-top: 2rem;
+    font-family: "Cutive Mono", monospace;
+    letter-spacing: 0.4rem;
+    font-size: 2.5rem;
 }
 
 .content{
@@ -362,6 +456,22 @@ form.form-search input{
     font-size: 1.4rem;
 }
 
+.container-box, 
+.container-list {
+    background-color: #1b1b1bc7;
+    box-shadow: 0 0.2rem 0.2rem 0 #0000001a !important;
+}
+
+@media (min-width: 970px){
+    .container-box{
+        width: 730px;
+    }
+
+    .container-list{
+        width: 1050px;
+    }
+} 
+
 .container-buttons{
     display: flex;
     flex-direction: row;
@@ -378,27 +488,37 @@ form.form-search input{
     padding: 0;
 } 
 
+.box{
+    background: linear-gradient(to bottom, #0000004d 0%, #000000b3 60%, #000 100%); 
+}
+
 /* ------------------------[ TABLAS ]------------------------*/
 
 table{
     background: linear-gradient(to bottom, #0000004d 0%, #000000b3 60%, #000 100%); 
     border-collapse: collapse;
     width: 100%;
+    color: white;
+    font-family: "Cutive Mono", monospace;
+    text-align: center;
 }
 
-table th, table td{
-    color: white;
-    font-size: 1.4rem;
-    font-weight: 400;
-    text-align: center;
+th{
+    font-size: 1.7rem;
+    padding: 1rem;
+    font-weight: 300;
+    vertical-align: middle;
     border-bottom: .1rem solid white;
+}
+
+td{
+    font-size: 1.4rem;
     padding: 1rem;
     vertical-align: middle;
 }
 
-table th{
-    font-size: 1.5rem;
-}
+
+
 
 @media (max-width: 460px) {
     table th{
@@ -408,8 +528,6 @@ table th{
         font-size: 1.2rem;
     }
 }
-
-
 
 table td a{
     color: #ffe6d6;
@@ -422,8 +540,47 @@ table td a:hover{
     cursor: pointer;
 }
 
-table td p{
-    font-size: 1.6rem;
+/* ------------------------[ USUARIOS CARDS ]------------------------*/
+
+.custom-card{
+    background: #00000081;
+    box-shadow: 0 0.2rem 0.2rem 0 #0000001a;
+    border: .1rem solid #ffffffaf;
+    padding: 2rem;
+}
+
+.info-card{
+    background: #00000081;
+    padding: 2rem 3rem; 
+
+    &.info-card h2{
+        font-family: "Cutive Mono", monospace;
+        letter-spacing: 0.8rem;
+        font-size: 3rem;
+    }
+
+    &.info-card p{
+        font-family: "Cutive Mono", monospace;
+        font-size: 1.8rem;
+    }
+
+}
+
+@media (min-width: 768px){
+    .info-card{
+        text-align: left;
+    }
+}
+
+@media (max-width: 767px){
+    .info-card{
+        text-align: center !important;
+    }
+}
+
+.avatar-profile{
+    width: 60%;
+    border-radius: 20%;
 }
 
 
