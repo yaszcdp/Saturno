@@ -8,9 +8,9 @@
         <h1 class="text-center text-white">LISTADO USUARIOS</h1>
         <hr>
 
-        <div class="row gx-4 gx-lg-5 mx-2 custom-card align-items-center justify-content-around">
-            <div class="col-12 col-lg-5 ">
-                <div class="row info-card">
+        <div class="row gx-4 gx-lg-5 mx-2 custom-card justify-content-around">
+            <div class="col-12 col-lg-5 align-top mt-4">
+                <div class="row info-card ">
                     {% block search %}
                         {% include 'main/search.html' with page='Users' %}
                     {% endblock search %}
@@ -21,41 +21,40 @@
                 </div>
             </div>
 
-        <div class="col-12 col-lg-7 mt-4">
-            <table class="info-card">
-                <thead>
-                    <tr>
-                        <th>Rol</th>
-                        <th>Username</th>
-                        <th>Nombre y Apellido</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for user in users %}
-                    <tr>
-                        <td>
-                            {% if user.role %}
-                            {{ user.role.get_role_display }}
-                            {% else %}
-                            —
-                            {% endif %}
-                        </td>
-                        <td>{{ user.username }}</td>
-                        <td>{{ user.first_name }} {{ user.last_name }}</td>
-                        <td>
-                            <a href="{% url 'UserDetail' user.pk %}">
-                                <i class="bi bi-pen"></i>
-                            </a>
-                        </td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="3">No hay usuarios.</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+            <div class="col-12 col-lg-7 mt-4">
+                <table class="info-card justify-content-center">
+                    <thead>
+                        <tr>
+                            <th>Rol</th>
+                            <th>Username</th>
+                            <th>Nombre</th>
+                            <th>Apellido</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                        <tr>
+                            <td>
+                                {% if user.role %}
+                                {{ user.role.get_role_display }}
+                                {% else %}
+                                —
+                                {% endif %}
+                            </td>
+                            <td>{{ user.username }}</td>
+                            <td>{{ user.first_name }}</td>
+                            <td>{{ user.last_name }}</td>
+                            <td>
+                                <a href="{% url 'UserDetail' user.pk %}">
+                                    <i class="bi bi-pen"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </section>

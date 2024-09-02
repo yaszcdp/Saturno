@@ -9,10 +9,10 @@
         <h1>PERFIL DE USUARIO</h1>
         <hr>
         <div class="row gx-4 gx-lg mx-2 custom-card justify-content-center">
-            <div class="col-8 col-md-6">   
+            <div class="col-8 col-md-5">   
                 <img class="avatar-profile" src="{{avatar}}" alt="Avatar" style="width: 200px">
             </div>
-            <div class="col-12 col-md-6 pt-2 pe-4 mt-sm-3 mt-md-0 info-card">
+            <div class="col-12 col-md-7 pt-2 pe-4 mt-sm-3 mt-md-0 info-card">
                 <h2>{{user.username}}
                     <a href="{% url 'Update' %}">
                         <i class="bi bi-pen"></i>
@@ -21,7 +21,7 @@
                 <p>Nombre: {{user.first_name}}</p>
                 <p>Apellido: {{user.last_name}}</p>
                 <p>Email: {{user.email}}</p>
-                <p>Puesto: {{user.role}}</p>
+                <p>Puesto: {{user.role.get_role_display}}</p>
             </div>
         </div>
         <a href="{% url 'index' %}" class="btn btn-outline-green col-10 my-3">Volver</a>

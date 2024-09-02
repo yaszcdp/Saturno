@@ -1,10 +1,9 @@
 from django.urls import path
 from accounts import views
-from accounts.views import accounts_view, search
+from accounts.views import accounts_view
 
 urlpatterns = [
     path('', accounts_view, name='Accounts'),
-    path('buscar', search, name='Search'),
 
     path('clientes', views.ClientListView.as_view(), name='Clients'),
     path('ver-cliente/<int:pk>', views.ClientDetailView.as_view(), name='DetailClient'),

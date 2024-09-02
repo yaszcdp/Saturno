@@ -417,6 +417,15 @@ form.form-search input{
     border-bottom: .2rem solid #da7a21;
 }
 
+select{
+    outline: none !important;
+    box-shadow: none !important;
+    border: none !important;
+    border-bottom: .1rem solid white !important; 
+    background-color: #000000 !important;
+    font-size: 1.6rem !important;
+    color: white !important;
+}
 
 
 /*--------------[ PAGES ]-------------*/
@@ -520,12 +529,18 @@ td{
 
 
 
-@media (max-width: 460px) {
+@media (max-width: 515px) {
     table th{
-        font-size: .9rem;
+        font-size: 1.2rem;
+        padding: .5rem;
     }
     table td {
         font-size: 1.2rem;
+        padding: .5rem;
+    }
+
+    a i{
+        font-size: 2rem;
     }
 }
 
@@ -546,7 +561,13 @@ table td a:hover{
     background: #00000081;
     box-shadow: 0 0.2rem 0.2rem 0 #0000001a;
     border: .1rem solid #ffffffaf;
-    padding: 2rem;
+    /* padding: 2rem; */
+}
+
+@media (min-width: 380px){
+    .custom-card{
+        padding: 2rem;
+    }
 }
 
 .info-card{

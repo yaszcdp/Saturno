@@ -14,7 +14,7 @@ from django.contrib.auth.decorators import login_required
 def accounts_view(request):
     return render(request, 'accounts/accounts.html')
 
-def search(request):
+""" def search(request):
     query = request.GET.get('query', '')
     page = request.GET.get('page', '')
 
@@ -27,7 +27,7 @@ def search(request):
     else:
         response = "No hay resultados"
         return HttpResponse(response)
-
+ """
 #-------[ VISTAS CLIENTES ]-------
 class ClientListView(LoginRequiredMixin, ListView):
     model = Client

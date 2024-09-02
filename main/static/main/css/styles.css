@@ -12348,6 +12348,16 @@ form.form-search input {
   border-bottom: 0.2rem solid #da7a21;
 }
 
+select {
+  outline: none !important;
+  box-shadow: none !important;
+  border: none !important;
+  border-bottom: 0.1rem solid white !important;
+  background-color: #000000 !important;
+  font-size: 1.6rem !important;
+  color: white !important;
+}
+
 /*--------------[ PAGES ]-------------*/
 .page {
   min-height: 90vh;
@@ -12440,12 +12450,17 @@ td {
   vertical-align: middle;
 }
 
-@media (max-width: 460px) {
+@media (max-width: 515px) {
   table th {
-    font-size: 0.9rem;
+    font-size: 1.2rem;
+    padding: 0.5rem;
   }
   table td {
     font-size: 1.2rem;
+    padding: 0.5rem;
+  }
+  a i {
+    font-size: 2rem;
   }
 }
 table td a {
@@ -12464,9 +12479,14 @@ table td a:hover {
   background: rgba(0, 0, 0, 0.5058823529);
   box-shadow: 0 0.2rem 0.2rem 0 rgba(0, 0, 0, 0.1019607843);
   border: 0.1rem solid rgba(255, 255, 255, 0.6862745098);
-  padding: 2rem;
+  /* padding: 2rem; */
 }
 
+@media (min-width: 380px) {
+  .custom-card {
+    padding: 2rem;
+  }
+}
 .info-card {
   background: rgba(0, 0, 0, 0.5058823529);
   padding: 2rem 3rem;
