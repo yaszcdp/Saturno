@@ -3,6 +3,10 @@
 
 Saturno es un sistema de gestión comercial que permite la administración de Comprobantes (Ventas, Compras y Pagos), Caja Registradora, Productos, Clientes, Proveedores y sus Cuentas Corrientes.
 Este proyecto está construido usando Django, con una arquitectura modular que facilita la expansión y el mantenimiento.
+
+## Video del proyecto en loom. 
+
+https://www.loom.com/share/9dea6cb6f668403a957e6a9a7f09f4a8?sid=0a55433a-7673-492a-8e4d-17874981ce96
  
 ## Tabla de Contenidos
 - [Características Principales](#características-principales)
