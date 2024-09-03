@@ -1,0 +1,39 @@
+{% extends "main/base.html" %}
+{% load static %}
+
+{% block title %} Saturno | Home {% endblock%}
+
+{% block main %}
+
+<header class="masthead page">
+    <div class="container px-4 px-lg-5 d-flex h-100 align-items-center justify-content-center">
+        <div class="d-flex justify-content-center">
+            <div class="text-center">
+                <img src="{% static 'main/assets/img/logo-gradient.png' %}" alt="logo" class="mx-auto my-0">
+                <hr>
+                <h2 class="mx-auto mb-5">ADMINISTRADOR DE NEGOCIOS.</h2>
+
+                <div class="container-buttons row gy-3 justify-content-around">
+                    {% if request.user.is_authenticated %} 
+                    <h1 class="mx-auto">Bienvenido, {{request.user.username}}</h1>
+                    {% else %}
+                    <a class="btn btn-outline-orange col-12 col-md-4" href="{% url 'Login' %}">Iniciar Sesión</a>
+                    <a class="btn btn-outline-orange col-12 col-md-4" href="{% url 'Register' %}">Registrarse</a>
+                    {% endif %}
+                </div>
+
+                {% if request.user.is_authenticated %}
+                <div class="container-buttons row gy-3 justify-content-around">
+                    <a class="btn btn-outline-orange col-12 col-md-2" aria-current="page" href="{% url 'Accounts' %}">Cuentas</a> 
+                    <a class="btn btn-outline-orange col-12 col-md-3" aria-current="page" href="{% url 'Products' %}">Productos</a>
+                    <a class="btn btn-outline-orange col-12 col-md-3" aria-current="page" href="{% url 'Tickets' %}">Comprobantes</a>
+                    <a class="btn btn-outline-orange col-12 col-md-2" aria-current="page" href="{% url 'CashRegister' %}">Caja</a>
+                </div>
+                {% endif %} 
+            </div>
+        </div>
+    </div>
+</header>
+
+
+{% endblock main %}
