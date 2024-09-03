@@ -65,3 +65,8 @@ Cada una de estas entidades tiene sus propias vistas y formularios para gestiona
 
 **Administrar Productos, Clientes y Proveedores:**
   Gestiona el catálogo de productos, y maneja las cuentas corrientes de clientes y proveedores.
+
+
+## Casos de Uso
+
+[Ver casos de uso](media/casos_de_uso.pdf)
