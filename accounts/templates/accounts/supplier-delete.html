@@ -5,16 +5,15 @@
 {% block main %}
 
 <section class="page-section">
-    <div class="container text-white text-center">
-        <h1 class="pb-4">ELIMINAR PROVEEDOR</h1>
-        <br>
+    <div class="container container-box py-4 px-lg-5 text-white text-center">
+        <h1>ELIMINAR PROVEEDOR</h1>
         <hr>
-        <form action="" method="POST">
+        <form action="" method="POST" class="custom-card">
             {% csrf_token %}
             <h2>¿Seguro deseas eliminar a {{ supplier.company }}?</h2>
-            <input type="submit" class="btn btn-dark" value="Eliminar">
-            <a href="{% url 'Suppliers' %}" class="btn btn-dark">Cancelar</a>
+            <input type="submit" class="btn btn-outline-green col-8 mt-3" value="Confirmar">
         </form>
+        <a href="{% url 'Suppliers' %}" class="btn btn-outline-orange col-10 my-3">Cancelar</a>
     </div>
 </section>    
 

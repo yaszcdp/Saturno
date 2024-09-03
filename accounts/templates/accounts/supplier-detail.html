@@ -5,22 +5,21 @@
 {% block main %}
 
 <section class="page-section">
-    <div class="container text-white text-center justify-content-center">
-        <h1 class="pb-4">FICHA PROVEEDOR</h1>
-        <br>
+    <div class="container container-box py-4 px-lg-5 text-white text-center">
+        <h1>FICHA PROVEEDOR</h1>
         <hr>
-        <div class="pb-4">
-            <h2>{{supplier.company}}</h2>
-            <h5>Cuit: {{supplier.cuit}}</h5>
-            <h5>Teléfono: {{supplier.phone}}</h5>
-        </div>
-        {% if request.user.is_superuser %}
-            <div>
-                <a class="btn btn-dark" href="{% url 'UpdateSupplier' supplier.pk %}">Editar</a>
-                <a class="btn btn-dark" href="{% url 'DeleteSupplier' supplier.pk %}">Eliminar</a>
+        <div class="row gx-4 gx-lg mx-2 custom-card">
+            <div class="col-12 pt-4 pe-4 mt-sm-3 mt-md-0 info-card">
+                <h2 class="col-12">{{ supplier.company }}
+                    {% if request.user.is_superuser %}
+                        <a href="{% url 'UpdateSupplier' supplier.pk %}"><i class="bi bi-pen"></i></a> 
+                    {% endif %}
+                </h2>
+                <p>Cuit: {{supplier.cuit}}</p>
+                <p>Teléfono: {{supplier.phone}}</p>
             </div>
-        {% endif %}
-        <a class="btn btn-dark mt-5" href="{% url 'Suppliers' %}">Volver</a>
+        </div>
+        <a class="btn btn-outline-green col-10 my-3" href="{% url 'Suppliers' %}">Volver</a>
     </div>
 </section>    
 

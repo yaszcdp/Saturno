@@ -3,8 +3,8 @@ from django.db.models import TextChoices
 
 # -------[ MODELS PERSON -> CLIENT & SUPPLIER  ]-------
 class Person(models.Model):
-    cuit = models.CharField(max_length=11)
-    phone = models.CharField(max_length=15)
+    cuit = models.CharField(max_length=11, null=True, blank=True)
+    phone = models.IntegerField(max_length=15, null=True, blank=True)
     
     def __str__(self):
         return f'Cuit: {self.cuit} — Teléfono: {self.phone}'

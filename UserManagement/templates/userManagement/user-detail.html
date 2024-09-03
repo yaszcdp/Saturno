@@ -9,22 +9,23 @@
         <h1>DETALLE USUARIO</h1>
         <hr>
         <div class="row gx-4 gx-lg mx-2 custom-card justify-content-center">
-            <div class="col-12 col-md-10 pt-2 pe-4 mt-sm-3 mt-md-0 info-card">
-                <h2>{{user.username}}</h2>
-                <p>Nombre: {{user.first_name}}</p>
-                <p>Apellido: {{user.last_name}}</p>
-                <p>Email: {{user.email}}</p>
+            <form method="POST" class="row justify-content-center">
+                <div class="col-12 col-md-10 pt-2 pe-4 mt-sm-3 mt-md-0 info-card">
+                    <h2>{{user.username}}</h2>
+                    <p>Nombre: {{user.first_name}}</p>
+                    <p>Apellido: {{user.last_name}}</p>
+                    <p>Email: {{user.email}}</p>
 
-                <form method="POST" class="row justify-content-center">
                     {% csrf_token %}
-                    <p class="col-1">Rol: </p>
-                    <div class="col-10 mx-4">{{ form.role }}</div>
-
-                    <button type="submit" class="btn btn-outline-green col-10 my-3">Guardar Rol</button>
-                </form>
-            </div>
-            <a href="{% url 'Users' %}" class="btn btn-outline-orange col-10 my-3">Volver</a>
+                    <div class="row justify-content-first">
+                        <p class="col-12 col-md-4">Asignar Rol: </p>
+                        <div class="col-12 col-md-7 text-center">{{ form.role }}</div>
+                    </div>
+                </div>
+                <input type="submit" class="btn btn-outline-green col-10 my-3" value="Guardar Rol">
+            </form>
         </div>
+        <a href="{% url 'Users' %}" class="btn btn-outline-orange col-10 my-3">Volver</a>
     </div>
 </section>    
 

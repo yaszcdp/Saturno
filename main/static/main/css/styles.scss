@@ -31,6 +31,8 @@ header {
 }
 
 
+
+
 /*---------------[ MENSAJES ERROR ]---------------*/
 .form-group{
     margin-bottom: 1rem;
@@ -272,20 +274,6 @@ header {
 
 /*--------------[ BOTONES ]-------------*/
 
-.btn-dark {
-    box-shadow: 0 0.1875rem 0.1875rem 0 #0000001a !important;
-    padding: .5rem 1rem;
-    font-size: 1.6rem;
-    text-transform: uppercase;
-    letter-spacing: 0.15rem;
-    border: 0;
-    
-    &:hover{
-        background: #14ae2e;
-    }
-}
-
-
 .btn-outline-orange {
     font-size: 1.6rem;
     color: white !important;
@@ -316,7 +304,6 @@ header {
         box-shadow: 0 0.2rem 0.2rem 0 #0000001a !important;
     }
 }
-
 
 .btn-outline-green {
     color: white !important;
@@ -427,7 +414,6 @@ select{
     color: white !important;
 }
 
-
 /*--------------[ PAGES ]-------------*/
 
 .page{
@@ -465,6 +451,11 @@ select{
     font-size: 1.4rem;
 }
 
+.container h2{
+    font-family: "Cutive Mono", monospace !important;
+    font-size: 1.9rem;
+}
+
 .container-box, 
 .container-list {
     background-color: #1b1b1bc7;
@@ -478,6 +469,10 @@ select{
 
     .container-list{
         width: 1050px;
+    }
+
+    select .form-control{
+        align-self: center;
     }
 } 
 

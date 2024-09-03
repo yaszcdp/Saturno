@@ -12213,18 +12213,6 @@ header {
   }
 }
 /*--------------[ BOTONES ]-------------*/
-.btn-dark {
-  box-shadow: 0 0.1875rem 0.1875rem 0 rgba(0, 0, 0, 0.1019607843) !important;
-  padding: 0.5rem 1rem;
-  font-size: 1.6rem;
-  text-transform: uppercase;
-  letter-spacing: 0.15rem;
-  border: 0;
-}
-.btn-dark:hover {
-  background: #14ae2e;
-}
-
 .btn-outline-orange {
   font-size: 1.6rem;
   color: white !important;
@@ -12392,6 +12380,11 @@ select {
   font-size: 1.4rem;
 }
 
+.container h2, .container .h2 {
+  font-family: "Cutive Mono", monospace !important;
+  font-size: 1.9rem;
+}
+
 .container-box,
 .container-list {
   background-color: rgba(27, 27, 27, 0.7803921569);
@@ -12404,6 +12397,9 @@ select {
   }
   .container-list {
     width: 1050px;
+  }
+  select .form-control {
+    align-self: center;
   }
 }
 .container-buttons {

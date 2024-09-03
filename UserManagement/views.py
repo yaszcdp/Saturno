@@ -144,7 +144,7 @@ class UserDetailUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         return context
     
     def get_success_url(self):
-        return reverse_lazy('UserDetail', kwargs={'pk': self.kwargs['pk']})
+        return reverse_lazy('Users')
 
     def test_func(self):
         return is_superadmin(self.request.user)
