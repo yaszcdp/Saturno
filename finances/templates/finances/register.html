@@ -4,19 +4,25 @@
 
 {% block main %}
 
-    <div class="page-section">
-        <div class="container text-white text-center justify-content-center">
-            <h1 class="pb-4">CAJA REGISTRADORA</h1>
-            <br>
+<section class="page-section">
+    <div class="container container-box py-4 px-lg-5 text-white text-center">
+            <h1>CAJA REGISTRADORA</h1>
             <hr>
+
+            <div class="alert alert-info">
+                <div class="{{ message.tags }}">Esta página aún está en construcción.
+                    <br>
+                    Puedes explorarla, pero no esperes que funcione correctamente, ni te sorprendas si se rompe. :)
+                </div>
+            </div>
             <div class="container-buttons">
-                <a class="btn btn-dark" href="{% url 'CashRegisterInit' %}">Iniciar Caja</a>
-                <a class="btn btn-dark" href="{% url 'CashRegisterClose' %}">Cerrar Caja</a>
+                <a class="btn btn-outline-green" href="{% url 'CashRegisterInit' %}">Iniciar Caja</a>
+                <a class="btn btn-outline-orange" href="{% url 'CashRegisterClose' %}">Cerrar Caja</a>
             </div>
 
         </div>
     </div>
-
+</section>
 
 
 {% endblock main %}

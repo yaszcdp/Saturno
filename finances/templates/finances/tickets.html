@@ -4,11 +4,17 @@
 
 {% block main %}
 
-    <div class="page-section">
-        <div class="container text-white text-center justify-content-center">
-            <h1 class="pb-4">GESTION DE COMPROBANTES</h1>
-            <br>
+<section class="page-section">
+    <div class="container container-box py-4 px-lg-5 text-white text-center">
+            <h1>GESTION DE COMPROBANTES</h1>
             <hr>
+
+            <div class="alert alert-info">
+                <div class="{{ message.tags }}">Esta página aún está en construcción.
+                    <br>
+                    Puedes explorarla, pero no esperes que funcione correctamente, ni te sorprendas si se rompe. :)
+                </div>
+            </div>
             <div class="accordion accordion-flush" id="accordionFlushExample">
                 <div class="accordion-item">
                     <h2 class="accordion-header">
@@ -50,8 +56,8 @@
                     </div>
                 </div>
             </div>
-            <a class="btn btn-dark" href="{% url 'index' %}">Volver</a>
+            <a class="btn btn-outline-orange my-3 col-10" href="{% url 'index' %}">Volver</a>
         </div>
-    </div>
+</section>
 
 {% endblock main %}
