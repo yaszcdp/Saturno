@@ -14,20 +14,6 @@ from django.contrib.auth.decorators import login_required
 def accounts_view(request):
     return render(request, 'accounts/accounts.html')
 
-""" def search(request):
-    query = request.GET.get('query', '')
-    page = request.GET.get('page', '')
-
-    if page == 'Clients':
-        clients = Client.objects.filter(first_name__icontains=query) | Client.objects.filter(last_name__icontains=query)
-        return render(request, 'accounts/client-list.html', {'clients': clients})
-    elif page == 'Suppliers':
-        suppliers = Supplier.objects.filter(company__icontains=query)
-        return render(request, 'accounts/Supplier-list.html', {'suppliers': suppliers})
-    else:
-        response = "No hay resultados"
-        return HttpResponse(response)
- """
 #-------[ VISTAS CLIENTES ]-------
 class ClientListView(LoginRequiredMixin, ListView):
     model = Client

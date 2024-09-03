@@ -5,18 +5,34 @@
 {% block main %}
 
 <section class="page-section">
-    <div class="container text-white text-center justify-content-center">
-        <h1 class="pb-4">NUEVO PRODUCTO</h1>
-        <br>
+    <div class="container container-box py-4 px-lg-5 text-white text-center">
+        <h1>NUEVO PRODUCTO</h1>
         <hr>
-        <form class="formulario" action="" method="POST">
+        <form class="form-group custom-card" action="" method="POST">
             {% csrf_token %}
-            <table class="m-auto">
-                {{form.as_table}}
-            </table>
-            <input type="submit" class="btn btn-dark" value="Guardar">
-            <a href="{% url 'Products' %}" class="btn btn-dark">Cancelar</a>
+            <div class="box py-2">
+            {% for field in form %}
+                <div class="row gx-4 gx-lg-5 my-4 justify-content-center">
+                    <div class="col-12 col-md-5">{{ field.label_tag }}</div>
+                    <div class="col-10 col-md-6 align-items-center me-1">
+                        {{ field }}
+                        {% if field.errors %}
+                            <div class="invalid-feedback">
+                            {% for error in field.errors %}
+                                <div>{{ error }}</div>
+                            {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+            </div>
+
+            <div class="col-12 mt-4">
+                <input type="submit" class="btn btn-outline-green col-8" value="Guardar">
+            </div>
         </form>
+        <a href="{% url 'Products' %}" class="btn btn-outline-orange col-10 my-3">Cancelar</a>
     </div>
 </section>    
 

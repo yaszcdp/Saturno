@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.http import HttpResponse
 from accounts.models import *
 from userManagement.models import *
+from products.models import *
 
 # Create your views here.
 def index(request):
@@ -23,6 +24,9 @@ def search(request):
     elif page == 'Suppliers':
         suppliers = Supplier.objects.filter(company__icontains=query)
         return render(request, 'accounts/Supplier-list.html', {'suppliers': suppliers})
+    elif page == 'Products':
+        products = Product.objects.filter(name__icontains=query)
+        return render(request, 'products/products.html', {'products': products})
     else:
         response = "No hay resultados"
         return HttpResponse(response)

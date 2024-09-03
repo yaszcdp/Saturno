@@ -274,6 +274,21 @@ header {
 
 /*--------------[ BOTONES ]-------------*/
 
+.btn-dark {
+    box-shadow: 0 0.1875rem 0.1875rem 0 #0000001a !important;
+    padding: 1.25rem 2rem;
+    font-size: 1.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15rem;
+    border: 0;
+
+    &:hover {
+        background: #14ae2e !important;
+        box-shadow: 0 0.2rem 0.2rem 0 #0000001a;
+    }
+
+}
+
 .btn-outline-orange {
     font-size: 1.6rem;
     color: white !important;
@@ -522,8 +537,6 @@ td{
 }
 
 
-
-
 @media (max-width: 515px) {
     table th{
         font-size: 1.2rem;
@@ -599,6 +612,15 @@ table td a:hover{
     border-radius: 20%;
 }
 
+
+/*--------------[ ABOUT ]-------------*/
+.about img{
+    width: 200px;
+}
+
+.about p{
+    font-family: "Cutive Mono", monospace;
+}
 
 
 /*
