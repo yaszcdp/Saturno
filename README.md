@@ -8,7 +8,7 @@ Este proyecto está construido usando Django, con una arquitectura modular que f
 
 https://echidnamun.pythonanywhere.com/
 
-## Video del proyecto en loom. 
+## Video del proyecto en Loom. 
 
 https://www.loom.com/share/9dea6cb6f668403a957e6a9a7f09f4a8?sid=0a55433a-7673-492a-8e4d-17874981ce96
  
