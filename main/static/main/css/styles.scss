@@ -361,6 +361,30 @@ a i:hover{
     color: #da7a21;
 }
 
+.add-item-btn i, .delete-item-btn i{
+    font-size: 2.5rem;
+    color: white;
+    transition: color 0.2s ease;
+    pointer-events: none;
+}
+
+.delete-item-btn:hover i{
+    color: #a10202;
+}
+
+.add-item-btn:hover i{
+    color: #14ae2e;
+}
+
+.delete-item-btn, .add-item-btn{
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+}
+
+
+
 .bi.bi-github, .bi.bi-linkedin{
     font-size: 4rem;
 }

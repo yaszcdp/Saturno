@@ -5,50 +5,161 @@
 {% block main %}
 
 <section class="page-section">
-    <div class="container text-white text-center justify-content-center">
-        <h1 class="pb-4">NUEVO {{ form_type }}</h1>
-        <br>
+    <div class="container container-box py-4 px-lg-5 text-white text-center" styles="width: 100%;">
+        <h1 class="pb-4">NUEVA {{ form_type }}</h1>
         <hr>
-        <form class="formulario" action="" method="POST">
-            {% csrf_token %}
-            {{form.as_table}}
-            <table id="item-table" class="m-auto">
+
+        <div class="row gx-4 gx-lg-5 mx-2 justify-content-around">
+            <form method="post" class="custom-card col-12">
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-6">
+                        {{ form.temporal_name.label_tag }}
+                    </div>
+                    <div class="col-6">
+                        {{ form.temporal_name }}
+                    </div>
+                </div>
+                <br>
+                <br>
                 {{ formset.management_form }}
-                {% for form in formset %}
-                    <tr class="item-form">
-                        {{ form.as_table }}
-                    </tr>
-                {% endfor %}
-            </table>
-            <button id="add-item-btn" class="btn btn-dark" type="button">Agregar Item</button>
-            <input type="submit" class="btn btn-dark" value="Guardar">
-            <a href="{% url 'Tickets' %}" class="btn btn-dark">Cancelar</a>
-        </form>
+
+                <table class="justify-content-center" id="item-table">
+                    <thead>
+                        <tr>
+                            <th class="col-2">Cant</th>
+                            <th class="col-4">Producto</th>
+                            <th class="col-3">Precio</th>
+                            <th class="col-3">Subtotal</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for form in formset.forms %}
+                        <tr class="item-form">
+                            <td>{{ form.quantity }}</td>
+                            <td>
+                                <input type="text" name="{{ form.product.html_name }}" list="productos">
+                            </td>
+                            <td>{{ form.price }}</td>
+                            <td class="subtotal-cell">-</td>
+                            <td class="delete-cell">
+                                {{ form.DELETE }}                                
+                            </td>
+                        </tr>
+                        {% endfor %}
+
+                        <!-- Empty form for JS cloning -->
+                        <tr id="empty-form" class="item-form d-none">
+                            <td>__QTY__</td>
+                            <td>__PROD__</td>
+                            <td>__PRICE__</td>
+                            <td></td>
+                            <td>__DEL__</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <datalist id="productos">
+                    {% for product in products %}
+                    <option value="{{ product.name }}">
+                    {% endfor %}
+                </datalist>
+
+                
+                <div class="col-12 text-start mt-5">
+                    <button type="button" id="add-item-btn" class="btn add-item-btn">
+                        <i class="bi bi-plus-circle"></i>
+                    </button>
+                <div>
+                <div class="col-12 text-center mt-5">
+                    <button type="submit" class="btn btn-outline-green col-8">Guardar</button>
+                </div>
+            </form>
+        </div>
     </div>
-</section>    
+    <a href="{% url 'Tickets' %}" class="btn btn-outline-orange col-10 my-3">Cancelar</a>
+</section> 
 
 <script>
-    document.getElementById('add-item-btn').addEventListener('click', function(){
-        var formsetPrefix = '{{ formset.prefix }}';
-        var totalForms = document.getElementById('id_' + formsetPrefix + '-TOTAL_FORMS');
-        var currentFormCount = parseInt(totalForms.value);
-        var newFormCount = currentFormCount + 1;
-    
-        var itemForms = document.querySelectorAll('.item-form');
-        var lastForm = itemForms[itemForms.length - 1];
-        var newForm = lastForm.cloneNode(true);
-        
-        newForm.querySelectorAll('input, select, textarea').forEach(function(element) {
-            var name = element.name.replace(`-${currentFormCount - 1}-`, `-${currentFormCount}-`);
-            var id = element.id.replace(`_${currentFormCount - 1}_`, `_${currentFormCount}_`);
-            element.name = name;
-            element.id = id;
-            element.value = '';
-        });
-    
-        document.getElementById('item-table').appendChild(newForm);
-        totalForms.value = newFormCount;
+document.addEventListener("DOMContentLoaded", function () {
+    const tableBody = document.querySelector("#item-table tbody");
+    const totalForms = document.getElementById("id_form-TOTAL_FORMS");
+
+    // Crear plantilla vacía
+    const emptyRow = document.createElement("tr");
+    const rawEmptyHtml = `
+        <td><input type="number" name="form-__prefix__-quantity" step="any"></td>
+        <td>
+            <input type="text" name="form-__prefix__-product" list="productos" class="form-control">
+        </td>
+        <td><input type="number" name="form-__prefix__-price" step="any"></td>
+        <td class="subtotal-cell">—</td>
+        <td class="delete-cell"><input type="checkbox" name="form-__prefix__-DELETE"></td>
+    `.trim();
+    emptyRow.innerHTML = rawEmptyHtml;
+    emptyRow.id = "empty-form";
+    emptyRow.classList.add("item-form", "d-none");
+    tableBody.appendChild(emptyRow);
+
+    // Agregar nuevo ítem
+    document.getElementById("add-item-btn").addEventListener("click", () => {
+        const newIndex = parseInt(totalForms.value);
+        const html = emptyRow.innerHTML.replace(/__prefix__/g, newIndex);
+        const newRow = document.createElement("tr");
+        newRow.classList.add("item-form");
+        newRow.innerHTML = html;
+        tableBody.insertBefore(newRow, emptyRow);
+        totalForms.value = newIndex + 1;
     });
+
+    // Cálculo automático del subtotal
+    tableBody.addEventListener("input", function (e) {
+        if (e.target.name.includes("quantity") || e.target.name.includes("price")) {
+            const row = e.target.closest("tr");
+            const qty = parseFloat(row.querySelector('input[name$="-quantity"]').value) || 0;
+            const price = parseFloat(row.querySelector('input[name$="-price"]').value) || 0;
+            const subtotal = qty * price;
+            row.querySelector(".subtotal-cell").textContent = subtotal ? `$ ${subtotal.toFixed(2)}` : "—";
+        }
+    });
+
+    // Convertir checkbox en ícono de tacho
+    tableBody.addEventListener("change", function (e) {
+        if (e.target.name.includes("DELETE")) {
+            const cell = e.target.closest("td");
+            const trashBtn = document.createElement("button");
+            trashBtn.type = "button";
+            trashBtn.classList.add("delete-item-btn");
+            trashBtn.innerHTML = `<i class="bi bi-trash3"></i>`;
+            cell.innerHTML = ""; // limpiar checkbox
+            cell.appendChild(trashBtn);
+        }
+    });
+
+
+    // Eliminar fila con botón tacho
+    tableBody.addEventListener("click", function (e) {
+        if (e.target.closest(".delete-item-btn")) {
+            const row = e.target.closest("tr");
+            row.remove();
+
+            // Reindexar
+            const rows = tableBody.querySelectorAll("tr.item-form:not(.d-none)");
+            rows.forEach((row, i) => {
+                row.querySelectorAll("input, select").forEach(el => {
+                    if (el.name) el.name = el.name.replace(/form-\\d+-/, `form-${i}-`);
+                    if (el.id) el.id = el.id.replace(/form-\\d+-/, `form-${i}-`);
+                });
+            });
+
+            totalForms.value = rows.length;
+        }
+    });
+});
 </script>
 
-{% endblock %}
+
+
+
+{% endblock main %}

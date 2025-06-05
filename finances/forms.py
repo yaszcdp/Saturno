@@ -23,18 +23,19 @@ class CashRegisterForm(forms.ModelForm):
 #----------------[ TICKETS FORMS ]----------------
 
 #SALES
+#Formulario creacion para vendedores. Asignan items y nombre cliente. 
 class SaleCreateForm(forms.ModelForm):
     class Meta:
         model = Sale
         fields = ['temporal_name']
-        labels = {'temporal_name': 'Nombre Temporal'}
+        labels = {'temporal_name': 'Nombre Cliente'}
 
+#Formulario de actualización para cajera. Cambia el estado y asigna metodo de pago o cuenta corriente. 
 class SaleUpdateForm(forms.ModelForm):
     class Meta:
         model = Sale
-        fields = ['temporal_name', 'status', 'payment_method', 'current_account']
+        fields = ['status', 'payment_method', 'current_account']
         labels = {
-            'temporal_name': 'Nombre Temporal', 
             'status': 'Estado', 
             'payment_method': 'Método de Pago',
             'current_account': 'Cuenta Corriente'
@@ -69,7 +70,16 @@ class ItemCreateForm(forms.ModelForm):
             self.fields['price'].widget.attrs['placeholder'] = f'{self.instance.product.price}'
 
 #FORMSETS
-SaleItemFormSet = inlineformset_factory(Sale, Item, form=ItemCreateForm, extra=1, can_delete=True)
+#SaleItemFormSet = inlineformset_factory(Sale, Item, form=ItemCreateForm, extra=1, can_delete=True)
+SaleItemFormSet = forms.inlineformset_factory(
+    parent_model = Sale, 
+    model = Item, 
+    fields = ('product', 'quantity', 'price'), 
+    extra = 1, 
+    can_delete = True,
+)
+
+
 PurchaseItemFormSet = inlineformset_factory(Purchase, Item, form=ItemCreateForm, extra=1, can_delete=True)
 
 #PAYMENTS

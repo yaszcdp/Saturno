@@ -105,16 +105,13 @@ class CashRegister(models.Model):
 #----------------[ TICKETS ]----------------
 
 class Ticket(models.Model):
-    date = models.DateField()
+    date = models.DateField(default=timezone.now)
     amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     current_account = models.ForeignKey(CurrentAccount, on_delete=models.CASCADE, null=True, blank=True)
-
+    
     def __str__(self):
         return f'{self.date} — Monto: ${self.amount} — Cuenta: {self.current_account}'
-    
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.date = timezone.now().date()
+
 
 class Sale(Ticket):
     temporal_name = models.CharField(max_length=100, null=True, blank=True)
@@ -122,8 +119,8 @@ class Sale(Ticket):
     payment_method = models.CharField(max_length=2, choices=PAYMENT_METHODS_CHOICES, null=True, blank=True)
 
     def calculate_total(self):
-        if not self.pk:
-            self.save()
+        #if not self.pk:
+            #self.save()
         total = sum(item.product.price * item.quantity for item in self.items.all())
         self.amount = total
         self.save()
@@ -146,10 +143,10 @@ class Item(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     quantity = models.DecimalField(max_digits=10, decimal_places=2)
     price = models.DecimalField(max_digits=10, decimal_places=2)
-    subtotal = models.DecimalField(max_digits=10, decimal_places=2)
+    subtotal = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
 
     def __str__(self):
-        return f'{self.product} — {self.quantity} x ${self.price} = ${self.price * self.quantity}'
+        return f'{self.product} — {self.quantity} x ${self.price} = ${self.subtotal}'
 
     def clean(self):
         if self.sale and self.purchase:
@@ -162,6 +159,5 @@ class Item(models.Model):
         return self.subtotal
 
     def save(self, *args, **kwargs):
-        self.clean()
         self.calculate_subtotal()
         super().save(*args, **kwargs)

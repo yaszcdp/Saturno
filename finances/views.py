@@ -7,6 +7,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
 from finances.forms import *
 from finances.models import *
+from products.models import Product
 
 # Create your views here.
 @login_required
@@ -79,12 +80,13 @@ class SaleCreateView(LoginRequiredMixin, CreateView):
 
     def get_context_data(self, **kwargs):
         data = super().get_context_data(**kwargs)
+        instance = getattr(self, 'object', None)
         if self.request.POST:
-            data['formset'] = SaleItemFormSet(self.request.POST, instance=self.object)
-            print('Entró en el if', self.request.POST)
+            data['formset'] = SaleItemFormSet(self.request.POST, instance=instance, prefix='form')
         else:
-            data['formset'] = SaleItemFormSet(instance=self.object)
-            print('No entró')
+            data['formset'] = SaleItemFormSet(instance=instance, prefix='form')
+        data['products'] = Product.objects.all()
+        
         return data
     
     def form_valid(self, form):
