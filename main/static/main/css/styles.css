@@ -12023,11 +12023,20 @@ header {
   margin-top: 0.25rem;
 }
 
-.alert, .alert-info {
+.alert {
   background-color: transparent;
-  color: #a10202;
   font-size: 1.3rem;
+  border: 0.1rem solid white;
+}
+
+.alert.alert-danger {
+  color: #a10202;
   border: 0.1rem solid #a10202;
+}
+
+.alert.alert-success {
+  color: #14ae2e;
+  border: 0.1rem solid #14ae2e;
 }
 
 /*--------------[ NAVBAR ]-------------*/

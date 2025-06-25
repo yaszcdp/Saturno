@@ -21,7 +21,38 @@ class CashRegisterForm(forms.ModelForm):
             self.fields['initial_amounts'].initial = previous_register.final_amounts
 
 #----------------[ TICKETS FORMS ]----------------
+class BaseSaleForm(forms.ModelForm):
+    class Meta:
+        model = Sale
+        fields = '__all__'
+        widgets = {
+            'status': forms.Select(attrs={'class': 'form-select'}),
+            'payment_method': forms.Select(attrs={'class': 'form-select'}),
+            'current_account': forms.Select(attrs={'class': 'form-select'}),
+        }
 
+class SaleCreateForm(BaseSaleForm):
+    class Meta(BaseSaleForm.Meta):
+        fields = ['temporal_name']
+        labels = {'temporal_name': 'Cliente'}
+        widgets = {
+            'temporal_name': forms.TextInput(attrs={'placeholder': 'Nombre del Cliente'})
+        }
+
+class SaleUpdateForm(BaseSaleForm):
+    class Meta(BaseSaleForm.Meta):
+        fields = ['status', 'payment_method', 'current_account']
+        labels = {
+            'status': 'Estado', 
+            'payment_method': 'Método de Pago',
+            'current_account': 'Cuenta Corriente'
+        }
+
+
+
+
+
+''''
 #SALES
 #Formulario creacion para vendedores. Asignan items y nombre cliente. 
 class SaleCreateForm(forms.ModelForm):
@@ -40,13 +71,15 @@ class SaleUpdateForm(forms.ModelForm):
             'payment_method': 'Método de Pago',
             'current_account': 'Cuenta Corriente'
         }
-
+'''
 #PURCHASES
 class PurchaseCreateForm(forms.ModelForm):
     class Meta:
         model = Purchase
         fields = ['temporal_name']
         labels = {'temporal_name': 'Nombre Temporal'}
+
+
 
 #ITEMS
 class ItemCreateForm(forms.ModelForm):

@@ -1,3 +1,4 @@
+import json
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.views.generic import ListView
@@ -8,6 +9,7 @@ from django.contrib.auth.decorators import login_required
 from finances.forms import *
 from finances.models import *
 from products.models import Product
+from django.contrib import messages
 
 # Create your views here.
 @login_required
@@ -80,31 +82,55 @@ class SaleCreateView(LoginRequiredMixin, CreateView):
 
     def get_context_data(self, **kwargs):
         data = super().get_context_data(**kwargs)
-        instance = getattr(self, 'object', None)
-        if self.request.POST:
-            data['formset'] = SaleItemFormSet(self.request.POST, instance=instance, prefix='form')
-        else:
-            data['formset'] = SaleItemFormSet(instance=instance, prefix='form')
-        data['products'] = Product.objects.all()
+        data['form_type'] = 'Venta'
+
+        #Lista de productos para el datalist. 
+        products = Product.objects.all()
+        data['products'] = products
+
+        data['products_json'] = json.dumps(
+            [{'name': product.name, 'price': str(product.price)} for product in products]
+        )
         
         return data
     
     def form_valid(self, form):
-        self.object = form.save(commit=False)
-        context = self.get_context_data()
-        formset = context['formset']
+        #usuario creador
+        form.instance.user_created = self.request.user
 
-        if formset.is_valid():
-            self.object.save()
-            formset.instance = self.object
-            formset.save()
+        #Obtener datos del formulario
+        temporal_name = form.cleaned_data.get('temporal_name')
+        print(f"Temporal Name: {temporal_name} ")
+        items_json = self.request.POST.get('items_json')
+        print(f"Items JSON: {items_json} ")
 
-            self.object.calculate_total()
-            self.object.save()
+        #Procesar los ítems del JSON
+        try:
+            items = json.loads(items_json)
+            print(f"Items: {items} ")
+        except json.JSONDecodeError:
+            messages.error(self.request, "Error al procesar los ítems.")
+            return self.render_to_response(self.get_context_data(form=form))
 
-            return redirect(self.success_url)
-        else:
-            return self.form_invalid(form)
+        #Guardar venta
+        self.object = form.save()
+
+        #creación del item
+        for item_data in items:
+            product_obj = Product.objects.filter(name=item_data['product_name']).first()
+
+            Item.objects.create(
+                sale=self.object,
+                product=product_obj,
+                product_name_cache=item_data['product_name'],
+                quantity=item_data['quantity'],
+                price=item_data['price'],
+            )
+
+        self.object.calculate_total()
+
+        messages.success(self.request, "¡Venta creada con éxito!")
+        return self.render_to_response(self.get_context_data(form=form))
     
 
 class SaleUpdateView(LoginRequiredMixin, UpdateView):

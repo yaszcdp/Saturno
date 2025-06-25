@@ -1,30 +1,67 @@
 {% extends 'main/base.html'  %}
 
-{% block title %} Saturno | Nuevo {{ form_type }} {% endblock title %}
+{% block title %} Saturno | Crear {{ form_type }} {% endblock title %}
 
 {% block main %}
 
 <section class="page-section">
     <div class="container container-box py-4 px-lg-5 text-white text-center" styles="width: 100%;">
-        <h1 class="pb-4">NUEVA {{ form_type }}</h1>
+        <h1 class="pb-4">NUEVA {{ form_type|upper }}</h1>
         <hr>
-
+        <!-- Formulario de creación de venta -->
         <div class="row gx-4 gx-lg-5 mx-2 justify-content-around">
-            <form method="post" class="custom-card col-12">
+            <form id="form" method="post" class="custom-card col-12">
                 {% csrf_token %}
-                <div class="row">
-                    <div class="col-6">
+                <!-- Nombre del cliente -->
+                <div class="row justify-content-start align-items-center">
+                    <!-- *** error Nombre Cliente-->
+                    <div id="name-error" class="col-1 p-0 m-0" style="display:none; color:#a10202; font-size: 2.4rem;" >*</div>
+                    <div class="col-md-3 col-8 text-start ms-3">
                         {{ form.temporal_name.label_tag }}
                     </div>
-                    <div class="col-6">
+                    <div class="col-md-7 col-11 px-5 ms-3 text-center">
                         {{ form.temporal_name }}
                     </div>
                 </div>
                 <br>
-                <br>
-                {{ formset.management_form }}
+                <!-- Formulario carga rapida de ítems-->
+                <div class="row align-items-center text-center justify-content-center py-2 pb-5" style="background-color: black;">
+                    <!-- *** error No hay items en la venta-->
+                    <div class="row align-items-center">
+                        <div id="items-error" class="col-1 p-0 m-0" style="display:none; color:#a10202; font-size: 2.4rem;">*</div>
+                        <h2 class="col-md-11 col-5 text-start" style="font-size: 1.8rem;">Ítem:</h2>
+                    </div>
+                    <hr>
 
-                <table class="justify-content-center" id="item-table">
+                    <div class="col-md-2 col-8 mt-2">
+                        <label for="quantity-input" class="form-label">Cant</label>
+                        <input type="number" id="quantity-input" step="any">
+                    </div>
+
+                    <div class="col-md-6 col-10 mt-2">
+                        <label for="product-input" class="form-label">Producto</label>
+                        <input type="text" id="product-input" list="productos">
+                        <datalist id="productos">
+                            {% for product in products %}
+                                <option value="{{ product.name }}" data-price="{{ product.price }}">
+                            {% endfor %}
+                        </datalist>
+                    </div>
+
+                    <div class="col-md-3 col-8 mt-2">
+                        <label for="price-input" class="form-label">Precio</label>
+                        <input type="number" id="price-input" step="any">
+                    </div>
+                    <!-- Botón para confirmar el ítem --> 
+                    <div class="col-md-1 col-12 mt-3">
+                        <button type="button" id="confirm-item-btn" class="btn add-item-btn">
+                            <i class="bi bi-plus-circle"></i>
+                        </button>
+                    </div>
+                </div>
+                <br>
+                <!--Tabla Items agregados-->
+                <table id="items-table" class="justify-content-center" style="display: none;">
                     <thead>
                         <tr>
                             <th class="col-2">Cant</th>
@@ -34,128 +71,183 @@
                             <th></th>
                         </tr>
                     </thead>
-                    <tbody>
-                        {% for form in formset.forms %}
-                        <tr class="item-form">
-                            <td>{{ form.quantity }}</td>
-                            <td>
-                                <input type="text" name="{{ form.product.html_name }}" list="productos">
-                            </td>
-                            <td>{{ form.price }}</td>
-                            <td class="subtotal-cell">-</td>
-                            <td class="delete-cell">
-                                {{ form.DELETE }}                                
-                            </td>
-                        </tr>
-                        {% endfor %}
-
-                        <!-- Empty form for JS cloning -->
-                        <tr id="empty-form" class="item-form d-none">
-                            <td>__QTY__</td>
-                            <td>__PROD__</td>
-                            <td>__PRICE__</td>
-                            <td></td>
-                            <td>__DEL__</td>
-                        </tr>
-                    </tbody>
+                    <tbody id="items-body"></tbody>
                 </table>
-
-                <datalist id="productos">
-                    {% for product in products %}
-                    <option value="{{ product.name }}">
-                    {% endfor %}
-                </datalist>
-
                 
-                <div class="col-12 text-start mt-5">
-                    <button type="button" id="add-item-btn" class="btn add-item-btn">
-                        <i class="bi bi-plus-circle"></i>
-                    </button>
-                <div>
-                <div class="col-12 text-center mt-5">
+                <!-- Total -->
+                <div id="total-div" class="text-end me-5 pe-5 mt-5" style="display: none;">
+                    <label>Total: <span id="total-label">$0.00</span></label>
+                </div>
+
+                <input type="hidden" name="items_json" id="items-json">
+                
+                <div class="col-12 text-center mt-3">
                     <button type="submit" class="btn btn-outline-green col-8">Guardar</button>
                 </div>
+                <br>
+
+
+                <div id="message-error" class="alert alert-danger" style="display: none;"></div>
+
+                {% if messages %}
+                    {% for message in messages %}
+                        {% if message.tags == 'success'%}
+                            <div class="alert alert-success">
+                                <!--{{ message }}-->
+                                <script>
+                                    alert("{{ message|escapejs }}");
+                                    window.location.href = "{% url 'Tickets' %}";
+                                </script>
+                            </div>
+
+
+                        {% else %}
+                            <div class="alert alert-danger">
+                                {{ message }}
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
             </form>
         </div>
+        <a href="{% url 'Tickets' %}" class="btn btn-outline-orange col-10 my-3">Cancelar</a>
     </div>
-    <a href="{% url 'Tickets' %}" class="btn btn-outline-orange col-10 my-3">Cancelar</a>
+    
 </section> 
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
-    const tableBody = document.querySelector("#item-table tbody");
-    const totalForms = document.getElementById("id_form-TOTAL_FORMS");
+    //Elementos del DOM
+    const form = document.getElementById("form");
+    //items
+    const items = [];
+    const itemsJson = document.getElementById("items-json");
+    //Tabla elementos
+    const itemsBody = document.getElementById("items-body");
+    const itemsTable = document.getElementById("items-table");
+    const totalDiv = document.getElementById("total-div");
+    //inputs fields
+    
+    const productInput = document.getElementById("product-input");
+    const quantityInput = document.getElementById("quantity-input");
+    const priceInput = document.getElementById("price-input");
 
-    // Crear plantilla vacía
-    const emptyRow = document.createElement("tr");
-    const rawEmptyHtml = `
-        <td><input type="number" name="form-__prefix__-quantity" step="any"></td>
-        <td>
-            <input type="text" name="form-__prefix__-product" list="productos" class="form-control">
-        </td>
-        <td><input type="number" name="form-__prefix__-price" step="any"></td>
-        <td class="subtotal-cell">—</td>
-        <td class="delete-cell"><input type="checkbox" name="form-__prefix__-DELETE"></td>
-    `.trim();
-    emptyRow.innerHTML = rawEmptyHtml;
-    emptyRow.id = "empty-form";
-    emptyRow.classList.add("item-form", "d-none");
-    tableBody.appendChild(emptyRow);
-
-    // Agregar nuevo ítem
-    document.getElementById("add-item-btn").addEventListener("click", () => {
-        const newIndex = parseInt(totalForms.value);
-        const html = emptyRow.innerHTML.replace(/__prefix__/g, newIndex);
-        const newRow = document.createElement("tr");
-        newRow.classList.add("item-form");
-        newRow.innerHTML = html;
-        tableBody.insertBefore(newRow, emptyRow);
-        totalForms.value = newIndex + 1;
+    //Construir el array de productos válidos y sus precios. 
+    const validProducts = {{ products_json|safe }};
+    document.querySelectorAll("#productos option").forEach(opt =>{
+        validProducts[opt.value] = parseFloat(opt.dataset.price || 0);
     });
 
-    // Cálculo automático del subtotal
-    tableBody.addEventListener("input", function (e) {
-        if (e.target.name.includes("quantity") || e.target.name.includes("price")) {
-            const row = e.target.closest("tr");
-            const qty = parseFloat(row.querySelector('input[name$="-quantity"]').value) || 0;
-            const price = parseFloat(row.querySelector('input[name$="-price"]').value) || 0;
-            const subtotal = qty * price;
-            row.querySelector(".subtotal-cell").textContent = subtotal ? `$ ${subtotal.toFixed(2)}` : "—";
+    //Autocompletar precio al seleccionar producto
+    productInput.addEventListener("input", function(){
+        const selectedProduct = productInput.value.trim();
+        if (selectedProduct in validProducts){
+            priceInput.value = validProducts[selectedProduct];
         }
     });
 
-    // Convertir checkbox en ícono de tacho
-    tableBody.addEventListener("change", function (e) {
-        if (e.target.name.includes("DELETE")) {
-            const cell = e.target.closest("td");
-            const trashBtn = document.createElement("button");
-            trashBtn.type = "button";
-            trashBtn.classList.add("delete-item-btn");
-            trashBtn.innerHTML = `<i class="bi bi-trash3"></i>`;
-            cell.innerHTML = ""; // limpiar checkbox
-            cell.appendChild(trashBtn);
+    //Calcular Total
+    function calculateTotal() {
+        const total = items.reduce((acc, item) => acc +(item.price * item.quantity), 0);
+        document.getElementById("total-label").textContent = `$${total.toFixed(2)}`;
+    }
+    //Agregar Item
+    document.getElementById("confirm-item-btn").addEventListener("click", function() {
+        const product = productInput.value.trim();
+        const quantity = parseFloat(quantityInput.value);
+        const price = parseFloat(priceInput.value);
+
+        if(!product || isNaN(quantity) || isNaN(price) || quantity <= 0){
+            alert("Completa todos los campos para confirmar el ítem");
+            return;
         }
+
+        if(!(product in validProducts)){
+            alert("El producto ingresado no existe en el listado.");
+            return;
+        }
+
+        const subtotal = quantity * price;
+        
+        //Agregar el item al array global
+        items.push({ product_name: product, quantity, price });
+        console.log("Items después de agregar:", items);
+
+        calculateTotal();
+        
+        if(items.length === 1){
+            itemsTable.style.display = "";
+            totalDiv.style.display = "";
+        }
+        
+        const row = document.createElement("tr");
+        row.innerHTML = `
+        <td>${quantity}</td>
+        <td>${product}</td>
+        <td>$${price.toFixed(2)}</td>
+        <td>$${subtotal.toFixed(2)}</td>
+        <td><button type="button" class="btn delete-item-btn"><i class="bi bi-trash3"></i></button></td>
+        `;
+        
+
+        row.querySelector(".delete-item-btn").addEventListener("click", () => {
+            if (confirm("¿Seguro quieres eliminar este ítem?")){
+                const index = [...itemsBody.children].indexOf(row);
+                if (index > -1){
+                    items.splice(index, 1);
+                    row.remove();
+                    calculateTotal();
+                    if(items.length === 0){
+                        itemsTable.style.display = "none";
+                        totalDiv.style.display = "none";
+                    }
+                    console.log("Items después de eliminar:", items);
+                }
+            }
+        });
+
+        itemsBody.appendChild(row);
+        
+        productInput.value = "";
+        quantityInput.value = "";
+        priceInput.value = "";
+        productInput.focus();
     });
 
+    //Serializar antes de enviar
+    form.addEventListener("submit", function (event) {
+        const temporalName = document.getElementById("id_temporal_name").value.trim();
+        const errorDivName = document.getElementById("name-error");
+        const errorDivItems = document.getElementById("items-error");
+        const errorDivMessage = document.getElementById("message-error");
+        console.log("Nombre Cliente:", temporalName);
 
-    // Eliminar fila con botón tacho
-    tableBody.addEventListener("click", function (e) {
-        if (e.target.closest(".delete-item-btn")) {
-            const row = e.target.closest("tr");
-            row.remove();
-
-            // Reindexar
-            const rows = tableBody.querySelectorAll("tr.item-form:not(.d-none)");
-            rows.forEach((row, i) => {
-                row.querySelectorAll("input, select").forEach(el => {
-                    if (el.name) el.name = el.name.replace(/form-\\d+-/, `form-${i}-`);
-                    if (el.id) el.id = el.id.replace(/form-\\d+-/, `form-${i}-`);
-                });
-            });
-
-            totalForms.value = rows.length;
+        event.preventDefault(); //Detiene el envío del formulario para validación
+        if (!temporalName && items.length === 0) {
+            errorDivMessage.innerHTML = "*Completa el nombre del cliente*<br>*Debes agregar al menos un ítem*";
+            errorDivMessage.style.display = "block";
+            errorDivName.style.display = "block";
+            errorDivItems.style.display = "block";
+        } else if (temporalName && items.length === 0) {
+            errorDivMessage.textContent = "*Debes agregar al menos un ítem*"
+            errorDivMessage.style.display = "block";
+            errorDivItems.style.display = "block";
+            errorDivName.style.display = "none";
+        } else if (!temporalName && items.length > 0) {
+            errorDivMessage.textContent = "*Completa el nombre del cliente*"
+            errorDivMessage.style.display = "block";
+            errorDivName.style.display = "block";
+            errorDivItems.style.display = "none";
+        } else { //si todo OK
+            errorDivName.style.display = "none";
+            errorDivItems.style.display = "none";
+            itemsJson.value = JSON.stringify(items);
+            console.log("Items JSON:", itemsJson.value);
+            form.submit(); // Envía el formulario manualmente
         }
+
     });
+
 });
 </script>
 
