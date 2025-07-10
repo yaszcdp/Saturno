@@ -1,0 +1,54 @@
+
+
+{% load static %}
+
+{% block filter %}
+<form class="form-search my-5" method="GET" action="{{ action_url }}">
+    <input type="hidden" name="page" value="{{page}}">
+    <select name="search_by" id="search_by" class="pt-2 col-12 form-control">
+        <option value="" selected disabled>Buscar por...</option>
+        <option value="client">Cliente</option>
+        <option value="date">Fecha</option>
+        <option value="user">Usuario</option>
+    </select>
+
+    <div class="row mt-3">
+        <!-- Campo de búsqueda por nombre -->
+        <input id="search-name" type="text" name="query" placeholder="Buscar..." class="ms-2 col-10 col-md-8" style="display:none;">
+        <!-- Campo de fecha -->
+        <input id="search-date" type="date" name="date" class="col-6 ms-2" style="display:none;">
+        <!-- Botón de búsqueda -->
+        <a id="search-button" class="col-1" style="display:none;">
+            <button class="btn" type="submit">
+                <i class="bi bi-search-heart"></i>
+            </button>
+        </a>
+    </div>
+
+</form>
+
+<script>
+    document.getElementById('search_by').addEventListener('change', function() {
+        const searchDate = document.getElementById('search-date');
+        const searchName = document.getElementById('search-name');
+        const searchButton = document.getElementById('search-button');
+
+        //Mostrar el div de búsqueda si se selecciona "cliente" o "usuario"
+        if (this.value === 'client' || this.value === 'user') {
+            searchName.style.display = 'flex';
+            searchDate.style.display = 'none';
+            searchButton.style.display = 'flex';
+        } else if (this.value === 'date') {
+            searchDate.style.display = 'flex';
+            searchName.style.display = 'none';
+            searchButton.style.display = 'flex';
+        } else {
+            searchDate.style.display = 'none';
+            searchName.style.display = 'none';
+            searchButton.style.display = 'none';
+        }
+
+    });
+</script>
+
+{% endblock filter %}

@@ -4,35 +4,52 @@
 
 {% block main %}
 
-<section class="page-section">
-    <div class="container container-list py-4 px-lg-5 text-white text-center" styles="width: 100%;">
+<section class="page-section" styles="width:100%; padding-bottom: 5rem;">
+    <div class="container container-list py-4 pb-5 mb-5 px-lg-5 text-white text-center">
         <h1> LISTADO DE {{ form_type|upper }} </h1>
         <hr>
         
-        <div class="row gx-4 gx-lg-5 mx-2 custom-card justify-content-around">
-            <div class="col-12 col-lg-5 align-top mt-4">
-                <div class="row info-card ">
-                    {% if request.user.is_superuser %}
-                        <a class="btn btn-outline-green" href="{% url 'CreateSale' %}">Nueva Venta</a>
-                    {% endif %}
+        <div class="row gx-4 gx-lg-5 mx-2 custom-card justify-content-center">
+            <div class="col-12 col-md-12 col-lg-10 col-xl-4 align-top my-4">
+                <div class="info-card">
+                    <!--BUSCADOR-->
+                    <form class="form-search my-4" method="GET" action="{{ request.path }}">
+                        <select name="search_by" id="search_by" class="pt-2 col-12 form-control">
+                            <option value="" selected disabled>Filtrar por...</option>
+                            {% for option in search_options %}
+                                <option value="{{ option.value }}">{{ option.label }}</option>
+                            {% endfor %}
+                        </select>
 
-                    {% block search %}
-                        {% include 'main/search.html' with page='Tickets' %}
-                    {% endblock search %}
+                        <div class="row mt-3 ms-1">
+                            <input id="search-query" type="text" name="query" value="{{ query }}" placeholder="Buscar..." class="ms-2 col-8 col-md-8 d-none">
+                            <input id="search-date" type="date" name="date" value="{{ date }}" class="col-6 ms-2 d-none">
+                            <a id="search-button" class="col-1 d-none">
+                                <button class="btn" type="submit">
+                                    <i class="bi bi-search-heart"></i>
+                                </button>
+                            </a>
+                        </div>
 
-                <!--AGREGAR FILTRADO DE BUSQUEDA-->
+                    </form>
                 </div>
             </div>
 
-            <div class="col-12 col-lg-7 mt-4">
+            <div class="col-12 col-md-12 col-lg-10 col-xl-8 my-4">
                 <table class="info-card justify-content-center">
                     <thead>
                         <tr>
+                            <th>Código</th>
                             <th>Fecha</th>
                             <th>Cliente</th>
-                            <th>Total</th>
+                            <th class="d-none d-sm-none d-md-table-cell">Total</th>
+                            <th>User</th>
+                            <th class="d-none d-sm-none d-md-table-cell">
+                                {% if form_type == 'Ventas' %}
+                                    Estado
+                                {% endif %}        
+                            </th>
                             {% if request.user.is_superuser %}
-                                <th></th>
                                 <th></th>
                             {% endif %}
                         </tr>
@@ -41,22 +58,96 @@
                     <tbody>
                         {% for ticket in tickets %}
                             <tr>
-                                <td>{{ ticket.date_time }}</td>
+                                <td>{{ ticket.ticket_code.number|stringformat:"06d" }}
+                                <td>{{ ticket.date_time|date:"d/m/Y" }}</td>
                                 <td>{{ ticket.temporal_name }}</td>
-                                <td>${{ ticket.amount }}</td>
-                                {% if request.user.is_superuser %}
-                                    <td><a class="btn btn-dark" href="{% url update_url ticket.pk %}">Editar</a></td>
-                                    <td><a class="btn btn-dark" href="{% url detail_url ticket.pk %}">Detalle</a></td>
+                                <td class="d-none d-sm-none d-md-table-cell">${{ ticket.amount }}</td>
+                                <td>{{ ticket.user_created.username }}</td>
+                                <td class="d-none d-sm-none d-md-table-cell">
+                                    {% if ticket.status %}
+                                        {% if ticket.status == 'PE' %}
+                                            <span style="color:#da7a21;">Pendiente</span>
+                                        {% elif ticket.status == 'CA' %}
+                                            <span style="color:#a10202;">Cancelado</span>
+                                        {% elif ticket.status == 'CC' %}
+                                            <span style="color:#4774e9;">Cta Cte</span>
+                                        {% elif ticket.status == 'PA' %}
+                                            <span style="color:#14ae2e;">Pagado</span>
+                                        {% endif %}
+                                    {% endif %}
+                                </td>
+                                    {% if request.user.is_superuser %}
+                                    <td>
+                                        <a href="{% url 'Tickets' %}"> <!--generalilzar después-->
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                    </td>
                                 {% endif %}
                             </tr>
                         {% endfor %}
                     </tbody>
-
                 </table>
+                <!--PAGINACION-->
+                <div class="step-links mt-3">
+                    {% if is_paginated %}
+                        {% if page_obj.has_previous %}
+                            <a href="?page=1&search_by={{ search_by }}&query={{ query }}&date={{ date }}">&laquo;</a>
+                            <a href="?page={{ page_obj.previous_page_number }}&search_by={{ search_by }}&query={{ query }}&date={{ date }}"> &lt; </a>
+                        {% endif %}
+
+                        <span class="current">
+                            Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+                        </span>
+
+                        {% if page_obj.has_next %}
+                            <a href="?page={{ page_obj.next_page_number }}&search_by={{ search_by }}&query={{ query }}&date={{ date }}"> &gt; </a>
+                            <a href="?page={{ page_obj.paginator.num_pages }}&search_by={{ search_by }}&query={{ query }}&date={{ date }}">&raquo;</a>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            
             </div>
         </div>
-        <a class="btn btn-outline-orange col-8 mt-4" href="{% url 'Tickets' %}">Volver</a>
+        <div class="row justify-content-around">
+            {% if request.user.is_superuser %} <!--Agregar para vendedor y cajero-->
+                <a class="btn btn-outline-green col-5 mt-4 mx-2" href="{% url 'CreateSale' %}">Nueva Venta</a>
+            {% endif %}
+            <a class="btn btn-outline-orange col-5 mt-4 mx-2" href="{% url 'Tickets' %}">Volver</a>
+        </div>
     </div>
 </section>
+<script>
+    function updateSearchFields () {
+        const searchBy = document.getElementById('search_by').value;
+        const searchDate = document.getElementById('search-date');
+        const searchQuery = document.getElementById('search-query');
+        const searchButton = document.getElementById('search-button');
+
+        searchQuery.classList.add('d-none');
+        searchDate.classList.add('d-none');
+        searchButton.classList.add('d-none');
+        
+        //Manejo de inputs Name y Date. 
+        if (searchBy === 'client' || searchBy === 'user' || searchBy === 'code') { 
+            searchDate.value = '';
+            searchQuery.classList.remove('d-none');
+            searchButton.classList.remove('d-none');
+        } else if (searchBy === 'date') {
+            searchQuery.value = '';
+            searchDate.classList.remove('d-none');
+            searchButton.classList.remove('d-none');
+        }else {
+            if (searchQuery.value){
+                searchQuery.classList.remove('d-none');
+                searchButton.classList.remove('d-none');
+            } else if (searchDate.value){
+                searchDate.classList.remove('d-none');
+                searchButton.classList.remove('d-none');
+            }
+        }   
+    }
+    document.addEventListener('DOMContentLoaded', updateSearchFields);
+    document.getElementById('search_by').addEventListener('change', updateSearchFields);
+</script>
 
 {% endblock main %}

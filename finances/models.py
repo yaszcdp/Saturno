@@ -103,6 +103,19 @@ class CashRegister(models.Model):
 
 
 #----------------[ TICKETS ]----------------
+class NumTicket(models.Model):
+    type = models.CharField(max_length=1, choices=TICKET_TYPE_CHOICES)
+    year = models.PositiveIntegerField()
+    number = models.PositiveIntegerField()
+    code = models.CharField(max_length=20, unique=True)
+
+    def save(self, *args, **kwargs):
+        if not self.code:
+            self.code = f"{self.type}{self.year}-{self.number:06d}"
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.code
 
 class Ticket(models.Model):
     date_time = models.DateTimeField(auto_now_add=True)
@@ -115,6 +128,7 @@ class Ticket(models.Model):
 
 
 class Sale(Ticket):
+    ticket_code = models.OneToOneField(NumTicket, on_delete=models.CASCADE, null=True, blank=True)#quitar null y blank una vez reseteada la base de datos
     temporal_name = models.CharField(max_length=100, null=True, blank=True)
     status = models.CharField(max_length=2, choices=STATUS_CHOICES, default='PE')
     payment_method = models.CharField(max_length=2, choices=PAYMENT_METHODS_CHOICES, null=True, blank=True)

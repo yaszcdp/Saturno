@@ -10,6 +10,7 @@ from finances.forms import *
 from finances.models import *
 from products.models import Product
 from django.contrib import messages
+from datetime import datetime
 
 # Create your views here.
 @login_required
@@ -58,14 +59,46 @@ class SaleListView(LoginRequiredMixin, ListView):
     model = Sale
     context_object_name = 'tickets'
     template_name = 'finances/ticket-list.html'
+    paginate_by = 10  # Número de ventas por página
+
+    def get_queryset(self):
+        qs = Sale.objects.all().order_by('-date_time')
+        search_by = self.request.GET.get('search_by', '')
+        query = self.request.GET.get('query', '')
+        date = self.request.GET.get('date', '')
+
+        if search_by == 'client' and query:
+            qs = qs.filter(temporal_name__icontains=query)
+        elif search_by == 'user' and query:
+            qs = qs.filter(user_created__username__icontains=query)
+        elif search_by == 'date' and date:
+            qs = qs.filter(date_time__date=date)
+        elif search_by == 'code' and query:
+            qs = qs.filter(ticket_code__code=query)
+        return qs
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['form_type'] = 'Ventas'
-        context['update_url'] = 'UpdateSale'
-        context['detail_url'] = 'DetailSale'
-        context['cancel_url'] = 'CancelSale'
+        context['search_by'] = self.request.GET.get('search_by', '')
+        context['search_options']=[
+            {'value': 'client', 'label': 'Cliente'},
+            {'value': 'user', 'label': 'Usuario'},
+            {'value': 'date', 'label': 'Fecha'},
+            {'value': 'code', 'label': 'Nro de Comprobante'}
+        ]
+        context['query'] = self.request.GET.get('query', '')
+        context['date'] = self.request.GET.get('date', '')
+
+        #context['update_url'] = 'UpdateSale'
+        #context['detail_url'] = 'DetailSale'
+        #context['cancel_url'] = 'CancelSale'
+        params = self.request.GET.copy()
+        if params.get('page'):
+            del params['page']      
+            context['params'] = params.urlencode()
         return context
+    
 
 
 class SaleDetailView(LoginRequiredMixin, DetailView):
@@ -97,6 +130,16 @@ class SaleCreateView(LoginRequiredMixin, CreateView):
     def form_valid(self, form):
         #usuario creador
         form.instance.user_created = self.request.user
+
+        #NumTicket 
+        type = 'S'
+        year = datetime.now().year
+        last = NumTicket.objects.filter(type=type, year=year).order_by('-number').first()
+        next_number = 1 if not last else last.number + 1
+        num_ticket = NumTicket.objects.create(type=type, year=year, number=next_number)
+
+        #asignacion numTicket a venta
+        form.instance.ticket_code = num_ticket 
 
         #Obtener datos del formulario
         temporal_name = form.cleaned_data.get('temporal_name')

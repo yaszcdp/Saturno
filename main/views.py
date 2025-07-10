@@ -3,6 +3,8 @@ from django.http import HttpResponse
 from accounts.models import *
 from userManagement.models import *
 from products.models import *
+from finances.models import *
+from django.core.paginator import Paginator
 
 # Create your views here.
 def index(request):
@@ -30,3 +32,26 @@ def search(request):
     else:
         response = "No hay resultados"
         return HttpResponse(response)
+
+'''
+def filter_search(request):
+    query = request.GET.get('query', '')
+    page = request.GET.get('page', '')
+
+    ticket_type = request.GET.get('type', 'sale')
+    if ticket_type == 'sale':
+        tickets = Sale.objects.all()
+        if query: 
+            tickets = tickets.filter(temporal_name__icontains=query)
+    elif ticket_type == 'purchase':
+        tickets = Purchase.objects.all()
+        if query:
+            tickets = tickets.filter(temporal_name__icontains=query)
+    else:
+        response = "No hay resultados"
+        return HttpResponse(response)
+    
+    paginator = Paginator(tickets, 10)
+    tickets_page = paginator.get_page(page)
+    return render(request, 'finances/ticket-list.html', {'tickets': tickets_page})
+    '''

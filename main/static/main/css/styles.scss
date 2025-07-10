@@ -435,6 +435,10 @@ select {
     }
 }
 
+input[type="date"]::-webkit-calendar-picker-indicator{
+    filter: invert(100%) sepia(1) saturate(5) hue-rotate(180deg);
+}
+
 form.form-search{
     width: 100%;
     text-align: center;
@@ -474,6 +478,7 @@ select{
     padding-top: 8rem;
     background: linear-gradient(to bottom, #0000004d 0%, #000000b3 60%, #000 100%); 
     min-height: 90vh;
+    padding-bottom: 8rem;
 }
 
 .page-section h1{
@@ -487,6 +492,29 @@ select{
     display: flex; 
     width: 100%;
     justify-content: space-between;
+}
+
+
+/*--------------[ PAGINACION ]-------------*/
+.step-links{
+    font-family: "Zen Kaku Gothic New", sans-serif;
+    font-size: 1.6rem !important;
+}
+
+.step-links a{
+    text-decoration: none;
+    letter-spacing: 0.4rem;
+    font-size: 1.6rem;
+    font-family: "Zen Kaku Gothic New", sans-serif;
+    color: #c2c2c2e6 !important;
+
+    &:hover{
+        color: white !important;
+    }
+
+    &:focus{
+        color: #c2c2c2e6;
+    }
 }
 
 
@@ -517,13 +545,14 @@ select{
     }
 
     .container-list{
-        width: 1050px;
+        width: 1140px;
     }
 
     select .form-control{
         align-self: center;
     }
 } 
+
 
 .container-buttons{
     display: flex;
@@ -571,7 +600,7 @@ td{
 }
 
 
-@media (max-width: 515px) {
+@media (max-width: 767px) {
     table th{
         font-size: 1.2rem;
         padding: .5rem;
@@ -608,7 +637,7 @@ table td a:hover{
 
 @media (min-width: 380px){
     .custom-card{
-        padding: 2rem;
+        padding: 1rem;
     }
 }
 
@@ -627,6 +656,13 @@ table td a:hover{
         font-size: 1.8rem;
     }
 
+}
+
+@media (max-width: 450px){
+    .custom-card   {
+        padding: 0;
+        margin: 0;
+    }
 }
 
 @media (min-width: 768px){
