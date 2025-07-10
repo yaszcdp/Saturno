@@ -392,6 +392,11 @@ a i:hover{
     cursor: pointer;
 }
 
+@media (max-width: 430px){
+    .delete-item-btn i{
+        font-size: 1.5rem;
+    }
+}
 
 
 .bi.bi-github, .bi.bi-linkedin{
