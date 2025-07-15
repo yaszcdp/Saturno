@@ -67,14 +67,18 @@ class SaleListView(LoginRequiredMixin, ListView):
         query = self.request.GET.get('query', '')
         date = self.request.GET.get('date', '')
 
-        if search_by == 'client' and query:
-            qs = qs.filter(temporal_name__icontains=query)
-        elif search_by == 'user' and query:
-            qs = qs.filter(user_created__username__icontains=query)
-        elif search_by == 'date' and date:
-            qs = qs.filter(date_time__date=date)
-        elif search_by == 'code' and query:
-            qs = qs.filter(ticket_code__code=query)
+        if not search_by and query:
+            return Sale.objects.none()
+        else:
+            if search_by == 'client' and query:
+                qs = qs.filter(temporal_name__icontains=query)
+            elif search_by == 'user' and query:
+                qs = qs.filter(user_created__username__icontains=query)
+            elif search_by == 'date' and date:
+                qs = qs.filter(date_time__date=date)
+            elif search_by == 'code' and query:
+                qs = qs.filter(ticket_code__code__icontains=query)
+        
         return qs
 
     def get_context_data(self, **kwargs):
@@ -89,6 +93,7 @@ class SaleListView(LoginRequiredMixin, ListView):
         ]
         context['query'] = self.request.GET.get('query', '')
         context['date'] = self.request.GET.get('date', '')
+        context['no_results'] = not context['tickets'].exists()
 
         #context['update_url'] = 'UpdateSale'
         #context['detail_url'] = 'DetailSale'

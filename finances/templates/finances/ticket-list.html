@@ -56,7 +56,8 @@
                     </thead>
 
                     <tbody>
-                        {% for ticket in tickets %}
+                        {% if tickets %}
+                            {% for ticket in tickets %}
                             <tr>
                                 <td>{{ ticket.ticket_code.number|stringformat:"06d" }}
                                 <td>{{ ticket.date_time|date:"d/m/Y" }}</td>
@@ -84,7 +85,14 @@
                                     </td>
                                 {% endif %}
                             </tr>
-                        {% endfor %}
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="7" class="text-center" styles="font-size: 2rem;">
+                                    No se encontraron resultados.
+                                </td>
+                            </tr>
+                        {% endif %}
                     </tbody>
                 </table>
                 <!--PAGINACION-->
@@ -122,6 +130,7 @@
         const searchDate = document.getElementById('search-date');
         const searchQuery = document.getElementById('search-query');
         const searchButton = document.getElementById('search-button');
+        const searchBtn = searchButton.querySelector('button');
 
         searchQuery.classList.add('d-none');
         searchDate.classList.add('d-none');
@@ -132,17 +141,21 @@
             searchDate.value = '';
             searchQuery.classList.remove('d-none');
             searchButton.classList.remove('d-none');
+            searchBtn.disabled = false;
         } else if (searchBy === 'date') {
             searchQuery.value = '';
             searchDate.classList.remove('d-none');
             searchButton.classList.remove('d-none');
-        }else {
-            if (searchQuery.value){
+            searchBtn.disabled = false;
+        }else { //si no hay searchBy but 
+            if (searchQuery.value){ //hay query... 
                 searchQuery.classList.remove('d-none');
                 searchButton.classList.remove('d-none');
+                searchBtn.disabled = true;
             } else if (searchDate.value){
                 searchDate.classList.remove('d-none');
                 searchButton.classList.remove('d-none');
+                searchBtn.disabled = true;
             }
         }   
     }

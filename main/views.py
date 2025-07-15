@@ -13,6 +13,9 @@ def index(request):
 def about(request):
     return render(request, 'main/about.html')
 
+def messages(request):
+    return render(request, 'main/messages.html')
+
 def search(request):
     query = request.GET.get('query', '')
     page = request.GET.get('page', '')
@@ -32,6 +35,8 @@ def search(request):
     else:
         response = "No hay resultados"
         return HttpResponse(response)
+    
+
 
 '''
 def filter_search(request):

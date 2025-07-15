@@ -12,8 +12,8 @@
             <form action="" method="POST" enctype="multipart/form-data" class="col-12">
                 {% csrf_token %}
                 <div class="row">
-                    <div class="col-12 col-md-4 mb-3">
-                        <img class="avatar-profile col-12" src="{{avatar}}" alt="Avatar" style="width: 140px">
+                    <div class="col-12 col-md-4 mb-3 py-3">
+                        <img class="avatar-profile col-12" src="{{avatar}}" alt="Avatar" style="width: 18rem">
                     </div>
 
                     <div class="col-12 col-md-8 info-card pb-2">
@@ -38,14 +38,18 @@
                     {{ form.avatar }}
                 </div>
 
-                <div class="col-12 text-center">
-                    <input type="submit" class="btn btn-outline-green col-8 mt-3" value="Actualizar">
+                <div class="col-12 text-center my-3">
+                    <input type="submit" class="btn btn-outline-green col-8" value="Actualizar">
                 </div>
+
+                {% block messages %}
+                        {% include 'main/messages.html' with redirect_url=redirect_url %}
+                {% endblock messages %}
             </form>
         </div>
-        <div class="mt-4 justify-content-around">
-            <a href="{% url 'PasswordUpdate' %}" class="btn btn-outline-orange col-12 col-md-5 me-lg-2 m-1">Editar Contraseña</a>
-            <a href="{% url 'Profile' %}" class="btn btn-outline-orange col-12 col-md-5 ms-lg-2 m-1">Cancelar</a>
+        <div class="justify-content-around my-3 pt-1">
+            <a href="{% url 'PasswordUpdate' %}" class="btn btn-outline-orange col-12 col-md-5 me-lg-3 my-2">Editar Contraseña</a>
+            <a href="{% url 'Profile' %}" class="btn btn-outline-orange col-12 col-md-5 ms-lg-3 my-2">Cancelar</a>
         </div>
     </div>
 </section>    

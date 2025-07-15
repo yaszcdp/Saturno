@@ -9,8 +9,8 @@
         <h1>PERFIL DE USUARIO</h1>
         <hr>
         <div class="row gx-4 gx-lg mx-2 custom-card justify-content-center">
-            <div class="col-8 col-md-5">   
-                <img class="avatar-profile" src="{{avatar}}" alt="Avatar" style="width: 200px">
+            <div class="col-8 col-md-5 py-3">   
+                <img class="avatar-profile" src="{{avatar}}" alt="Avatar" style="width: 20rem">
             </div>
             <div class="col-12 col-md-7 pt-2 pe-4 mt-sm-3 mt-md-0 info-card">
                 <h2>{{user.username}}
@@ -24,7 +24,7 @@
                 <p>Puesto: {{ user.role.get_role_display }}</p>
             </div>
         </div>
-        <a href="{% url 'index' %}" class="btn btn-outline-orange col-10 my-3">Volver</a>
+        <a href="{% url 'index' %}" class="btn btn-outline-orange col-10 my-5">Volver</a>
 </section>    
 
 {% endblock %}

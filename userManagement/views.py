@@ -79,14 +79,12 @@ def user_update(request):
 
     if request.method == 'POST':
         form = UserUpdateForm(request.POST, instance=request.user)
-        
         if form.is_valid():
             form.save()
             messages.success(request, 'Usuario actualizado con éxito')
-            return redirect('Profile')
     else:
         form = UserUpdateForm(instance=request.user)
-    return render(request, 'userManagement/user-update.html', {'form':form, 'avatar':avatar})
+    return render(request, 'userManagement/user-update.html', {'form':form, 'avatar':avatar, 'redirect_url': reverse_lazy('Profile')})
 
 
 #----------------[ Password Update ]----------------
