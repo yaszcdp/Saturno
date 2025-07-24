@@ -12300,6 +12300,10 @@ a i:hover {
   color: #da7a21;
 }
 
+.trash-icon:hover i {
+  color: #a10202;
+}
+
 .add-item-btn i, .delete-item-btn i {
   font-size: 2.5rem;
   color: white;
@@ -12354,7 +12358,7 @@ select {
   color: white !important;
   font-family: "Cutive Mono", monospace;
   font-size: 1.6rem;
-  width: 100%;
+  width: 90%;
 }
 input:focus,
 input[type=text]:focus,

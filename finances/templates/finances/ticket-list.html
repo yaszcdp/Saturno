@@ -1,11 +1,11 @@
 {% extends 'main/base.html'  %}
 
-{% block title %} Saturno | Listar {{ form_type }} {% endblock title %}
+{% block title %} Saturno | {{ form_type }} {% endblock title %}
 
 {% block main %}
 
 <section class="page-section" styles="width:100%; padding-bottom: 5rem;">
-    <div class="container container-list py-4 pb-5 mb-5 px-lg-5 text-white text-center">
+    <div class="container container-list py-4 pb-4 mb-5 px-lg-5 text-white text-center">
         <h1> LISTADO DE {{ form_type|upper }} </h1>
         <hr>
         
@@ -30,11 +30,10 @@
                                 </button>
                             </a>
                         </div>
-
                     </form>
                 </div>
             </div>
-
+            <!--LISTADO-->
             <div class="col-12 col-md-12 col-lg-10 col-xl-8 my-4">
                 <table class="info-card justify-content-center">
                     <thead>
@@ -116,11 +115,11 @@
             
             </div>
         </div>
-        <div class="row justify-content-around">
+        <div class="row justify-content-around mt-4">
             {% if request.user.is_superuser %} <!--Agregar para vendedor y cajero-->
-                <a class="btn btn-outline-green col-5 mt-4 mx-2" href="{% url 'CreateSale' %}">Nueva Venta</a>
+                <a class="btn btn-outline-green col-5 my-3 mx-2" href="{% url 'CreateSale' %}">Nueva Venta</a>
             {% endif %}
-            <a class="btn btn-outline-orange col-5 mt-4 mx-2" href="{% url 'Tickets' %}">Volver</a>
+            <a class="btn btn-outline-orange col-5 my-3 mx-2" href="{% url 'Tickets' %}">Volver</a>
         </div>
     </div>
 </section>

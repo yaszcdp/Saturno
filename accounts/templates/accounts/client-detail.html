@@ -6,20 +6,26 @@
 
 <section class="page-section">
     <div class="container container-box py-4 px-lg-5 text-white text-center">
-        <h1>FICHA CLIENTE</h1>
+        <h1 class="pb-4">FICHA CLIENTE</h1>
         <hr>
-        <div class="row gx-4 gx-lg mx-2 custom-card">
-            <div class="col-12 pt-4 pe-4 mt-sm-3 mt-md-0 info-card">
-                <h2 class="col-12">{{ client.first_name }} {{ client.last_name }}
-                    {% if request.user.is_superuser %}
-                        <a href="{% url 'UpdateClient' client.pk %}"><i class="bi bi-pen"></i></a> 
-                    {% endif %}
-                </h2>
+        <div class="row mx-2 mb-2 custom-card justify-content-center">
+            <div class="col-10 pt-4 pe-4 mt-sm-3 info-card">
+                <h2>{{ client.first_name }} {{ client.last_name }}</h2>  
                 <p>Cuit: {{ client.cuit }}</p>
                 <p>Teléfono: {{ client.phone }}</p>
             </div>
+            {% if request.user.is_superuser %}
+            <div class="col-1 mt-sm-3 justify-content-around">
+                <div class="my-2">
+                    <a href="{% url 'UpdateClient' client.pk %}"><i class="bi bi-pen"></i></a>
+                </div>
+                <div class="my-2">
+                    <a class="trash-icon" href="{% url 'DeleteClient' client.pk %}"><i class="bi bi-trash3"></i></a>
+                </div>
+            </div>
+            {% endif %}
         </div>
-        <a class="btn btn-outline-green col-10 my-3" href="{% url 'Clients' %}">Volver</a>
+        <a class="btn btn-outline-green col-10 my-3 mt-4" href="{% url 'Clients' %}">Volver</a>
     </div>
 </section>    
 

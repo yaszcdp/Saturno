@@ -5,11 +5,11 @@
 {% block main %}
 
 <section class="page-section">
-    <div class="container container-box py-4 px-lg-5 text-white text-center" styles="width: 100%;">
+    <div class="container container-box py-4 pb-4 mb-5 px-lg-5 text-white text-center" styles="width: 100%;">
         <h1 class="pb-4">NUEVA {{ form_type|upper }}</h1>
         <hr>
         <!-- Formulario de creación de venta -->
-        <div class="row gx-4 gx-lg-5 mx-2">
+        <div class="row gx-4 gx-lg-5 mx-2 mb-2">
             <form id="form" method="post" class="custom-card col-12">
                 {% csrf_token %}
                 <!-- Nombre del cliente -->
@@ -25,7 +25,7 @@
                 </div>
                 <br>
                 <!-- Formulario carga rapida de ítems-->
-                <div class="row custom-card text-center justify-content-center py-4 mb-5" style="border:none;">
+                <div class="row custom-card text-center justify-content-center py-4 my-3 mx-2" style="border:none;">
                     <!-- *** error No hay items en la venta-->
                     <div class="row align-items-center">
                         <div id="items-error" class="col-1 p-0 m-0" style="display:none; color:#a10202; font-size: 2.4rem;">*</div>
@@ -60,7 +60,7 @@
                     </div>
                 </div>
                 <!--Tabla Items agregados-->
-                <div id="items-table" class="row custom-card text-center justify-content-center py-4 mt-5" style="border:none;display:none;">
+                <div id="items-table" class="row custom-card text-center justify-content-center py-4 my-4 mx-2" style="border:none;display:none;">
                     <h2 class="text-start ps-4" style="font-size: 1.8rem;">Productos agregados:</h2>
                     <hr style="width:98%;">
                     <table class="justify-content-center">
@@ -78,14 +78,14 @@
                 </div>
                 
                     <!-- Total -->
-                <div id="total-div" class="text-end me-5 pe-5 my-3" style="display: none;">
+                <div id="total-div" class="text-end me-4 pe-4 mb-3" style="display: none;">
                     <label>Total: <span id="total-label">$0.00</span></label>
                 </div>
 
                 <input type="hidden" name="items_json" id="items-json">
                 
-                <div class="col-12 text-center mt-5">
-                    <button type="submit" class="btn btn-outline-green col-8">Guardar</button>
+                <div class="col-12 text-center">
+                    <button type="submit" class="btn btn-outline-green col-8 mt-4">Guardar</button>
                 </div>
                 <br>
 
@@ -111,7 +111,7 @@
                 {% endif %}
             </form>
         </div>
-        <a href="{% url 'Tickets' %}" class="btn btn-outline-orange col-10 my-3">Cancelar</a>
+        <a href="{% url 'Tickets' %}" class="btn btn-outline-orange col-10 my-3 mt-4">Cancelar</a>
     </div>
     
 </section> 

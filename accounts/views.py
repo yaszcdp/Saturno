@@ -18,7 +18,25 @@ def accounts_view(request):
 class ClientListView(LoginRequiredMixin, ListView):
     model = Client
     context_object_name = 'clients'
-    template_name = 'accounts/client-list.html'
+    template_name = 'accounts/account-list.html'
+    paginate_by = 10
+
+    def get_queryset(self):
+        qs = Client.objects.all().order_by('first_name')
+        query = self.request.GET.get('search_query', '')
+        if query:
+            qs = qs.filter(first_name__icontains=query)
+        return qs
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['form_type'] = 'Clientes'
+        params = self.request.GET.copy()
+        if params.get('page'):
+            del params['page']
+            context['params'] = params.urlencode()
+        return context
+
 
 class ClientDetailView(LoginRequiredMixin, DetailView):
     model = Client
