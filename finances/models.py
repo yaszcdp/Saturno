@@ -3,7 +3,9 @@ from accounts.models import Client, Supplier, CurrentAccount
 from products.models import Product
 from django.utils import timezone
 from django.core.exceptions import ValidationError
-
+#from django.db.models.signals import post_save
+#from django.dispatch import receiver
+#from decimal import Decimal
 
 #----------------[ GLOBAL ]----------------
 
@@ -122,6 +124,7 @@ class Ticket(models.Model):
     amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     current_account = models.ForeignKey(CurrentAccount, on_delete=models.CASCADE, null=True, blank=True)
     user_created = models.ForeignKey('auth.User', on_delete=models.CASCADE, related_name='tickets_created', null=True, blank=True)
+    #person = models.ForeignKey('accounts.Person', on_delete=models.SET_NULL, null=True, blank=True) #cliente o proveedor **migrar
 
     def __str__(self):
         return f'{self.date_time} — Monto: ${self.amount} — Cuenta: {self.current_account}'
@@ -171,3 +174,6 @@ class Item(models.Model):
             self.product_name_cache = self.product.name
         self.calculate_subtotal()
         super().save(*args, **kwargs)
+
+
+

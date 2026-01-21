@@ -1,12 +1,12 @@
 {% extends 'main/base.html'  %}
 
-{% block title %} Saturno | Nuevo Cliente {% endblock title %}
+{% block title %} Saturno | Nuevo {{ form_type }} {% endblock title %}
 
 {% block main %}
 
 <section class="page-section">
     <div class="container container-box py-4 mb-5 px-lg-5 text-white text-center">
-        <h1 class="pb-4">NUEVO CLIENTE</h1>
+        <h1 class="pb-4">NUEVO {{ form_type|upper }}</h1>
         <hr>
 
         <div class="row gx-4 gx-lg-5 mx-2 mb-2">
@@ -18,7 +18,7 @@
                         <div class="col-12 col-md-5">
                             {{ field.label_tag }}
                         </div>
-                        
+
                         <div class="col-10 col-md-6 align-items-center me-1">
                             {{ field }}
                             {% if field.errors %}
@@ -29,6 +29,23 @@
                                 </div>
                             {% endif %}
                         </div>
+                        {% if messages %}
+                        {% for message in messages %}
+                            {% if message.tags == 'success'%}
+                            <div class="alert alert-success">
+                                {{ message }}
+                                <script>
+                                    alert("{{ message|escapejs }}");
+                                    window.location.href = "{% url 'Tickets' %}";
+                                </script>
+                            </ div>
+                            {% else %}
+                            <div class="alert alert-danger">
+                                {{ message }}
+                            </div>
+                        {% endif %}
+                        {% endfor %}
+                {% endif %}
                     </div>
                     {% endfor %}
                 </div>
@@ -39,7 +56,11 @@
                 <br>
             </form>
         </div>
-        <a href="{% url 'Clients' %}" class="btn btn-outline-orange col-10 my-3 mt-4">Cancelar</a>
+        {% if form_type == 'Cliente' %}
+            <a href="{% url 'Clients' %}" class="btn btn-outline-orange col-10 my-3 mt-4">Cancelar</a>
+        {% elif form_type == 'Proveedor' %}
+            <a href="{% url 'Suppliers' %}" class="btn btn-outline-orange col-10 my-3 mt-4">Cancelar</a>
+        {% endif %}
         <br>
     </div>
 </section>    

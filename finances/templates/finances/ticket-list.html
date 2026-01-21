@@ -87,7 +87,7 @@
                             {% endfor %}
                         {% else %}
                             <tr>
-                                <td colspan="7" class="text-center" styles="font-size: 2rem;">
+                                <td colspan="7" class="text-center py-4" style="font-size: 1.9rem;">
                                     No se encontraron resultados.
                                 </td>
                             </tr>
@@ -117,9 +117,9 @@
         </div>
         <div class="row justify-content-around mt-4">
             {% if request.user.is_superuser %} <!--Agregar para vendedor y cajero-->
-                <a class="btn btn-outline-green col-5 my-3 mx-2" href="{% url 'CreateSale' %}">Nueva Venta</a>
+                <a class="btn btn-outline-green col-10 col-md-5 my-3 mx-2" href="{% url 'CreateSale' %}">Nueva Venta</a>
             {% endif %}
-            <a class="btn btn-outline-orange col-5 my-3 mx-2" href="{% url 'Tickets' %}">Volver</a>
+            <a class="btn btn-outline-orange col-10 col-md-5 my-3 mx-2" href="{% url 'Tickets' %}">Volver</a>
         </div>
     </div>
 </section>

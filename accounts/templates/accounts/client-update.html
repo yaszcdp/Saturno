@@ -8,10 +8,11 @@
     <div class="container container-box py-4 mb-5 px-lg-5 text-white text-center">
         <h1 class="pb-4">EDITAR CLIENTE</h1>
         <hr>
-        <div class="row mx-2 mb-2 custom-card">
-            <form action="" method="POST" class="col-12">
+
+        <div class="row gx-4 gx-lg-5 mx-2 mb-2">
+            <form class="col-12 custom-card" action="" method="POST">
             {% csrf_token %}
-                <div class="box py-2">
+                <div class="info-card my-3">
                 {% for field in form %}
                     <div class="row gx-4 gx-lg-5 my-4 justify-content-center">
                         <div class="col-12 col-md-5">

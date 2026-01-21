@@ -25,16 +25,50 @@ class Supplier(Person):
 
 # -------[ MODELS CURRENT ACCOUNT ]-------
 class CurrentAccount(models.Model):
-    client = models.ForeignKey(Client, on_delete=models.CASCADE, null=True, blank=True)
-    supplier = models.ForeignKey(Supplier, on_delete=models.CASCADE, null=True, blank=True)
-    resumen = models.TextField()
+    person = models.ForeignKey(Person, on_delete=models.CASCADE, null=True, blank=True)
+    resumen = models.TextField(blank=True)
 
     def __str__(self):
-        if self.client:
-            return f'Cuenta Corriente de: {self.client.first_name} Deuda: ${self.resumen}'
-        elif self.supplier:
-            return f'Cuenta Corriente de: {self.supplier.company} Deuda: ${self.resumen}'
+        if self.person:
+            return f'Cuenta Corriente de {self.person}'
         
         return 'Cuenta Corriente'
     
+    '''def get_ledger(self):
+        entries = self.entries.all().order_by('date', 'id')
+        running = 0
+        result = []
+        for e in entries:
+            running += e.amount
+            result.append({
+                'date': e.date,
+                'ticket_pk': e.ticket_id,
+                'description': e.description,
+                'amount': e.amount,
+                'balance_after': running, 
+                'entry': e,
+            })
+        return result'''
     
+'''
+class AccountEntry(models.Model):
+    ACCOUNT_TYPES = [
+        ('SA', 'Sale'),
+        ('PU', 'Purchase'),
+        ('PA', 'Payment'),
+        ('AD', 'Adjustment'),
+    ]
+    current_account = models.ForeignKey(CurrentAccount, related_name='entries', on_delete=models.CASCADE)
+    date = models.DateField(auto_now_add=True)
+    entry_type = models.CharField(max_length=2, choices=ACCOUNT_TYPES)
+    description = models.CharField(max_length=200)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    ticket = models.ForeignKey('finances.Ticket', on_delete=models.CASCADE, null=True, blank=True)
+
+    class Meta:         
+        ordering = ['date', 'id']
+        
+    def __str__(self):
+            return f'{self.date} — {self.entry_type} — ${self.amount}'
+
+'''

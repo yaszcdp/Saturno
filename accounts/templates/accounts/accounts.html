@@ -5,15 +5,16 @@
 {% block main %}
 
 <section class="page-section">
-    <div class="container container-box py-4 px-lg-5 text-white text-center">
-        <h1>CUENTAS</h1>
+    <div class="container container-box py-4 mb-5 px-lg-5 text-white text-center">
+        <h1 class="pb-4">CUENTAS</h1>
         <hr>
-        <div class="row gx-4 gx-lg-5 m-1 custom-card justify-content-around">
-            <a class="btn btn-outline-green col-10 col-md-5 me-lg-2 m-2" href="{% url 'Clients' %}">Clientes</a>                
-            <a class="btn btn-outline-green col-10 col-md-5 ms-lg-2 m-2" href="{% url 'Suppliers' %}">Proveedores</a>
+
+        <div class="row mx-2 mb-2 custom-card justify-content-around">
+            <a class="btn btn-outline-green col-8 m-2 my-4" href="{% url 'Clients' %}">Clientes</a>                
+            <a class="btn btn-outline-green col-8 m-2 my-4" href="{% url 'Suppliers' %}">Proveedores</a>
         </div>
 
-        <a class="btn btn-outline-orange col-10 mt-4" href="{% url 'index' %}">Volver</a>
+        <a class="btn btn-outline-orange col-10 my-3 mt-4" href="{% url 'index' %}">Volver</a>
     </div>
 </section>
 

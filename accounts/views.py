@@ -46,8 +46,13 @@ class ClientDetailView(LoginRequiredMixin, DetailView):
 class ClientCreateView(LoginRequiredMixin, CreateView):
     model = Client
     form_class = ClientForm
-    template_name = 'accounts/client-create.html'
+    template_name = 'accounts/account-create.html'
     success_url = reverse_lazy('Clients')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['form_type'] = 'Cliente'
+        return context
 
 class ClientUpdateView(LoginRequiredMixin, UpdateView):
     model = Client
@@ -66,7 +71,24 @@ class ClientDeleteView(LoginRequiredMixin, DeleteView):
 class SupplierListView(LoginRequiredMixin, ListView):
     model = Supplier
     context_object_name = 'suppliers'
-    template_name = 'accounts/supplier-list.html'
+    template_name = 'accounts/account-list.html'
+    paginate_by = 10
+
+    def get_queryset(self):
+        qs = Supplier.objects.all().order_by('company')
+        query = self.request.GET.get('search_query', '')
+        if query:
+            qs = qs.filter(company__icontains=query)
+        return qs
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['form_type'] = 'Proveedores'
+        params = self.request.GET.copy()
+        if params.get('page'):
+            del params['page']
+            context['params'] = params.urlencode()
+        return context
 
 class SupplierDetailView(LoginRequiredMixin, DetailView):
     model = Supplier
@@ -76,8 +98,13 @@ class SupplierDetailView(LoginRequiredMixin, DetailView):
 class SupplierCreateView(LoginRequiredMixin, CreateView):
     model = Supplier
     form_class = SupplierForm
-    template_name = 'accounts/supplier-create.html'
+    template_name = 'accounts/account-create.html'
     success_url = reverse_lazy('Suppliers')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['form_type'] = 'Proveedor'
+        return context
 
 class SupplierUpdateView(LoginRequiredMixin, UpdateView):
     model = Supplier
