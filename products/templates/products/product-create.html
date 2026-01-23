@@ -8,6 +8,25 @@
     <div class="container container-box py-4 px-lg-5 text-white text-center">
         <h1>NUEVO PRODUCTO</h1>
         <hr>
+        
+        {% if messages %}
+            <div class="row mb-3">
+                <div class="col-12">
+                    {% for message in messages %}
+                        {% if message.tags == 'success' %}
+                            <div class="alert alert-success text-center">
+                                {{ message }}
+                            </div>
+                        {% else %}
+                            <div class="alert alert-danger text-center">
+                                {{ message }}
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+        
         <form class="form-group custom-card" action="" method="POST">
             {% csrf_token %}
             <div class="box py-2">

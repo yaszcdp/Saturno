@@ -8,6 +8,25 @@
     <div class="container container-box py-4 px-lg-5 text-white text-center">
         <h1>PERFIL DE USUARIO</h1>
         <hr>
+        
+        {% if messages %}
+            <div class="row mb-3">
+                <div class="col-12">
+                    {% for message in messages %}
+                        {% if message.tags == 'success' %}
+                            <div class="alert alert-success text-center">
+                                {{ message }}
+                            </div>
+                        {% else %}
+                            <div class="alert alert-danger text-center">
+                                {{ message }}
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+        
         <div class="row gx-4 gx-lg mx-2 custom-card justify-content-center">
             <div class="col-8 col-md-5 py-3">   
                 <img class="avatar-profile" src="{{avatar}}" alt="Avatar" style="width: 20rem">

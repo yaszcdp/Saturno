@@ -9,7 +9,23 @@
         <h1 class="pb-4">ELIMINAR CLIENTE</h1>
         <hr>
         <div class="row mx-2 mb-2 custom-card justify-content-center">
-            <h2 class="col-10 pt-4 pe-4 mt-sm-3 ">¿Seguro querés eliminar a {{client.first_name}} {{client.last_name}}?</h2>
+            {% if messages %}
+                <div class="col-12 mb-3 mt-3">
+                    {% for message in messages %}
+                        {% if message.tags == 'success' %}
+                            <div class="alert alert-success text-center">
+                                {{ message }}
+                            </div>
+                        {% else %}
+                            <div class="alert alert-danger text-center">
+                                {{ message }}
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            {% endif %}
+            
+            <h2 class="col-10 pt-4 pe-4 mt-sm-3 ">¿Seguro querés eliminar a {{client.first_name}} {{client.last_name}} de clientes?</h2>
             <form action="" method="POST" class="pt-2">
                 {% csrf_token %}
                 <div class="col-12 text-center">

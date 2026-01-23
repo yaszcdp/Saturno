@@ -1,7 +1,7 @@
 @import url("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css");
 @import url('https://fonts.googleapis.com/css2?family=BIZ+UDMincho&family=Cutive+Mono&family=Zen+Kaku+Gothic+New&display=swap');
 
-@import "~bootstrap/scss/bootstrap";
+@import "../../../../node_modules/bootstrap/scss/bootstrap";
 /*--------------[ ESTILOS GENERALES ]-------------*/
 
 
@@ -64,19 +64,26 @@ header {
 }
 
 .alert{
-    background-color: transparent;
-    font-size: 1.3rem;
-    border: .1rem solid white
+    background-color: #000000b3 !important;
+    font-size: 1.3rem !important;
+    border: none !important;
+    padding: 1.5rem !important;
+    margin-bottom: 1rem !important;
 }
 
 .alert.alert-danger{
-    color: #a10202;
-    border: .1rem solid #a10202;
+    color: #a10202 !important;
+    border: .1rem solid #a10202 !important;
 }
 
 .alert.alert-success{
-    color: #14ae2e;
-    border: .1rem solid #14ae2e;
+    color: #14ae2e !important;
+    border: .1rem solid #14ae2e !important;
+}
+
+.alert.alert-info{
+    color: #a10202 !important;
+    border: .1rem solid #a10202 !important;
 }
 
 /*--------------[ NAVBAR ]-------------*/

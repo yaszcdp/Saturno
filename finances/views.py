@@ -177,8 +177,8 @@ class SaleCreateView(LoginRequiredMixin, CreateView):
 
         self.object.calculate_total()
 
-        messages.success(self.request, "¡Venta creada con éxito!")
-        return self.render_to_response(self.get_context_data(form=form))
+        messages.success(self.request, f"Venta {self.object.ticket_code} agregada correctamente")
+        return redirect(self.success_url)
     
 
 class SaleUpdateView(LoginRequiredMixin, UpdateView):
@@ -202,8 +202,10 @@ class SaleUpdateView(LoginRequiredMixin, UpdateView):
             self.object = form.save()
             formset.instance = self.object
             formset.save()
+            messages.success(self.request, 'Venta actualizada correctamente')
             return redirect(self.success_url)
         else:
+            messages.error(self.request, 'Error al actualizar la venta')
             return self.form_invalid(form)
 
 
@@ -211,7 +213,8 @@ def cancel_sale(request, pk):
     sale = get_object_or_404(Sale, pk=pk)
     sale.status = 'CA'  # Set the status to 'CA' for 'Canceled'
     sale.save()
-    return render(request, 'finances/ticket-list.html')
+    messages.success(request, 'Venta cancelada correctamente')
+    return redirect('Tickets')
 
 
 #---------------------------------
@@ -256,8 +259,10 @@ class PurchaseCreateView(LoginRequiredMixin, CreateView):
             self.object = form.save()
             formset.instance = self.object
             formset.save()
+            messages.success(self.request, f'Compra {self.object.ticket_code} agregada correctamente')
             return redirect(self.success_url)
         else:
+            messages.error(self.request, 'Error al crear la compra')
             return self.form_invalid(form)
         
 
@@ -282,8 +287,10 @@ class PurchaseUpdateView(LoginRequiredMixin, UpdateView):
             self.object = form.save()
             formset.instance = self.object
             formset.save()
+            messages.success(self.request, 'Compra actualizada correctamente')
             return redirect(self.success_url)
         else:
+            messages.error(self.request, 'Error al actualizar la compra')
             return self.form_invalid(form)
         
         
@@ -291,6 +298,10 @@ class PurchaseDeleteView(LoginRequiredMixin, DeleteView):
     model = Purchase
     template_name = 'finances/ticket-delete.html'
     success_url = reverse_lazy('Tickets')
+    
+    def delete(self, request, *args, **kwargs):
+        messages.success(self.request, 'Compra eliminada correctamente')
+        return super().delete(request, *args, **kwargs)
 
 
 #---------------------------------
@@ -320,6 +331,15 @@ class PaymentCreateView(LoginRequiredMixin, CreateView):
     form_class = PaymentCreateForm
     template_name = 'finances/ticket-create.html'
     success_url = reverse_lazy('Tickets')
+    
+    def form_valid(self, form):
+        payment = form.save()
+        messages.success(self.request, 'Pago agregado correctamente')
+        return super().form_valid(form)
+    
+    def form_invalid(self, form):
+        messages.error(self.request, 'Error al crear el pago')
+        return super().form_invalid(form)
 
 
 class PaymentUpdateView(LoginRequiredMixin, UpdateView):
@@ -327,9 +347,21 @@ class PaymentUpdateView(LoginRequiredMixin, UpdateView):
     form_class = PaymentCreateForm
     template_name = 'finances/ticket-update.html'
     success_url = reverse_lazy('Tickets')
+    
+    def form_valid(self, form):
+        messages.success(self.request, 'Pago actualizado correctamente')
+        return super().form_valid(form)
+    
+    def form_invalid(self, form):
+        messages.error(self.request, 'Error al actualizar el pago')
+        return super().form_invalid(form)
 
 
 class PaymentDeleteView(LoginRequiredMixin, DeleteView):
     model = Payment
     template_name = 'finances/ticket-delete.html'
     success_url = reverse_lazy('Tickets')
+    
+    def delete(self, request, *args, **kwargs):
+        messages.success(self.request, 'Pago eliminado correctamente')
+        return super().delete(request, *args, **kwargs)

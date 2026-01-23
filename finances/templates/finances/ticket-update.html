@@ -9,6 +9,22 @@
         <h1 class="pb-4">EDITAR {{ form_type }}</h1>
         <br>
         <hr>
+        {% if messages %}
+            <div class="col-12 mb-3">
+                {% for message in messages %}
+                    {% if message.tags == 'success' %}
+                        <div class="alert alert-success text-center">
+                            {{ message }}
+                        </div>
+                    {% else %}
+                        <div class="alert alert-danger text-center">
+                            {{ message }}
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        {% endif %}
+        
         <form class="formulario" action="" method="POST">
             {% csrf_token %}
             {{ form.as_table }}

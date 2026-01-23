@@ -10,6 +10,22 @@
         <hr>
 
         <div class="row gx-4 gx-lg-5 mx-2 mb-2">
+            {% if messages %}
+                <div class="col-12 mb-3">
+                    {% for message in messages %}
+                        {% if message.tags == 'success' %}
+                            <div class="alert alert-success text-center">
+                                {{ message }}
+                            </div>
+                        {% else %}
+                            <div class="alert alert-danger text-center">
+                                {{ message }}
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            {% endif %}
+            
             <form class="col-12 custom-card" action="" method="POST">
                 {% csrf_token %}
                 <div class="info-card my-3">
@@ -29,23 +45,6 @@
                                 </div>
                             {% endif %}
                         </div>
-                        {% if messages %}
-                        {% for message in messages %}
-                            {% if message.tags == 'success'%}
-                            <div class="alert alert-success">
-                                {{ message }}
-                                <script>
-                                    alert("{{ message|escapejs }}");
-                                    window.location.href = "{% url 'Tickets' %}";
-                                </script>
-                            </ div>
-                            {% else %}
-                            <div class="alert alert-danger">
-                                {{ message }}
-                            </div>
-                        {% endif %}
-                        {% endfor %}
-                {% endif %}
                     </div>
                     {% endfor %}
                 </div>

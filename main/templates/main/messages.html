@@ -3,22 +3,23 @@
 {% block messages %}
 
     {% if messages %}
-        {% for message in messages %}
-            {% if message.tags == 'success'%}
-                <div class="alert alert-success">
-                    <!--{{ message }}-->
-                    <script>
-                        alert("{{ message|escapejs }}");
-                        window.location.href = "{{ redirect_url|default:''}}";
-                    </script>
-                </div>
-            {% else %}
-                <div class="alert alert-danger">
-                    {{ message }}
-                </div>
+        <div class="messages-container">
+            {% for message in messages %}
+                {% if message.tags == 'success' %}
+                    <div class="alert alert-success text-center mb-3">
+                        {{ message }}
+                    </div>
+                {% elif message.tags == 'error' or message.tags == 'danger' %}
+                    <div class="alert alert-danger text-center mb-3">
+                        {{ message }}
+                    </div>
+                {% else %}
+                    <div class="alert alert-danger text-center mb-3">
+                        {{ message }}
+                    </div>
                 {% endif %}
-        {% endfor %}
+            {% endfor %}
+        </div>
     {% endif %}
-
 
 {% endblock messages %}

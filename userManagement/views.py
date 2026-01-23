@@ -19,11 +19,11 @@ def user_register(request):
         form = UserRegisterForm(request.POST)
 
         if form.is_valid():
-            form.save()
-            messages.success(request, 'Usuario registrado con éxito')
+            user = form.save()
+            messages.success(request, f'Usuario {user.username} registrado correctamente')
             return redirect('index')
         else:
-            messages.error(request, 'Error de formulario')
+            messages.error(request, 'Error al registrar el usuario')
     else:
         form = UserRegisterForm()
     
@@ -43,7 +43,6 @@ def user_login(request):
 
             if user:
                 login(request, user)
-                messages.success(request, 'Inicio de sesión exitoso')
                 return redirect('index')
         else:
             messages.error(request, 'Usuario o contraseña incorrectos')
@@ -81,10 +80,13 @@ def user_update(request):
         form = UserUpdateForm(request.POST, instance=request.user)
         if form.is_valid():
             form.save()
-            messages.success(request, 'Usuario actualizado con éxito')
+            messages.success(request, 'Perfil de usuario actualizado correctamente')
+            return redirect('Profile')
+        else:
+            messages.error(request, 'Error al actualizar el perfil de usuario')
     else:
         form = UserUpdateForm(instance=request.user)
-    return render(request, 'userManagement/user-update.html', {'form':form, 'avatar':avatar, 'redirect_url': reverse_lazy('Profile')})
+    return render(request, 'userManagement/user-update.html', {'form':form, 'avatar':avatar})
 
 
 #----------------[ Password Update ]----------------
@@ -141,8 +143,14 @@ class UserDetailUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         context['user'] = user
         return context
     
-    def get_success_url(self):
-        return reverse_lazy('Users')
+    def form_valid(self, form):
+        role = form.save()
+        messages.success(self.request, f'Rol del usuario {role.user.username} actualizado correctamente')
+        return redirect('UserDetail', pk=role.user.pk)
+    
+    def form_invalid(self, form):
+        messages.error(self.request, 'Error al actualizar el rol del usuario')
+        return super().form_invalid(form)
 
     def test_func(self):
         return is_superadmin(self.request.user)

@@ -9,6 +9,22 @@
         <h1>EDITAR PRODUCTO</h1>
         <hr>
         <div class="row gx-4 gx-lg-5 mx-2 custom-card justify-content-center">
+            {% if messages %}
+                <div class="col-12 mb-3 mt-3">
+                    {% for message in messages %}
+                        {% if message.tags == 'success' %}
+                            <div class="alert alert-success text-center">
+                                {{ message }}
+                            </div>
+                        {% else %}
+                            <div class="alert alert-danger text-center">
+                                {{ message }}
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            {% endif %}
+            
             <form action="" method="POST" class="col-12">
             {% csrf_token %}
             <div class="box py-2">

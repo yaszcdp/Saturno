@@ -10,15 +10,24 @@
         <h1>INICIO DE SESIÓN</h1>
         <hr>
         <form class="row gx-4 gx-lg-5 mx-2 mb-2 custom-card justify-content-center" action="" method="POST">
+            {% csrf_token %}
+            
             {% if messages %}
-            <div class="alert alert-info">
-                {% for message in messages %}
-                <div class="{{ message.tags }}">{{ message }}</div>
-                {% endfor %}
-            </div>
+                <div class="col-12 mb-3">
+                    {% for message in messages %}
+                        {% if message.tags == 'success' %}
+                            <div class="alert alert-success text-center">
+                                {{ message }}
+                            </div>
+                        {% else %}
+                            <div class="alert alert-danger text-center">
+                                {{ message }}
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
             {% endif %}
             
-            {% csrf_token %}
             <table class="col-12 mx-2 my-3 py-2">
                 <tr class="row gx-4 justify-content-center">
                     <td class="col-12 col-md-5">{{ form.username.label_tag }}</td>

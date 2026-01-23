@@ -10,6 +10,22 @@
         <hr>
         <!-- Formulario de creación de venta -->
         <div class="row gx-4 gx-lg-5 mx-2 mb-2">
+            {% if messages %}
+                <div class="col-12 mb-3">
+                    {% for message in messages %}
+                        {% if message.tags == 'success' %}
+                            <div class="alert alert-success text-center">
+                                {{ message }}
+                            </div>
+                        {% else %}
+                            <div class="alert alert-danger text-center">
+                                {{ message }}
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            {% endif %}
+            
             <form id="form" method="post" class="custom-card col-12">
                 {% csrf_token %}
                 <!-- Nombre del cliente -->
@@ -89,26 +105,7 @@
                 </div>
                 <br>
 
-
                 <div id="message-error" class="alert alert-danger" style="display: none;"></div>
-
-                {% if messages %}
-                    {% for message in messages %}
-                        {% if message.tags == 'success'%}
-                            <div class="alert alert-success">
-                                <!--{{ message }}-->
-                                <script>
-                                    alert("{{ message|escapejs }}");
-                                    window.location.href = "{% url 'Tickets' %}";
-                                </script>
-                            </div>
-                        {% else %}
-                            <div class="alert alert-danger">
-                                {{ message }}
-                            </div>
-                        {% endif %}
-                    {% endfor %}
-                {% endif %}
             </form>
         </div>
         <a href="{% url 'Tickets' %}" class="btn btn-outline-orange col-10 my-3 mt-4">Cancelar</a>

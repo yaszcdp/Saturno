@@ -8,6 +8,25 @@
     <div class="container container-box py-4 px-lg-5 text-white text-center">
         <h1 class="pb-4">FICHA CLIENTE</h1>
         <hr>
+        
+        {% if messages %}
+            <div class="row mb-3">
+                <div class="col-12">
+                    {% for message in messages %}
+                        {% if message.tags == 'success' %}
+                            <div class="alert alert-success text-center">
+                                {{ message }}
+                            </div>
+                        {% else %}
+                            <div class="alert alert-danger text-center">
+                                {{ message }}
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+        
         <div class="row mx-2 mb-2 custom-card justify-content-center">
             <div class="col-10 pt-4 pe-4 mt-sm-3 info-card">
                 <h2>{{ client.first_name }} {{ client.last_name }}</h2>  

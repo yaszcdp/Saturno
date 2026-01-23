@@ -9,6 +9,24 @@
         <h1> LISTADO DE {{ form_type|upper }} </h1>
         <hr>
         
+        {% if messages %}
+            <div class="row mb-3">
+                <div class="col-12">
+                    {% for message in messages %}
+                        {% if message.tags == 'success' %}
+                            <div class="alert alert-success text-center">
+                                {{ message }}
+                            </div>
+                        {% else %}
+                            <div class="alert alert-danger text-center">
+                                {{ message }}
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+        
         <div class="row gx-4 gx-lg-5 mx-2 custom-card justify-content-center">
             <div class="col-12 col-md-12 col-lg-10 col-xl-4 align-top my-4">
                 <div class="info-card">
