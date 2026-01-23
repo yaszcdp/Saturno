@@ -5,6 +5,7 @@ from django.db.models import TextChoices
 class Person(models.Model):
     cuit = models.CharField(max_length=11, null=True, blank=True)
     phone = models.IntegerField(null=True, blank=True)
+    city = models.CharField(max_length=100, null=True, blank=True, verbose_name='Ciudad')
     
     def __str__(self):
         return f'Cuit: {self.cuit} — Teléfono: {self.phone}'
@@ -13,15 +14,18 @@ class Person(models.Model):
 class Client(Person):
     first_name = models.CharField(max_length=50)
     last_name = models.CharField(max_length=50, null=True, blank=True)
+    business_name = models.CharField(max_length=100, null=True, blank=True, verbose_name='Empresa/Verdulería')
 
     def __str__(self):
-        return f'Cliente: {self.first_name} {self.last_name} — {super().__str__()}'
+        return f'{self.first_name} {self.last_name}'
 
 class Supplier(Person):
-    company = models.CharField(max_length=50)
+    company = models.CharField(max_length=50, verbose_name='Empresa')
+    salesperson = models.CharField(max_length=100, null=True, blank=True, verbose_name='Vendedor')
+    administrator = models.CharField(max_length=100, null=True, blank=True, verbose_name='Administrativo')
 
     def __str__(self):
-        return f'Proveedor: {self.company} — {super().__str__()}'
+        return f'{self.company}'
 
 # -------[ MODELS CURRENT ACCOUNT ]-------
 class CurrentAccount(models.Model):

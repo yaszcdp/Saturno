@@ -8,6 +8,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
 from finances.forms import *
 from finances.models import *
+from accounts.models import CurrentAccount
 from products.models import Product
 from django.contrib import messages
 from datetime import datetime
@@ -59,7 +60,7 @@ class SaleListView(LoginRequiredMixin, ListView):
     model = Sale
     context_object_name = 'tickets'
     template_name = 'finances/ticket-list.html'
-    paginate_by = 10  # Número de ventas por página
+    paginate_by = 10  # NÃºmero de ventas por pÃ¡gina
 
     def get_queryset(self):
         qs = Sale.objects.all().order_by('-date_time')
@@ -148,22 +149,24 @@ class SaleCreateView(LoginRequiredMixin, CreateView):
 
         #Obtener datos del formulario
         temporal_name = form.cleaned_data.get('temporal_name')
+        person = form.cleaned_data.get('person')
         print(f"Temporal Name: {temporal_name} ")
+        print(f"Person: {person} ")
         items_json = self.request.POST.get('items_json')
         print(f"Items JSON: {items_json} ")
 
-        #Procesar los ítems del JSON
+        #Procesar los Ã­tems del JSON
         try:
             items = json.loads(items_json)
             print(f"Items: {items} ")
         except json.JSONDecodeError:
-            messages.error(self.request, "Error al procesar los ítems.")
+            messages.error(self.request, "Error al procesar los Ã­tems.")
             return self.render_to_response(self.get_context_data(form=form))
 
         #Guardar venta
         self.object = form.save()
 
-        #creación del item
+        #creaciÃ³n del item
         for item_data in items:
             product_obj = Product.objects.filter(name=item_data['product_name']).first()
 
@@ -176,6 +179,19 @@ class SaleCreateView(LoginRequiredMixin, CreateView):
             )
 
         self.object.calculate_total()
+
+        #Si hay persona vinculada, actualizar CurrentAccount
+        if person:
+            current_account, created = CurrentAccount.objects.get_or_create(
+                person=person,
+                defaults={'balance': 0}
+            )
+            # Sumar el monto de la venta al balance (debe)
+            current_account.balance += self.object.amount
+            current_account.save()
+            
+            if created:
+                messages.info(self.request, f"Cuenta corriente creada para {person}")
 
         messages.success(self.request, f"Venta {self.object.ticket_code} agregada correctamente")
         return redirect(self.success_url)
@@ -246,24 +262,76 @@ class PurchaseCreateView(LoginRequiredMixin, CreateView):
 
     def get_context_data(self, **kwargs):
         data = super().get_context_data(**kwargs)
-        if self.request.POST:
-            data['formset'] = PurchaseItemFormSet(self.request.POST)
-        else:
-            data['formset'] = PurchaseItemFormSet()
+        data['form_type'] = 'Compra'
+
+        #Lista de productos para el datalist. 
+        products = Product.objects.all()
+        data['products'] = products
+
+        data['products_json'] = json.dumps(
+            [{'name': product.name, 'price': str(product.price)} for product in products]
+        )
+        
         return data
     
     def form_valid(self, form):
-        context = self.get_context_data()
-        formset = context['formset']
-        if form.is_valid() and formset.is_valid():
-            self.object = form.save()
-            formset.instance = self.object
-            formset.save()
-            messages.success(self.request, f'Compra {self.object.ticket_code} agregada correctamente')
-            return redirect(self.success_url)
-        else:
-            messages.error(self.request, 'Error al crear la compra')
-            return self.form_invalid(form)
+        #usuario creador
+        form.instance.user_created = self.request.user
+
+        #NumTicket 
+        type = 'P'
+        year = datetime.now().year
+        last = NumTicket.objects.filter(type=type, year=year).order_by('-number').first()
+        next_number = 1 if not last else last.number + 1
+        num_ticket = NumTicket.objects.create(type=type, year=year, number=next_number)
+
+        #asignacion numTicket a compra
+        form.instance.ticket_code = num_ticket 
+
+        #Obtener datos del formulario
+        temporal_name = form.cleaned_data.get('temporal_name')
+        person = form.cleaned_data.get('person')
+        items_json = self.request.POST.get('items_json')
+
+        #Procesar los Ã­tems del JSON
+        try:
+            items = json.loads(items_json)
+        except json.JSONDecodeError:
+            messages.error(self.request, "Error al procesar los Ã­tems.")
+            return self.render_to_response(self.get_context_data(form=form))
+
+        #Guardar compra
+        self.object = form.save()
+
+        #creaciÃ³n del item
+        for item_data in items:
+            product_obj = Product.objects.filter(name=item_data['product_name']).first()
+
+            Item.objects.create(
+                purchase=self.object,
+                product=product_obj,
+                product_name_cache=item_data['product_name'],
+                quantity=item_data['quantity'],
+                price=item_data['price'],
+            )
+
+        self.object.calculate_total()
+
+        #Si hay persona vinculada, actualizar CurrentAccount
+        if person:
+            current_account, created = CurrentAccount.objects.get_or_create(
+                person=person,
+                defaults={'balance': 0}
+            )
+            # Restar el monto de la compra al balance (haber)
+            current_account.balance -= self.object.amount
+            current_account.save()
+            
+            if created:
+                messages.info(self.request, f"Cuenta corriente creada para {person}")
+
+        messages.success(self.request, f'Compra {self.object.ticket_code} agregada correctamente')
+        return redirect(self.success_url)
         
 
 class PurchaseUpdateView(LoginRequiredMixin, UpdateView):
@@ -332,10 +400,46 @@ class PaymentCreateView(LoginRequiredMixin, CreateView):
     template_name = 'finances/ticket-create.html'
     success_url = reverse_lazy('Tickets')
     
+    def get_context_data(self, **kwargs):
+        data = super().get_context_data(**kwargs)
+        data['form_type'] = 'Pago'
+        return data
+    
     def form_valid(self, form):
+        #usuario creador
+        form.instance.user_created = self.request.user
+
+        #NumTicket 
+        type = 'PA'
+        year = datetime.now().year
+        last = NumTicket.objects.filter(type=type, year=year).order_by('-number').first()
+        next_number = 1 if not last else last.number + 1
+        num_ticket = NumTicket.objects.create(type=type, year=year, number=next_number)
+
+        #asignacion numTicket a pago
+        form.instance.ticket_code = num_ticket 
+
+        #Obtener persona vinculada
+        person = form.cleaned_data.get('person')
+
+        #Guardar pago
         payment = form.save()
-        messages.success(self.request, 'Pago agregado correctamente')
-        return super().form_valid(form)
+
+        #Si hay persona vinculada, actualizar CurrentAccount
+        if person:
+            current_account, created = CurrentAccount.objects.get_or_create(
+                person=person,
+                defaults={'balance': 0}
+            )
+            # Restar el monto del pago al balance (pago reduce deuda)
+            current_account.balance -= payment.amount
+            current_account.save()
+            
+            if created:
+                messages.info(self.request, f"Cuenta corriente creada para {person}")
+
+        messages.success(self.request, f'Pago {payment.ticket_code} agregado correctamente')
+        return redirect(self.success_url)
     
     def form_invalid(self, form):
         messages.error(self.request, 'Error al crear el pago')
@@ -357,6 +461,8 @@ class PaymentUpdateView(LoginRequiredMixin, UpdateView):
         return super().form_invalid(form)
 
 
+
+
 class PaymentDeleteView(LoginRequiredMixin, DeleteView):
     model = Payment
     template_name = 'finances/ticket-delete.html'
@@ -364,4 +470,88 @@ class PaymentDeleteView(LoginRequiredMixin, DeleteView):
     
     def delete(self, request, *args, **kwargs):
         messages.success(self.request, 'Pago eliminado correctamente')
+        return super().delete(request, *args, **kwargs)
+
+
+#---------------------------------
+#CREDIT NOTES
+
+class CreditNoteListView(LoginRequiredMixin, ListView):
+    model = CreditNote
+    context_object_name = 'tickets'
+    template_name = 'finances/ticket-list.html'
+    paginate_by = 10
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['form_type'] = 'Notas de Credito'
+        context['update_url'] = 'UpdateCreditNote'
+        context['detail_url'] = 'DetailCreditNote'
+        context['cancel_url'] = 'DeleteCreditNote'
+        return context
+
+class CreditNoteDetailView(LoginRequiredMixin, DetailView):
+    model = CreditNote
+    template_name = 'finances/ticket-detail.html'
+    context_object_name = 'creditnote'
+
+class CreditNoteCreateView(LoginRequiredMixin, CreateView):
+    model = CreditNote
+    form_class = CreditNoteCreateForm
+    template_name = 'finances/ticket-create.html'
+    success_url = reverse_lazy('Tickets')
+
+    def get_context_data(self, **kwargs):
+        data = super().get_context_data(**kwargs)
+        data['form_type'] = 'Nota de Credito'
+        return data
+
+    def form_valid(self, form):
+        form.instance.user_created = self.request.user
+        type = 'CN'
+        year = datetime.now().year
+        last = NumTicket.objects.filter(type=type, year=year).order_by('-number').first()
+        next_number = 1 if not last else last.number + 1
+        num_ticket = NumTicket.objects.create(type=type, year=year, number=next_number)
+        form.instance.ticket_code = num_ticket
+        person = form.cleaned_data.get('person')
+        note_type = form.cleaned_data.get('note_type')
+        credit_note = form.save()
+        if person:
+            current_account, created = CurrentAccount.objects.get_or_create(person=person, defaults={'balance': 0})
+            if note_type == 'S':
+                current_account.balance -= credit_note.amount
+            else:
+                current_account.balance += credit_note.amount
+            current_account.save()
+            if created:
+                messages.info(self.request, f'Cuenta corriente creada para {person}')
+        messages.success(self.request, f'Nota de Credito {credit_note.ticket_code} agregada correctamente')
+        return redirect(self.success_url)
+
+    def form_invalid(self, form):
+        messages.error(self.request, 'Error al crear la nota de credito')
+        return super().form_invalid(form)
+
+class CreditNoteUpdateView(LoginRequiredMixin, UpdateView):
+    model = CreditNote
+    form_class = CreditNoteCreateForm
+    template_name = 'finances/ticket-update.html'
+    success_url = reverse_lazy('Tickets')
+
+    def form_valid(self, form):
+        messages.success(self.request, 'Nota de Credito actualizada correctamente')
+        return super().form_valid(form)
+
+    def form_invalid(self, form):
+        messages.error(self.request, 'Error al actualizar la nota de credito')
+        return super().form_invalid(form)
+
+class CreditNoteDeleteView(LoginRequiredMixin, DeleteView):
+    model = CreditNote
+    template_name = 'finances/ticket-delete.html'
+    success_url = reverse_lazy('Tickets')
+
+    def delete(self, request, *args, **kwargs):
+        messages.success(self.request, 'Nota de Credito eliminada correctamente')
         return super().delete(request, *args, **kwargs)

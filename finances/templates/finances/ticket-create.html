@@ -28,6 +28,18 @@
             
             <form id="form" method="post" class="custom-card col-12">
                 {% csrf_token %}
+                
+                <!-- Persona (Cliente/Proveedor) -->
+                <div class="row custom-card align-items-center" style="background: none; border: none;">
+                    <div class="col-md-3 col-8 text-start ms-3">
+                        {{ form.person.label_tag }}
+                    </div>
+                    <div class="col-md-7 col-11 px-5 ms-3 text-center">
+                        {{ form.person }}
+                    </div>
+                </div>
+                <br>
+                
                 <!-- Nombre del cliente -->
                 <div class="row custom-card align-items-center" style="background: none; border: none;">
                     <!-- *** error Nombre Cliente-->

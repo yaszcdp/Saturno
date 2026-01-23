@@ -26,4 +26,10 @@ urlpatterns = [
     path('detail-payment/<int:pk>/', views.PaymentDetailView.as_view(), name='DetailPayment'),
     path('update-payment/<int:pk>/', views.PaymentUpdateView.as_view(), name='UpdatePayment'),
     path('delete-payment/<int:pk>/', views.PaymentDeleteView.as_view(), name='DeletePayment'),
+
+    path('list-creditnotes/', views.CreditNoteListView.as_view(), name='CreditNotes'),
+    path('create-creditnote/', views.CreditNoteCreateView.as_view(), name='CreateCreditNote'),
+    path('detail-creditnote/<int:pk>/', views.CreditNoteDetailView.as_view(), name='DetailCreditNote'),
+    path('update-creditnote/<int:pk>/', views.CreditNoteUpdateView.as_view(), name='UpdateCreditNote'),
+    path('delete-creditnote/<int:pk>/', views.CreditNoteDeleteView.as_view(), name='DeleteCreditNote'),
 ]

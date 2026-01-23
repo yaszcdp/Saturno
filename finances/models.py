@@ -28,6 +28,8 @@ TICKET_TYPE_CHOICES = [
     ('P', 'Purchase'),
     ('E', 'Expense'),
     ('I', 'Income'),
+    ('PA', 'Payment'),
+    ('CN', 'CreditNote'),
 ]
 
 STATUS_CHOICES = [
@@ -106,7 +108,7 @@ class CashRegister(models.Model):
 
 #----------------[ TICKETS ]----------------
 class NumTicket(models.Model):
-    type = models.CharField(max_length=1, choices=TICKET_TYPE_CHOICES)
+    type = models.CharField(max_length=2, choices=TICKET_TYPE_CHOICES)
     year = models.PositiveIntegerField()
     number = models.PositiveIntegerField()
     code = models.CharField(max_length=20, unique=True)
@@ -124,10 +126,11 @@ class Ticket(models.Model):
     amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     current_account = models.ForeignKey(CurrentAccount, on_delete=models.CASCADE, null=True, blank=True)
     user_created = models.ForeignKey('auth.User', on_delete=models.CASCADE, related_name='tickets_created', null=True, blank=True)
-    #person = models.ForeignKey('accounts.Person', on_delete=models.SET_NULL, null=True, blank=True) #cliente o proveedor **migrar
+    person = models.ForeignKey('accounts.Person', on_delete=models.SET_NULL, null=True, blank=True, verbose_name='Cliente/Proveedor')
 
     def __str__(self):
-        return f'{self.date_time} — Monto: ${self.amount} — Cuenta: {self.current_account}'
+        person_info = f' — {self.person}' if self.person else ''
+        return f'{self.date_time.strftime("%d/%m/%Y %H:%M")} — ${self.amount}{person_info}'
 
 
 class Sale(Ticket):
@@ -144,11 +147,30 @@ class Sale(Ticket):
 
 
 class Purchase(Ticket):
+    ticket_code = models.OneToOneField(NumTicket, on_delete=models.CASCADE, null=True, blank=True)
     temporal_name = models.CharField(max_length=100, null=True, blank=True)
+
+    def calculate_total(self):
+        total = sum(item.price * item.quantity for item in self.items.all())
+        self.amount = total
+        self.save()
+        return total
 
 class Payment(Ticket):
     payment_method = models.CharField(max_length=2, choices=PAYMENT_METHODS_CHOICES, null=True, blank=True)
     payment_type = models.CharField(max_length=2, choices=[('I', 'Income'), ('E', 'Expense')], default='S')
+
+
+class CreditNote(Ticket):
+    ticket_code = models.OneToOneField(NumTicket, on_delete=models.CASCADE, null=True, blank=True)
+    note_type = models.CharField(max_length=2, choices=[('S', 'Sale'), ('P', 'Purchase')], default='S', verbose_name='Tipo')
+    description = models.TextField(null=True, blank=True, verbose_name='Descripción')
+    status = models.CharField(max_length=2, choices=STATUS_CHOICES, default='PE')
+
+    def __str__(self):
+        person_info = f' — {self.person}' if self.person else ''
+        type_name = 'Venta' if self.note_type == 'S' else 'Compra'
+        return f'NC {type_name} {self.ticket_code} — ${self.amount}{person_info}'
 
 
 #----------------[ ITEM ]----------------
