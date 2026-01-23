@@ -29,9 +29,15 @@
         
         <div class="row mx-2 mb-2 custom-card justify-content-center">
             <div class="col-10 pt-4 pe-4 mt-sm-3 info-card">
-                <h2>{{ client.first_name }} {{ client.last_name }}</h2>  
-                <p>Cuit: {{ client.cuit }}</p>
-                <p>Teléfono: {{ client.phone }}</p>
+                <h2>{{ client.first_name }} {{ client.last_name }}</h2>
+                {% if client.business_name %}
+                    <p><strong>Empresa/Verdulería:</strong> {{ client.business_name }}</p>
+                {% endif %}
+                <p><strong>Cuit:</strong> {{ client.cuit }}</p>
+                <p><strong>Teléfono:</strong> {{ client.phone }}</p>
+                {% if client.city %}
+                    <p><strong>Ciudad:</strong> {{ client.city }}</p>
+                {% endif %}
             </div>
             {% if request.user.is_superuser %}
             <div class="col-1 mt-sm-3 justify-content-around">

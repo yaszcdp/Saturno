@@ -28,7 +28,7 @@
                         <tr>
                             <th>Empresa</th>
                             <th>Cuit</th>
-                            <th>Telefono</th>
+                            <th>Ciudad</th>
                             <th></th>
                             <th></th>
                         </tr>
@@ -39,7 +39,7 @@
                         <tr>
                             <td>{{ supplier.company }}</td>
                             <td>{{ supplier.cuit }}</td>
-                            <td>{{ supplier.phone }}</td>
+                            <td>{{ supplier.city|default:'-' }}</td>
                             {% if request.user.is_superuser %}
                             <td>
                                 <a href="{% url 'DetailSupplier' supplier.pk %}">

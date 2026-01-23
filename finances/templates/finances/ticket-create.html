@@ -29,25 +29,65 @@
             <form id="form" method="post" class="custom-card col-12">
                 {% csrf_token %}
                 
-                <!-- Persona (Cliente/Proveedor) -->
-                <div class="row custom-card align-items-center" style="background: none; border: none;">
-                    <div class="col-md-3 col-8 text-start ms-3">
-                        {{ form.person.label_tag }}
+                <!-- Checkbox Cuenta Corriente -->
+                <div class="row custom-card align-items-center mb-3" style="background: none; border: none;">
+                    <div class="col-12 text-start ms-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="use-account" name="use_account">
+                            <label class="form-check-label" for="use-account">
+                                <strong>Usar Cuenta Corriente</strong>
+                            </label>
+                        </div>
                     </div>
-                    <div class="col-md-7 col-11 px-5 ms-3 text-center">
-                        {{ form.person }}
+                </div>
+                
+                <!-- Sección de Persona (Cliente/Proveedor) - Se muestra solo si se marca Cta Cte -->
+                <div id="person-section" style="display: none;">
+                    <!-- Tipo de persona -->
+                    <div class="row custom-card align-items-center mb-2" style="background: none; border: none;">
+                        <div class="col-md-3 col-8 text-start ms-3">
+                            <label for="person-type">Tipo:</label>
+                        </div>
+                        <div class="col-md-7 col-11 px-5 ms-3">
+                            <select id="person-type" class="form-select">
+                                <option value="">Todos</option>
+                                <option value="client">Clientes</option>
+                                <option value="supplier">Proveedores</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- Buscador de persona -->
+                    <div class="row custom-card align-items-center mb-2" style="background: none; border: none;">
+                        <div class="col-md-3 col-8 text-start ms-3">
+                            <label for="person-search">Buscar:</label>
+                        </div>
+                        <div class="col-md-7 col-11 px-5 ms-3">
+                            <input type="text" id="person-search" class="form-control" placeholder="Buscar por nombre o empresa...">
+                        </div>
+                    </div>
+                    
+                    <!-- Lista filtrada de personas -->
+                    <div class="row custom-card align-items-center" style="background: none; border: none;">
+                        <div class="col-md-3 col-8 text-start ms-3">
+                            {{ form.person.label_tag }}
+                        </div>
+                        <div class="col-md-7 col-11 px-5 ms-3 text-center">
+                            {{ form.person }}
+                        </div>
                     </div>
                 </div>
                 <br>
                 
-                <!-- Nombre del cliente -->
-                <div class="row custom-card align-items-center" style="background: none; border: none;">
-                    <!-- *** error Nombre Cliente-->
-                    <div id="name-error" class="col-1 p-0 m-0" style="display:none; color:#a10202; font-size: 2.4rem;">*</div>
-                    <div class="col-md-3 col-8 text-start ms-3">
-                        {{ form.temporal_name.label_tag }}
-                    </div>
-                    <div class="col-md-7 col-11 px-5 ms-3 text-center">
+                <!-- Nombre del cliente temporal (solo si NO usa Cta Cte) -->
+                <div id="temporal-name-section">
+                    <div class="row custom-card align-items-center" style="background: none; border: none;">
+                        <!-- *** error Nombre Cliente-->
+                        <div id="name-error" class="col-1 p-0 m-0" style="display:none; color:#a10202; font-size: 2.4rem;">*</div>
+                        <div class="col-md-3 col-8 text-start ms-3">
+                            {{ form.temporal_name.label_tag }}
+                        </div>
+                        <div class="col-md-7 col-11 px-5 ms-3 text-center">
                         {{ form.temporal_name }}
                     </div>
                 </div>
@@ -228,24 +268,34 @@ document.addEventListener("DOMContentLoaded", function () {
     //Serializar antes de enviar
     form.addEventListener("submit", function (event) {
         const temporalName = document.getElementById("id_temporal_name").value.trim();
+        const useAccount = document.getElementById("use-account").checked;
+        const personId = document.getElementById("id_person").value;
         const errorDivName = document.getElementById("name-error");
         const errorDivItems = document.getElementById("items-error");
         const errorDivMessage = document.getElementById("message-error");
         console.log("Nombre Cliente:", temporalName);
+        console.log("Usar Cuenta:", useAccount);
+        console.log("Person ID:", personId);
 
         event.preventDefault(); //Detiene el envío del formulario para validación
-        if (!temporalName && items.length === 0) {
-            errorDivMessage.innerHTML = "*Completa el nombre del cliente*<br>*Debes agregar al menos un ítem*";
+        
+        // Validar que si usa cuenta corriente, haya seleccionado una persona O si no usa cuenta, tenga nombre temporal
+        const hasValidIdentification = useAccount ? personId : temporalName;
+        
+        if (!hasValidIdentification && items.length === 0) {
+            const identificationType = useAccount ? "un Cliente/Proveedor" : "el nombre del cliente";
+            errorDivMessage.innerHTML = `*Completa ${identificationType}*<br>*Debes agregar al menos un ítem*`;
             errorDivMessage.style.display = "block";
             errorDivName.style.display = "block";
             errorDivItems.style.display = "block";
-        } else if (temporalName && items.length === 0) {
+        } else if (hasValidIdentification && items.length === 0) {
             errorDivMessage.textContent = "*Debes agregar al menos un ítem*"
             errorDivMessage.style.display = "block";
             errorDivItems.style.display = "block";
             errorDivName.style.display = "none";
-        } else if (!temporalName && items.length > 0) {
-            errorDivMessage.textContent = "*Completa el nombre del cliente*"
+        } else if (!hasValidIdentification && items.length > 0) {
+            const identificationType = useAccount ? "un Cliente/Proveedor" : "el nombre del cliente";
+            errorDivMessage.textContent = `*Completa ${identificationType}*`
             errorDivMessage.style.display = "block";
             errorDivName.style.display = "block";
             errorDivItems.style.display = "none";
@@ -258,6 +308,62 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
     });
+
+    // Control del checkbox de Cuenta Corriente
+    const useAccountCheckbox = document.getElementById("use-account");
+    const personSection = document.getElementById("person-section");
+    const temporalNameSection = document.getElementById("temporal-name-section");
+    const personSelect = document.getElementById("id_person");
+    const temporalNameInput = document.getElementById("id_temporal_name");
+
+    useAccountCheckbox.addEventListener("change", function() {
+        if (this.checked) {
+            personSection.style.display = "block";
+            temporalNameSection.style.display = "none";
+            temporalNameInput.value = ""; // Limpiar nombre temporal
+            personSelect.required = true;
+            temporalNameInput.required = false;
+        } else {
+            personSection.style.display = "none";
+            temporalNameSection.style.display = "block";
+            personSelect.value = ""; // Limpiar selección de persona
+            personSelect.required = false;
+            temporalNameInput.required = true;
+        }
+    });
+
+    // Sistema de filtrado de personas
+    const personTypeSelect = document.getElementById("person-type");
+    const personSearchInput = document.getElementById("person-search");
+    const personOptions = Array.from(personSelect.options);
+
+    function filterPersonOptions() {
+        const selectedType = personTypeSelect.value;
+        const searchTerm = personSearchInput.value.toLowerCase();
+
+        // Guardar la opción vacía
+        const emptyOption = personOptions[0];
+        
+        // Limpiar todas las opciones
+        personSelect.innerHTML = "";
+        personSelect.appendChild(emptyOption);
+
+        // Filtrar y agregar opciones
+        personOptions.slice(1).forEach(option => {
+            const text = option.textContent.toLowerCase();
+            const matchesType = !selectedType || 
+                (selectedType === "client" && text.includes("cliente:")) ||
+                (selectedType === "supplier" && text.includes("proveedor:"));
+            const matchesSearch = !searchTerm || text.includes(searchTerm);
+
+            if (matchesType && matchesSearch) {
+                personSelect.appendChild(option.cloneNode(true));
+            }
+        });
+    }
+
+    personTypeSelect.addEventListener("change", filterPersonOptions);
+    personSearchInput.addEventListener("input", filterPersonOptions);
 
 });
 </script>

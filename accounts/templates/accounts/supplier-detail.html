@@ -30,8 +30,17 @@
         <div class="row mx-2 mb-2 custom-card justify-content-center">
             <div class="col-10 pt-4 pe-4 mt-sm-3 info-card">
                 <h2>{{ supplier.company }}</h2>
-                <p>Cuit: {{supplier.cuit}}</p>
-                <p>Teléfono: {{supplier.phone}}</p>
+                <p><strong>Cuit:</strong> {{ supplier.cuit }}</p>
+                <p><strong>Teléfono:</strong> {{ supplier.phone }}</p>
+                {% if supplier.city %}
+                    <p><strong>Ciudad:</strong> {{ supplier.city }}</p>
+                {% endif %}
+                {% if supplier.salesperson %}
+                    <p><strong>Vendedor:</strong> {{ supplier.salesperson }}</p>
+                {% endif %}
+                {% if supplier.administrator %}
+                    <p><strong>Administrativo:</strong> {{ supplier.administrator }}</p>
+                {% endif %}
             </div>
             {% if request.user.is_superuser %}
             <div class="col-1 mt-sm-3 justify-content-around">
