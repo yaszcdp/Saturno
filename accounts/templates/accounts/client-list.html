@@ -28,6 +28,7 @@
                             <th>Nombre</th>
                             <th>Apellido</th>
                             <th>Ciudad</th>
+                            <th>Cuit</th>
                             <th></th>
                         </tr>
                     </thead>
@@ -38,6 +39,7 @@
                             <td>{{ client.first_name }}</td>
                             <td>{{ client.last_name }}</td>
                             <td>{{ client.city|default:'-' }}</td>
+                            <td>{{ client.cuit }}</td>
                             {% if request.user.is_superuser %}
                             <td>
                                 <a href="{% url 'DetailClient' client.pk %}">

@@ -131,6 +131,11 @@ class SaleCreateView(LoginRequiredMixin, CreateView):
             [{'name': product.name, 'price': str(product.price)} for product in products]
         )
         
+        # Agregar clientes y proveedores para el datalist
+        from accounts.models import Client, Supplier
+        data['clients'] = Client.objects.all()
+        data['suppliers'] = Supplier.objects.all()
+        
         return data
     
     def form_valid(self, form):
@@ -272,6 +277,11 @@ class PurchaseCreateView(LoginRequiredMixin, CreateView):
             [{'name': product.name, 'price': str(product.price)} for product in products]
         )
         
+        # Agregar clientes y proveedores para el datalist
+        from accounts.models import Client, Supplier
+        data['clients'] = Client.objects.all()
+        data['suppliers'] = Supplier.objects.all()
+        
         return data
     
     def form_valid(self, form):
@@ -403,6 +413,12 @@ class PaymentCreateView(LoginRequiredMixin, CreateView):
     def get_context_data(self, **kwargs):
         data = super().get_context_data(**kwargs)
         data['form_type'] = 'Pago'
+        
+        # Agregar clientes y proveedores para el datalist
+        from accounts.models import Client, Supplier
+        data['clients'] = Client.objects.all()
+        data['suppliers'] = Supplier.objects.all()
+        
         return data
     
     def form_valid(self, form):
@@ -504,6 +520,12 @@ class CreditNoteCreateView(LoginRequiredMixin, CreateView):
     def get_context_data(self, **kwargs):
         data = super().get_context_data(**kwargs)
         data['form_type'] = 'Nota de Credito'
+        
+        # Agregar clientes y proveedores para el datalist
+        from accounts.models import Client, Supplier
+        data['clients'] = Client.objects.all()
+        data['suppliers'] = Supplier.objects.all()
+        
         return data
 
     def form_valid(self, form):

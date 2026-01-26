@@ -19,7 +19,7 @@ def accounts_view(request):
 class ClientListView(LoginRequiredMixin, ListView):
     model = Client
     context_object_name = 'clients'
-    template_name = 'accounts/account-list.html'
+    template_name = 'accounts/client-list.html'
     paginate_by = 10
 
     def get_queryset(self):
@@ -47,7 +47,7 @@ class ClientDetailView(LoginRequiredMixin, DetailView):
 class ClientCreateView(LoginRequiredMixin, CreateView):
     model = Client
     form_class = ClientForm
-    template_name = 'accounts/account-create.html'
+    template_name = 'accounts/client-create.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -94,7 +94,7 @@ class ClientDeleteView(LoginRequiredMixin, DeleteView):
 class SupplierListView(LoginRequiredMixin, ListView):
     model = Supplier
     context_object_name = 'suppliers'
-    template_name = 'accounts/account-list.html'
+    template_name = 'accounts/supplier-list.html'
     paginate_by = 10
 
     def get_queryset(self):
@@ -121,7 +121,7 @@ class SupplierDetailView(LoginRequiredMixin, DetailView):
 class SupplierCreateView(LoginRequiredMixin, CreateView):
     model = Supplier
     form_class = SupplierForm
-    template_name = 'accounts/account-create.html'
+    template_name = 'accounts/supplier-create.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
