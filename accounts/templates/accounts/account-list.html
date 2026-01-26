@@ -121,8 +121,11 @@
             </div>
         </div>
         <div class="row justify-content-around mt-4">
-            {% if request.user.is_superuser %}
-                <a class="btn btn-outline-green col-10 col-md-5 my-3 mx-2" href="{% url 'CreatePerson' person_type=person_type %}">Nuevo {{ form_type|title }}</a>
+            {% if request.user.is_superuser and person_type == 'client'%}
+                <a class="btn btn-outline-green col-10 col-md-5 my-3 mx-2" href="{% url 'CreatePerson' person_type=person_type %}">Nuevo Cliente</a>
+            {% endif %}
+            {% if request.user.is_superuser and person_type == 'supplier'%}
+                <a class="btn btn-outline-green col-10 col-md-5 my-3 mx-2" href="{% url 'CreatePerson' person_type=person_type %}">Nuevo Proveedor</a>
             {% endif %}
             <a class="btn btn-outline-orange col-10 col-md-5 my-3 mx-2" href="{% url 'Accounts' %}">Volver</a>
     </div>
