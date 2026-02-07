@@ -11993,6 +11993,16 @@ header {
   padding: 0;
 }
 
+/*
+h3{
+    font-family: 'Cutive Mono', monospace;
+    font-size: 1rem;
+}
+
+h4{
+    font-family: 'Cutive Mono', monospace;
+    font-size: 0.8rem;
+}*/
 /*---------------[ MENSAJES ERROR ]---------------*/
 .form-group {
   margin-bottom: 1rem;
