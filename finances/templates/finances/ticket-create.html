@@ -48,20 +48,20 @@
                 </div>
                 
                 <!-- Datos Cliente Confirmados (oculto hasta confirmar) -->
-                <div id="confirmed-client-section" class="row align-items-center mb-3 py-3" style="display: none; background: none; border: none;">
-                    <div class="col-12">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <h3 class="mb-0">Datos Cliente:</h3>
-                            <button type="button" class="btn" id="edit-client-btn" style="background: none; border: none;">
-                                <i class="bi bi-pencil" style="font-size: 2rem; color: white;"></i>
-                            </button>
+                <div id="confirmed-client-section" style="display: none;">
+                    <div class="row info-card align-items-center py-3 my-2 mx-auto">
+                        <div class="col-11 mb-2">
+                            <h2 class="text-start" style="font-size: 1.8rem; letter-spacing: 0rem;">Datos Cliente:</h2>
+                            <hr style="width:98%;">
                         </div>
-                        <hr style="border-color: white; opacity: 0.3; margin: 1rem 0;">
-                        <div class="text-start ps-3">
-                            <p class="mb-2">Nombre Apellido: <span id="confirmed-person-name"></span></p>
-                            <p class="mb-2">Cuit: <span id="confirmed-person-cuit"></span></p>
-                            <p class="mb-2">Teléfono: <span id="confirmed-person-phone"></span></p>
-                            <p class="mb-0">Ciudad: <span id="confirmed-person-city"></span></p>
+                        <a id="edit-client-btn" class="col-1">
+                            <i class="bi bi-pen"></i>
+                        </a>
+                        <div class="col-11 align-items-center me-1 ps-4 text-start">
+                            <p>Nombre Apellido: <span id="confirmed-person-name"></span></p>
+                            <p>Cuit: <span id="confirmed-person-cuit"></span></p>
+                            <p>Teléfono: <span id="confirmed-person-phone"></span></p>
+                            <p>Ciudad: <span id="confirmed-person-city"></span></p>
                         </div>
                     </div>
                 </div>
