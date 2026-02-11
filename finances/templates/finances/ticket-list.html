@@ -78,7 +78,7 @@
                             <tr>
                                 <td>{{ ticket.ticket_code.number|stringformat:"06d" }}
                                 <td>{{ ticket.date_time|date:"d/m/Y" }}</td>
-                                <td>{{ ticket.temporal_name }}</td>
+                                <td>{{ ticket.temporal_name|default:"-" }}</td>
                                 <td class="d-none d-sm-none d-md-table-cell">${{ ticket.amount }}</td>
                                 <td>{{ ticket.user_created.username }}</td>
                                 <td class="d-none d-sm-none d-md-table-cell">

@@ -32,4 +32,8 @@ urlpatterns = [
     path('detail-creditnote/<int:pk>/', views.CreditNoteDetailView.as_view(), name='DetailCreditNote'),
     path('update-creditnote/<int:pk>/', views.CreditNoteUpdateView.as_view(), name='UpdateCreditNote'),
     path('delete-creditnote/<int:pk>/', views.CreditNoteDeleteView.as_view(), name='DeleteCreditNote'),
+    
+    path('current-accounts/', views.CurrentAccountListView.as_view(), name='CurrentAccounts'),
+    path('current-account/<int:pk>/', views.CurrentAccountDetailView.as_view(), name='CurrentAccountDetail'),
+    path('current-account/person/<int:person_id>/', views.current_account_by_person, name='CurrentAccountByPerson'),
 ]

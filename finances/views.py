@@ -6,6 +6,8 @@ from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.views.generic.detail import DetailView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
+from django.db import models
+from django.utils import timezone
 from finances.forms import *
 from finances.models import *
 from accounts.models import CurrentAccount
@@ -117,7 +119,7 @@ class SaleCreateView(LoginRequiredMixin, CreateView):
     model = Sale
     form_class = SaleCreateForm
     template_name = 'finances/ticket-create.html'
-    success_url = reverse_lazy('Tickets')
+    success_url = reverse_lazy('Sales')
 
     def get_context_data(self, **kwargs):
         data = super().get_context_data(**kwargs)
@@ -154,18 +156,37 @@ class SaleCreateView(LoginRequiredMixin, CreateView):
 
         #Obtener datos del formulario
         temporal_name = form.cleaned_data.get('temporal_name')
-        person = form.cleaned_data.get('person')
-        print(f"Temporal Name: {temporal_name} ")
-        print(f"Person: {person} ")
+        person_id = self.request.POST.get('person')  # Obtener directamente del POST
+        person = None
+        
+        # Si hay person_id, obtener el objeto Person y guardar su nombre en temporal_name
+        if person_id:
+            try:
+                person = Person.objects.get(pk=person_id)
+                form.instance.person = person  # Asignar manualmente
+                
+                # Guardar el nombre en temporal_name para facilitar búsquedas y visualización
+                from accounts.models import Client, Supplier
+                try:
+                    client = Client.objects.get(pk=person_id)
+                    form.instance.temporal_name = f"{client.first_name} {client.last_name}"
+                except Client.DoesNotExist:
+                    try:
+                        supplier = Supplier.objects.get(pk=person_id)
+                        form.instance.temporal_name = supplier.company
+                    except Supplier.DoesNotExist:
+                        pass
+                        
+            except Person.DoesNotExist:
+                pass
+        
         items_json = self.request.POST.get('items_json')
-        print(f"Items JSON: {items_json} ")
 
-        #Procesar los Ã­tems del JSON
+        #Procesar los ítems del JSON
         try:
             items = json.loads(items_json)
-            print(f"Items: {items} ")
         except json.JSONDecodeError:
-            messages.error(self.request, "Error al procesar los Ã­tems.")
+            messages.error(self.request, "Error al procesar los ítems.")
             return self.render_to_response(self.get_context_data(form=form))
 
         #Guardar venta
@@ -185,15 +206,14 @@ class SaleCreateView(LoginRequiredMixin, CreateView):
 
         self.object.calculate_total()
 
-        #Si hay persona vinculada, actualizar CurrentAccount
+        #Si hay persona vinculada, crear/obtener CurrentAccount
         if person:
             current_account, created = CurrentAccount.objects.get_or_create(
                 person=person,
-                defaults={'balance': 0}
+                defaults={'notes': f'Cuenta creada automáticamente el {timezone.now().strftime("%d/%m/%Y")}'}
             )
-            # Sumar el monto de la venta al balance (debe)
-            current_account.balance += self.object.amount
-            current_account.save()
+            self.object.current_account = current_account
+            self.object.save()
             
             if created:
                 messages.info(self.request, f"Cuenta corriente creada para {person}")
@@ -263,7 +283,7 @@ class PurchaseCreateView(LoginRequiredMixin, CreateView):
     model = Purchase
     form_class = PurchaseCreateForm
     template_name = 'finances/ticket-create.html'
-    success_url = reverse_lazy('Tickets')
+    success_url = reverse_lazy('Purchases')
 
     def get_context_data(self, **kwargs):
         data = super().get_context_data(**kwargs)
@@ -327,15 +347,14 @@ class PurchaseCreateView(LoginRequiredMixin, CreateView):
 
         self.object.calculate_total()
 
-        #Si hay persona vinculada, actualizar CurrentAccount
+        #Si hay persona vinculada, crear/obtener CurrentAccount
         if person:
             current_account, created = CurrentAccount.objects.get_or_create(
                 person=person,
-                defaults={'balance': 0}
+                defaults={'notes': f'Cuenta creada automáticamente el {timezone.now().strftime("%d/%m/%Y")}'}
             )
-            # Restar el monto de la compra al balance (haber)
-            current_account.balance -= self.object.amount
-            current_account.save()
+            self.object.current_account = current_account
+            self.object.save()
             
             if created:
                 messages.info(self.request, f"Cuenta corriente creada para {person}")
@@ -408,7 +427,7 @@ class PaymentCreateView(LoginRequiredMixin, CreateView):
     model = Payment
     form_class = PaymentCreateForm
     template_name = 'finances/ticket-create.html'
-    success_url = reverse_lazy('Tickets')
+    success_url = reverse_lazy('Payments')
     
     def get_context_data(self, **kwargs):
         data = super().get_context_data(**kwargs)
@@ -441,15 +460,14 @@ class PaymentCreateView(LoginRequiredMixin, CreateView):
         #Guardar pago
         payment = form.save()
 
-        #Si hay persona vinculada, actualizar CurrentAccount
+        #Si hay persona vinculada, crear/obtener CurrentAccount y vincular
         if person:
             current_account, created = CurrentAccount.objects.get_or_create(
                 person=person,
-                defaults={'balance': 0}
+                defaults={'notes': f'Cuenta creada automáticamente el {timezone.now().strftime("%d/%m/%Y")}'}
             )
-            # Restar el monto del pago al balance (pago reduce deuda)
-            current_account.balance -= payment.amount
-            current_account.save()
+            payment.current_account = current_account
+            payment.save()
             
             if created:
                 messages.info(self.request, f"Cuenta corriente creada para {person}")
@@ -515,7 +533,7 @@ class CreditNoteCreateView(LoginRequiredMixin, CreateView):
     model = CreditNote
     form_class = CreditNoteCreateForm
     template_name = 'finances/ticket-create.html'
-    success_url = reverse_lazy('Tickets')
+    success_url = reverse_lazy('CreditNotes')
 
     def get_context_data(self, **kwargs):
         data = super().get_context_data(**kwargs)
@@ -539,15 +557,18 @@ class CreditNoteCreateView(LoginRequiredMixin, CreateView):
         person = form.cleaned_data.get('person')
         note_type = form.cleaned_data.get('note_type')
         credit_note = form.save()
+        
         if person:
-            current_account, created = CurrentAccount.objects.get_or_create(person=person, defaults={'balance': 0})
-            if note_type == 'S':
-                current_account.balance -= credit_note.amount
-            else:
-                current_account.balance += credit_note.amount
-            current_account.save()
+            current_account, created = CurrentAccount.objects.get_or_create(
+                person=person,
+                defaults={'notes': f'Cuenta creada automáticamente el {timezone.now().strftime("%d/%m/%Y")}'}
+            )
+            credit_note.current_account = current_account
+            credit_note.save()
+            
             if created:
                 messages.info(self.request, f'Cuenta corriente creada para {person}')
+        
         messages.success(self.request, f'Nota de Credito {credit_note.ticket_code} agregada correctamente')
         return redirect(self.success_url)
 
@@ -577,3 +598,79 @@ class CreditNoteDeleteView(LoginRequiredMixin, DeleteView):
     def delete(self, request, *args, **kwargs):
         messages.success(self.request, 'Nota de Credito eliminada correctamente')
         return super().delete(request, *args, **kwargs)
+
+
+#-------[ VISTAS CUENTA CORRIENTE ]-------
+class CurrentAccountDetailView(LoginRequiredMixin, DetailView):
+    model = CurrentAccount
+    template_name = 'finances/current-account-detail.html'
+    context_object_name = 'account'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['balance'] = self.object.get_balance()
+        context['ledger'] = self.object.get_ledger()
+        context['transactions'] = self.object.get_transactions()
+        return context
+
+
+class CurrentAccountListView(LoginRequiredMixin, ListView):
+    model = CurrentAccount
+    template_name = 'finances/current-account-list.html'
+    context_object_name = 'accounts'
+    paginate_by = 20
+    
+    def get_queryset(self):
+        qs = CurrentAccount.objects.select_related('person').all()
+        search = self.request.GET.get('search', '')
+        
+        if search:
+            from accounts.models import Client, Supplier
+            # Buscar en clientes y proveedores
+            qs = qs.filter(
+                models.Q(person__client__first_name__icontains=search) |
+                models.Q(person__client__last_name__icontains=search) |
+                models.Q(person__supplier__company__icontains=search)
+            )
+        
+        return qs
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Agregar balance a cada cuenta
+        accounts_with_balance = []
+        for account in context['accounts']:
+            accounts_with_balance.append({
+                'account': account,
+                'balance': account.get_balance(),
+                'person_name': str(account.person)
+            })
+        context['accounts_with_balance'] = accounts_with_balance
+        context['search'] = self.request.GET.get('search', '')
+        return context
+
+
+@login_required
+def current_account_by_person(request, person_id):
+    """Vista para acceder a cuenta corriente por person_id, creándola si no existe"""
+    from accounts.models import Person
+    
+    person = get_object_or_404(Person, pk=person_id)
+    
+    # Obtener o crear la cuenta corriente
+    current_account, created = CurrentAccount.objects.get_or_create(
+        person=person,
+        defaults={'notes': f'Cuenta creada automáticamente el {timezone.now().strftime("%d/%m/%Y")}'}
+    )
+    
+    # Obtener datos para el template
+    balance = current_account.get_balance()
+    ledger = current_account.get_ledger()
+    transactions = current_account.get_transactions()
+    
+    return render(request, 'finances/current-account-detail.html', {
+        'account': current_account,
+        'balance': balance,
+        'ledger': ledger,
+        'transactions': transactions
+    })
