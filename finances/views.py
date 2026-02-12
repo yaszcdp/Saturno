@@ -230,24 +230,96 @@ class SaleUpdateView(LoginRequiredMixin, UpdateView):
 
     def get_context_data(self, **kwargs):
         data = super().get_context_data(**kwargs)
-        if self.request.POST:
-            data['formset'] = SaleItemFormSet(self.request.POST, instance=self.object)
-        else:
-            data['formset'] = SaleItemFormSet(instance=self.object)
+        data['form_type'] = 'Venta'
+        data['sale'] = self.object
+        
+        # Lista de productos para el datalist
+        products = Product.objects.all()
+        data['products'] = products
+        
+        # Agregar clientes y proveedores para búsqueda
+        from accounts.models import Client, Supplier
+        data['clients'] = Client.objects.all()
+        data['suppliers'] = Supplier.objects.all()
+        
         return data
     
     def form_valid(self, form):
-        context = self.get_context_data()
-        formset = context['formset']
-        if form.is_valid() and formset.is_valid():
-            self.object = form.save()
-            formset.instance = self.object
-            formset.save()
-            messages.success(self.request, 'Venta actualizada correctamente')
-            return redirect(self.success_url)
-        else:
-            messages.error(self.request, 'Error al actualizar la venta')
-            return self.form_invalid(form)
+        # Obtener person_id del POST (puede haber cambiado)
+        person_id = self.request.POST.get('person')
+        person = None
+        
+        # Si hay person_id, actualizar la persona asociada
+        if person_id:
+            try:
+                person = Person.objects.get(pk=person_id)
+                form.instance.person = person
+                
+                # Actualizar temporal_name con el nuevo nombre
+                from accounts.models import Client, Supplier
+                try:
+                    client = Client.objects.get(pk=person_id)
+                    form.instance.temporal_name = f"{client.first_name} {client.last_name}"
+                except Client.DoesNotExist:
+                    try:
+                        supplier = Supplier.objects.get(pk=person_id)
+                        form.instance.temporal_name = supplier.company
+                    except Supplier.DoesNotExist:
+                        pass
+                        
+            except Person.DoesNotExist:
+                messages.error(self.request, "Persona no encontrada")
+                return self.form_invalid(form)
+        
+        # Obtener items_json del POST
+        items_json = self.request.POST.get('items_json')
+        
+        # Procesar los ítems del JSON
+        try:
+            items_data = json.loads(items_json)
+        except (json.JSONDecodeError, TypeError):
+            messages.error(self.request, "Error al procesar los ítems.")
+            return self.render_to_response(self.get_context_data(form=form))
+        
+        if not items_data:
+            messages.error(self.request, "Debes agregar al menos un ítem.")
+            return self.render_to_response(self.get_context_data(form=form))
+        
+        # Guardar la venta con los nuevos datos
+        self.object = form.save()
+        
+        # Eliminar items existentes
+        Item.objects.filter(sale=self.object).delete()
+        
+        # Crear nuevos items
+        for item_data in items_data:
+            product_obj = Product.objects.filter(name=item_data['product_name']).first()
+            
+            Item.objects.create(
+                sale=self.object,
+                product=product_obj,
+                product_name_cache=item_data['product_name'],
+                quantity=item_data['quantity'],
+                price=item_data['price'],
+            )
+        
+        # Recalcular total
+        self.object.calculate_total()
+        
+        # Si hay persona vinculada, actualizar CurrentAccount
+        if person:
+            current_account, created = CurrentAccount.objects.get_or_create(
+                person=person,
+                defaults={'notes': f'Cuenta creada automáticamente el {timezone.now().strftime("%d/%m/%Y")}'}
+            )
+            self.object.current_account = current_account
+            self.object.save()
+            
+            if created:
+                messages.info(self.request, f"Cuenta corriente creada para {person}")
+        
+        messages.success(self.request, f"Venta {self.object.ticket_code} actualizada correctamente")
+        return redirect(self.success_url)
 
 
 def cancel_sale(request, pk):

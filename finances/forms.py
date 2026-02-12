@@ -67,11 +67,16 @@ class SaleCreateForm(BaseSaleForm):
 
 class SaleUpdateForm(BaseSaleForm):
     class Meta(BaseSaleForm.Meta):
-        fields = ['status', 'payment_method', 'current_account']
+        fields = ['payment_status', 'payment_method', 'temporal_name']
         labels = {
-            'status': 'Estado', 
+            'payment_status': 'Estado de Pago',
             'payment_method': 'Método de Pago',
-            'current_account': 'Cuenta Corriente'
+            'temporal_name': 'Nombre del Cliente'
+        }
+        widgets = {
+            'payment_status': forms.Select(attrs={'class': 'form-select'}),
+            'payment_method': forms.Select(attrs={'class': 'form-select'}),
+            'temporal_name': forms.TextInput(attrs={'class': 'form-control', 'readonly': 'readonly'})
         }
 
 

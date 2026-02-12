@@ -35,7 +35,6 @@ DELIVERY_STATUS_CHOICES = [
     ('PE', 'Pendiente'),
     ('CO', 'Completado'),
     ('IN', 'Incompleto'),
-    ('CA', 'Cancelado'),
 ]
 
 # Estados de pago para Sale

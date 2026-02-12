@@ -40,12 +40,16 @@
                     {% else %}
                         <p><strong>Cliente:</strong> -</p>
                     {% endif %}
-                    <p><strong>Estado:</strong> 
-                        {% if sale.status == 'PE' %}Pendiente
-                        {% elif sale.status == 'CA' %}Cancelada
-                        {% elif sale.status == 'CC' %}Cuenta Corriente
-                        {% elif sale.status == 'PA' %}Pagado
-                        {% elif sale.status == 'CO' %}Completado
+                    <p><strong>Estado de Entrega:</strong> 
+                        {% if sale.delivery_status == 'PE' %}<span style="color: #da7a21;">Pendiente</span>
+                        {% elif sale.delivery_status == 'CO' %}<span style="color: #14ae2e;">Completado</span>
+                        {% elif sale.delivery_status == 'IN' %}<span style="color: #a10202;">Incompleto</span>
+                        {% endif %}
+                    </p>
+                    <p><strong>Estado de Pago:</strong>
+                        {% if sale.payment_status == 'PE' %}<span style="color: #da7a21;">Pendiente</span>
+                        {% elif sale.payment_status == 'PP' %}<span style="color: #da7a21;">Pago Parcial</span>
+                        {% elif sale.payment_status == 'PA' %}<span style="color: #14ae2e;">Pagado</span>
                         {% endif %}
                     </p>
                     <p><strong>Método de Pago:</strong> 

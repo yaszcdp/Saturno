@@ -5,87 +5,712 @@
 {% block main %}
 
 <section class="page-section">
-    <div class="container text-white text-center justify-content-center">
-        <h1 class="pb-4">EDITAR {{ form_type }}</h1>
-        <br>
+    <div class="container container-box py-4 pb-4 mb-5 px-lg-5 text-white text-center">
+        <!-- Encabezado con NRO de Venta/Compra -->
+        <h1 class="pb-2">EDITAR {{ form_type|upper }}</h1>
+        <h1 class="pb-2" style="font-size: 1.6rem; letter-spacing: 0.1rem;">NRO: {{ sale.ticket_code }}</h1>
         <hr>
-        {% if messages %}
-            <div class="col-12 mb-3">
-                {% for message in messages %}
-                    {% if message.tags == 'success' %}
+        
+        <!-- Mensajes -->
+        <div class="row gx-4 gx-lg-5 mx-2 mb-2">
+            {% if messages %}
+                <div class="col-12 mb-3">
+                    {% for message in messages %}
+                        {% if message.tags == 'success' %}
                         <div class="alert alert-success text-center">
                             {{ message }}
                         </div>
-                    {% else %}
-                        <div class="alert alert-danger text-center">
-                            {{ message }}
+                        {% else %}
+                            <div class="alert alert-danger text-center">
+                                {{ message }}
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
+            <form id="form" method="post" class="custom-card col-12">
+                {% csrf_token %}
+
+                <!-- Información del Ticket -->
+                <div id="ticket-info-section" class="row info-card align-items-center py-3 my-2 mx-auto">
+                    <div class="col-6 text-start">
+                        <p><strong>{{ sale.date_time|date:"d/m/Y H:i" }}</strong></p>
+                    </div>
+                    <div class="col-6 text-end">
+                        <p><strong>
+                            {% if sale.delivery_status == 'PE' %}
+                                <span class="status-pendiente">Pendiente de Entrega</span>
+                            {% elif sale.delivery_status == 'CO' %}
+                                <span class="status-completado">Completado</span>
+                            {% elif sale.delivery_status == 'IN' %}
+                                <span class="status-incompleto">Incompleto</span>
+                            {% endif %}
+                        </strong></p>
+                    </div>
+                </div>
+                
+                <!-- Datos del Cliente/Proveedor (si existe) -->
+                {% if sale.person %}
+                <div id="confirmed-person-section" class="row info-card align-items-center py-3 my-2 mx-auto">
+                    <div class="col-11 mb-2">
+                        <h2 class="text-start" style="font-size: 1.8rem; letter-spacing: 0rem;">
+                            {% if form_type == 'Venta' %}Datos Cliente:{% elif form_type == 'Compra' %}Datos Proveedor:{% else %}Datos:{% endif %}
+                        </h2>
+                        <hr style="width:98%;">
+                    </div>
+                    <a id="edit-person-btn" class="col-1">
+                        <i class="bi bi-pen"></i>
+                    </a>
+                    <div class="col-11 align-items-center me-1 ps-4 text-start">
+                        <p>Nombre/Empresa: <strong>{{ sale.person.get_full_name }}</strong></p>
+                        <p>CUIT: <strong>{{ sale.person.cuit|default:"-" }}</strong></p>
+                        <p>Teléfono: <strong>{{ sale.person.phone|default:"-" }}</strong></p>
+                        <p>Ciudad: <strong>{{ sale.person.city|default:"-" }}</strong></p>
+                        <p>Cta Cte: <strong>{% if sale.current_account %}{{ sale.current_account.account_number }}{% else %}0{% endif %}</strong></p>
+                    </div>
+                </div>
+                {% elif sale.temporal_name %}
+                <!-- Cliente temporal -->
+                <div class="row info-card align-items-center py-3 my-2 mx-auto">
+                    <div class="col-12 mb-2">
+                        <h2 class="text-start" style="font-size: 1.8rem;">Cliente:</h2>
+                        <hr style="width:98%;">
+                    </div>
+                    <div class="col-12 align-items-center ps-4 text-start">
+                        <p>Nombre: <strong>{{ sale.temporal_name }}</strong></p>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Sección de búsqueda de persona (oculta por defecto, se muestra al editar) -->
+                <div id="person-search-section" style="display: none;" class="row">
+                    <div class="align-items-center py-3">
+                        <div class="col-md-10 col-12 mx-auto">
+                            <div class="row mb-3 mx-2 info-card">
+                                <input type="text" id="person-search" class="form-search col-10 col-md-6" placeholder="Buscar cliente/proveedor..." autocomplete="off">
+                                <a id="search-button" class="col-1">    
+                                    <button class="btn" type="button" id="search-person-btn">
+                                        <i class="bi bi-search-heart"></i>
+                                    </button>
+                                </a>
+                            </div>
+                            <input type="hidden" id="id_person" name="person" value="{{ sale.person.person_ptr_id|default:'' }}">
+                            
+                            <br>
+                            <!-- Resultados de la búsqueda -->
+                            <div id="search-results" style="display: none;" class="info-card my-2">
+                                <div class="col-11 mb-2">
+                                    <h2 class="col-md-11 text-start" style="font-size: 1.8rem; letter-spacing: 0rem;">Resultados de la búsqueda:</h2>
+                                    <hr style="width:98%;">
+                                </div>
+                                <div id="results-list" class="pt-2"></div>
+                            </div>
                         </div>
-                    {% endif %}
-                {% endfor %}
-            </div>
-        {% endif %}
+                    </div>
+                    
+                    <!-- Datos del cliente/proveedor seleccionado -->
+                    <div id="selected-person-info" style="display: none;">
+                        <div class="col-10 info-card align-items-center py-3 my-2 mx-auto">
+                            <div class="col-11 mb-2">
+                                <h2 class="text-start" style="font-size: 1.8rem; letter-spacing: 0rem;">Seleccionado:</h2>
+                                <hr style="width:98%;">
+                            </div>
+                            <div class="col-11 align-items-center me-1 text-start ps-4">
+                                <p>Nombre: <span id="person-name-display"></span></p>
+                                <p>Cuit: <span id="person-cuit-display"></span></p>
+                                <p>Teléfono: <span id="person-phone-display"></span></p>
+                                <p>Ciudad: <span id="person-city-display"></span></p>
+                            </div>
+                        </div>
+                        <div class="col-12 text-center">
+                            <button type="button" class="btn btn-outline-green col-8 mt-4" id="confirm-person-change-btn">
+                                Confirmar Cambio
+                            </button>
+                        </div>
+                        <div class="col-12 text-center">
+                            <button type="button" class="btn btn-outline-orange col-8 mt-2" id="cancel-person-change-btn">
+                                Volver
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Estado de Pago (editable) -->
+                <div id="payment-status-section" class="row custom-card align-items-center py-3 my-3 mx-2" style="border:none;">
+                    <h2 class="text-start ps-4" style="font-size: 1.8rem;">Estado de Pago:</h2>
+                    <hr style="width:98%;">
+                    
+                    <div class="col-12 mb-3">
+                        <select name="payment_status" id="id_payment_status" class="form-select">
+                            <option value="PE" {% if sale.payment_status == 'PE' %}selected{% endif %}>Pendiente</option>
+                            <option value="PP" {% if sale.payment_status == 'PP' %}selected{% endif %}>Pago Parcial</option>
+                            <option value="PA" {% if sale.payment_status == 'PA' %}selected{% endif %}>Pagado</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- Métodos de Pago -->
+                <div id="payment-method-section" class="row custom-card align-items-center py-3 my-3 mx-2" style="border:none;">
+                    <h2 class="text-start ps-4" style="font-size: 1.8rem;">Método de Pago:</h2>
+                    <hr style="width:98%;">
+                    
+                    <div class="col-12 mb-3 text-start ps-4">
+                        <div class="d-flex flex-wrap gap-4">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="payment_method" id="payment-cash" value="CA" 
+                                    {% if sale.payment_method == 'CA' %}checked{% endif %}>
+                                <label class="form-check-label" for="payment-cash">Efectivo</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="payment_method" id="payment-transfer" value="TR"
+                                    {% if sale.payment_method == 'TR' %}checked{% endif %}>
+                                <label class="form-check-label" for="payment-transfer">Transferencia</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="payment_method" id="payment-check" value="CH"
+                                    {% if sale.payment_method == 'CH' %}checked{% endif %}>
+                                <label class="form-check-label" for="payment-check">Cheque</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Items existentes (solo lectura con botón editar) -->
+                <div id="items-section" class="row custom-card text-center justify-content-center py-4 my-3 mx-2" style="border:none;">
+                    <div class="col-11 mb-2">
+                        <h2 class="text-start" style="font-size: 1.8rem;">Productos:</h2>
+                        <hr style="width:98%;">
+                    </div>
+                    <a id="edit-items-btn" class="col-1">
+                        <i class="bi bi-pen"></i>
+                    </a>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-dark table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Producto</th>
+                                    <th class="text-center">Cantidad</th>
+                                    <th class="text-end">Precio Unit.</th>
+                                    <th class="text-end">Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody id="items-body-display">
+                                {% for item in sale.items.all %}
+                                <tr>
+                                    <td>{{ item.product_name_cache }}</td>
+                                    <td class="text-center">{{ item.quantity }}</td>
+                                    <td class="text-end">${{ item.price|floatformat:2 }}</td>
+                                    <td class="text-end">${{ item.subtotal|floatformat:2 }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- Items editable (inicialmente oculto) -->
+                <div id="items-edit-section" style="display: none;" class="row custom-card text-center justify-content-center py-4 my-3 mx-2">
+                    <h2 class="text-start ps-4" style="font-size: 1.8rem;">Editar Productos:</h2>
+                    <hr style="width:98%;">
+                    <table class="justify-content-center">
+                        <thead>
+                            <tr>
+                                <th class="col-2">Cant</th>
+                                <th class="col-4">Producto</th>
+                                <th class="col-3">Precio</th>
+                                <th class="col-3">Subtotal</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="items-body">
+                            {% for item in sale.items.all %}
+                            <tr data-item-id="{{ item.id }}">
+                                <td><input type="number" class="form-control item-quantity" value="{{ item.quantity }}" step="any"></td>
+                                <td><input type="text" class="form-control item-product" value="{{ item.product_name_cache }}" readonly></td>
+                                <td><input type="number" class="form-control item-price" value="{{ item.price }}" step="any"></td>
+                                <td class="item-subtotal">${{ item.subtotal }}</td>
+                                <td><button type="button" class="btn delete-item-btn"><i class="bi bi-trash3"></i></button></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    
+                    <div class="col-12 text-center mt-3">
+                        <button type="button" id="save-items-btn" class="btn btn-outline-green col-8">Confirmar Cambios</button>
+                    </div>
+                </div>
+                
+                <!-- Formulario para agregar nuevos ítems (inicialmente oculto) -->
+                <div id="add-item-section" style="display: none;" class="row custom-card text-center justify-content-center py-4 my-3 mx-2">
+                    <h2 class="text-start ps-4" style="font-size: 1.8rem;">Agregar Ítem:</h2>
+                    <hr style="width:98%;">
+
+                    <div class="col-md-2 col-8 mt-2">
+                        <label for="quantity-input" class="form-label">Cant</label>
+                        <input type="number" id="quantity-input" step="any" class="form-control">
+                    </div>
+
+                    <div class="col-md-6 col-10 mt-2">
+                        <label for="product-input" class="form-label">Producto</label>
+                        <input type="text" id="product-input" list="productos" class="form-control">
+                        <datalist id="productos">
+                            {% for product in products %}
+                                <option value="{{ product.name }}" data-price="{{ product.price }}">
+                            {% endfor %}
+                        </datalist>
+                    </div>
+
+                    <div class="col-md-3 col-8 mt-2">
+                        <label for="price-input" class="form-label">Precio</label>
+                        <input type="number" id="price-input" step="any" class="form-control">
+                    </div>
+                    
+                    <div class="col-md-1 col-12 my-3">
+                        <button type="button" id="add-item-btn" class="btn add-item-btn">
+                            <i class="bi bi-plus-circle"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Total -->
+                <div id="total-div" class="text-end me-4 pe-4 mb-3">
+                    <h2>Total: <span id="total-label">${{ sale.amount }}</span></h2>
+                </div>
+
+                <!-- Hidden fields para items -->
+                <input type="hidden" name="items_json" id="items-json">
+                
+                <div id="form-buttons" class="col-12 text-center">
+                    <button type="submit" class="btn btn-outline-green col-8 mt-4">Guardar</button>
+                </div>
+                <br>
+
+                <div id="message-error" class="alert alert-danger" style="display: none;"></div>
+            </form>
+        </div>
         
-        <form class="formulario" action="" method="POST">
-            {% csrf_token %}
-            {{ form.as_table }}
-            <table id="item-table" class="m-auto">
-                {{ formset.management_form }}
-                {% for form in formset %}
-                    <tr class="item-form">
-                        {{ form.as_table }}
-                    </tr>
-                {% endfor %}
-            </table>
-            <button id="add-item-btn" class="btn btn-dark" type="button">Agregar Item</button>
-            <input type="submit" class="btn btn-dark" value="Guardar">
-            <a href="{% url 'Tickets' %}" class="btn btn-dark">Cancelar</a>
-        </form>
+        <div id="cancel-button-container" class="text-center">
+            <a href="javascript:history.back()" class="btn btn-outline-orange col-10 my-3 mt-4">Cancelar</a>
+        </div>
     </div>
-</section>    
+</section>
+
+<style>
+    .form-check-input:checked {
+        background-color: #14ae2e !important;
+        border-color: #14ae2e !important;
+    }
+    
+    .form-check-input:focus {
+        border-color: #14ae2e !important;
+        box-shadow: 0 0 0 0.25rem rgba(20, 174, 46, 0.25) !important;
+    }
+    
+    .item-quantity, .item-price {
+        max-width: 100px;
+        text-align: center;
+    }
+    
+    /* Estados de entrega con colores */
+    .status-completado {
+        color: #14ae2e !important; /* Verde */
+    }
+    
+    .status-pendiente {
+        color: #da7a21 !important; /* Naranja */
+    }
+    
+    .status-incompleto {
+        color: #a10202 !important; /* Rojo */
+    }
+</style>
 
 <script>
-    document.getElementById('add-item-btn').addEventListener('click', function() {
-        var formsetPrefix = '{{ formset.prefix }}';
-        var totalForms = document.getElementById('id_' + formsetPrefix + '-TOTAL_FORMS');
-        var currentFormCount = parseInt(totalForms.value);
-        var newFormCount = currentFormCount + 1;
-
-        var itemForms = document.querySelectorAll('.item-form');
-        var lastForm = itemForms[itemForms.length - 1];
-        var newForm = lastForm.cloneNode(true);
-
-        newForm.querySelectorAll('input, select, textarea').forEach(function(element) {
-            var name = element.name.replace(`-${currentFormCount - 1}-`, `-${currentFormCount}-`);
-            var id = element.id.replace(`_${currentFormCount - 1}_`, `_${currentFormCount}_`);
-            element.name = name;
-            element.id = id;
-            element.value = ''; // Clear the value for the new form
-            if (element.type === 'checkbox' || element.type === 'radio') {
-                element.checked = false; // Reset checkboxes and radio buttons
-            }
-        });
-
-        document.getElementById('item-table').appendChild(newForm);
-        totalForms.value = newFormCount;
+document.addEventListener("DOMContentLoaded", function () {
+    const form = document.getElementById("form");
+    const itemsBody = document.getElementById("items-body");
+    const itemsJson = document.getElementById("items-json");
+    const totalLabel = document.getElementById("total-label");
+    
+    const productInput = document.getElementById("product-input");
+    const quantityInput = document.getElementById("quantity-input");
+    const priceInput = document.getElementById("price-input");
+    const addItemBtn = document.getElementById("add-item-btn");
+    
+    // Botones para editar items
+    const editItemsBtn = document.getElementById("edit-items-btn");
+    const saveItemsBtn = document.getElementById("save-items-btn");
+    const itemsSection = document.getElementById("items-section");
+    const itemsEditSection = document.getElementById("items-edit-section");
+    const addItemSection = document.getElementById("add-item-section");
+    
+    // Array de productos válidos
+    const validProducts = {};
+    document.querySelectorAll("#productos option").forEach(opt => {
+        validProducts[opt.value] = parseFloat(opt.dataset.price || 0);
     });
-
-    // Optional: Add validation for empty fields before submission
-    document.querySelector('.formulario').addEventListener('submit', function(event) {
-        let isValid = true;
-        document.querySelectorAll('input, select, textarea').forEach(function(element) {
-            if (element.required && !element.value.trim()) {
-                isValid = false;
-                element.classList.add('is-invalid'); // Add a class for invalid fields
-            } else {
-                element.classList.remove('is-invalid');
-            }
+    
+    // Editar items - mostrar sección editable
+    if (editItemsBtn) {
+        editItemsBtn.addEventListener("click", function() {
+            itemsSection.style.display = "none";
+            itemsEditSection.style.display = "block";
+            addItemSection.style.display = "block";
         });
-
-        if (!isValid) {
-            event.preventDefault();
-            alert('Por favor, completa todos los campos requeridos.');
+    }
+    
+    // Guardar cambios de items - volver a vista de solo lectura
+    if (saveItemsBtn) {
+        saveItemsBtn.addEventListener("click", function() {
+            // Actualizar la tabla de solo lectura
+            const itemsBodyDisplay = document.getElementById("items-body-display");
+            itemsBodyDisplay.innerHTML = "";
+            
+            itemsBody.querySelectorAll("tr").forEach(row => {
+                const quantity = parseFloat(row.querySelector(".item-quantity").value) || 0;
+                const product = row.querySelector(".item-product").value;
+                const price = parseFloat(row.querySelector(".item-price").value) || 0;
+                const subtotal = quantity * price;
+                
+                if (quantity > 0 && product && price > 0) {
+                    const displayRow = document.createElement("tr");
+                    displayRow.innerHTML = `
+                        <td>${product}</td>
+                        <td class="text-center">${quantity}</td>
+                        <td class="text-end">$${price.toFixed(2)}</td>
+                        <td class="text-end">$${subtotal.toFixed(2)}</td>
+                    `;
+                    itemsBodyDisplay.appendChild(displayRow);
+                }
+            });
+            
+            calculateTotal();
+            itemsEditSection.style.display = "none";
+            addItemSection.style.display = "none";
+            itemsSection.style.display = "block";
+        });
+    }
+    
+    // Autocompletar precio al seleccionar producto
+    productInput.addEventListener("input", function() {
+        const selectedProduct = productInput.value.trim();
+        if (selectedProduct in validProducts) {
+            priceInput.value = validProducts[selectedProduct];
         }
     });
+    
+    // Calcular total
+    function calculateTotal() {
+        let total = 0;
+        itemsBody.querySelectorAll("tr").forEach(row => {
+            const quantity = parseFloat(row.querySelector(".item-quantity").value) || 0;
+            const price = parseFloat(row.querySelector(".item-price").value) || 0;
+            const subtotal = quantity * price;
+            row.querySelector(".item-subtotal").textContent = `$${subtotal.toFixed(2)}`;
+            total += subtotal;
+        });
+        totalLabel.textContent = `$${total.toFixed(2)}`;
+    }
+    
+    // Actualizar subtotal al cambiar cantidad o precio
+    itemsBody.addEventListener("input", function(e) {
+        if (e.target.classList.contains("item-quantity") || e.target.classList.contains("item-price")) {
+            calculateTotal();
+        }
+    });
+    
+    // Agregar nuevo item
+    addItemBtn.addEventListener("click", function() {
+        const product = productInput.value.trim();
+        const quantity = parseFloat(quantityInput.value);
+        const price = parseFloat(priceInput.value);
+        
+        if (!product || isNaN(quantity) || isNaN(price) || quantity <= 0) {
+            alert("Completa todos los campos para agregar el ítem");
+            return;
+        }
+        
+        if (!(product in validProducts)) {
+            alert("El producto ingresado no existe en el listado.");
+            return;
+        }
+        
+        const subtotal = quantity * price;
+        
+        const row = document.createElement("tr");
+        row.innerHTML = `
+            <td><input type="number" class="form-control item-quantity" value="${quantity}" step="any"></td>
+            <td><input type="text" class="form-control item-product" value="${product}" readonly></td>
+            <td><input type="number" class="form-control item-price" value="${price}" step="any"></td>
+            <td class="item-subtotal">$${subtotal.toFixed(2)}</td>
+            <td><button type="button" class="btn delete-item-btn"><i class="bi bi-trash3"></i></button></td>
+        `;
+        
+        itemsBody.appendChild(row);
+        calculateTotal();
+        
+        // Limpiar inputs
+        productInput.value = "";
+        quantityInput.value = "";
+        priceInput.value = "";
+        productInput.focus();
+    });
+    
+    // Eliminar item
+    itemsBody.addEventListener("click", function(e) {
+        if (e.target.closest(".delete-item-btn")) {
+            if (confirm("¿Seguro quieres eliminar este ítem?")) {
+                e.target.closest("tr").remove();
+                calculateTotal();
+            }
+        }
+    });
+    
+    // Serializar items antes de enviar
+    form.addEventListener("submit", function(event) {
+        const items = [];
+        
+        itemsBody.querySelectorAll("tr").forEach(row => {
+            const itemId = row.dataset.itemId;
+            const quantity = parseFloat(row.querySelector(".item-quantity").value);
+            const product = row.querySelector(".item-product").value;
+            const price = parseFloat(row.querySelector(".item-price").value);
+            
+            if (quantity > 0 && product && price > 0) {
+                items.push({
+                    id: itemId || null,
+                    product_name: product,
+                    quantity: quantity,
+                    price: price
+                });
+            }
+        });
+        
+        if (items.length === 0) {
+            event.preventDefault();
+            alert("Debes tener al menos un ítem en la venta");
+            return;
+        }
+        
+        itemsJson.value = JSON.stringify(items);
+        console.log("Items JSON:", itemsJson.value);
+    });
+    
+    // ========== FUNCIONALIDAD DE EDITAR PERSONA ==========
+    const editPersonBtn = document.getElementById("edit-person-btn");
+    const confirmedPersonSection = document.getElementById("confirmed-person-section");
+    const personSearchSection = document.getElementById("person-search-section");
+    const personSearchInput = document.getElementById("person-search");
+    const personIdInput = document.getElementById("id_person");
+    const searchResults = document.getElementById("search-results");
+    const resultsList = document.getElementById("results-list");
+    const selectedPersonInfo = document.getElementById("selected-person-info");
+    const confirmPersonChangeBtn = document.getElementById("confirm-person-change-btn");
+    const searchPersonBtn = document.getElementById("search-person-btn");
+    
+    // Array de todas las personas (clientes y proveedores)
+    const allPersons = [
+        {% for client in clients %}
+        {
+            id: "{{ client.person_ptr_id }}",
+            name: "{{ client.first_name }} {{ client.last_name }}",
+            city: "{{ client.city|default:'-' }}",
+            cuit: "{{ client.cuit }}",
+            phone: "{{ client.phone|default:'-' }}",
+            type: "cliente"
+        },
+        {% endfor %}
+        {% for supplier in suppliers %}
+        {
+            id: "{{ supplier.person_ptr_id }}",
+            name: "{{ supplier.company }}",
+            city: "{{ supplier.city|default:'-' }}",
+            cuit: "{{ supplier.cuit }}",
+            phone: "{{ supplier.phone|default:'-' }}",
+            type: "proveedor"
+        },
+        {% endfor %}
+    ];
+    
+    // Botón editar persona
+    if (editPersonBtn) {
+        editPersonBtn.addEventListener("click", function() {
+            // Ocultar sección confirmada
+            confirmedPersonSection.style.display = "none";
+            
+            // Ocultar todas las demás secciones (productos, estado, pagos)
+            document.getElementById("ticket-info-section").style.display = "none";
+            document.getElementById("payment-status-section").style.display = "none";
+            document.getElementById("payment-method-section").style.display = "none";
+            itemsSection.style.display = "none";
+            itemsEditSection.style.display = "none";
+            addItemSection.style.display = "none";
+            document.getElementById("total-div").style.display = "none";
+            
+            // Ocultar botones del formulario
+            document.getElementById("form-buttons").style.display = "none";
+            document.getElementById("cancel-button-container").style.display = "none";
+            
+            // Mostrar sección de búsqueda
+            personSearchSection.style.display = "block";
+        });
+    }
+    
+    // Buscar persona
+    function searchPerson() {
+        const searchTerm = personSearchInput.value.trim().toLowerCase();
+        
+        if (searchTerm.length < 2) {
+            searchResults.style.display = "none";
+            selectedPersonInfo.style.display = "none";
+            return;
+        }
+        
+        const matches = allPersons.filter(person => 
+            person.name.toLowerCase().includes(searchTerm) ||
+            person.cuit.includes(searchTerm)
+        );
+        
+        if (matches.length > 0) {
+            resultsList.innerHTML = "";
+            
+            matches.forEach((person) => {
+                const resultItem = document.createElement("div");
+                resultItem.className = "custom-card p-3 mb-2";
+                resultItem.style = "cursor: pointer; transition: border-color 0.3s ease, color 0.3s ease;";
+                
+                resultItem.addEventListener("mouseenter", function() {
+                    this.style.borderColor = "#14ae2e";
+                    this.style.color = "#14ae2e";
+                });
+                resultItem.addEventListener("mouseleave", function() {
+                    this.style.borderColor = "rgba(255,255,255,0.2)";
+                    this.style.color = "white";
+                });
+                
+                resultItem.innerHTML = `
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="text-start">
+                            <h3 style="font-family: 'Cutive Mono', monospace; font-size:1.6rem;">${person.name}</h3>
+                            <h4 style="font-family: 'Zen Kaku Gothic New', sans-serif; font-size:1.4rem;"><small>${person.city}</small></h4>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="person_selection" 
+                                id="person-${person.id}" value="${person.id}"
+                                data-name="${person.name}" data-cuit="${person.cuit}" 
+                                data-phone="${person.phone}" data-city="${person.city}">
+                        </div>
+                    </div>
+                `;
+                
+                resultItem.addEventListener("click", function(e) {
+                    if (e.target.type !== "radio") {
+                        const radio = resultItem.querySelector('input[type="radio"]');
+                        radio.checked = true;
+                        radio.dispatchEvent(new Event('change'));
+                    }
+                });
+                
+                const radioInput = resultItem.querySelector('input[type="radio"]');
+                radioInput.addEventListener("change", function() {
+                    if (this.checked) {
+                        personIdInput.value = this.value;
+                        document.getElementById("person-name-display").textContent = this.dataset.name;
+                        document.getElementById("person-cuit-display").textContent = this.dataset.cuit || '-';
+                        document.getElementById("person-phone-display").textContent = this.dataset.phone || '-';
+                        document.getElementById("person-city-display").textContent = this.dataset.city || '-';
+                        selectedPersonInfo.style.display = "block";
+                    }
+                });
+                
+                resultsList.appendChild(resultItem);
+            });
+            
+            searchResults.style.display = "block";
+        } else {
+            resultsList.innerHTML = '<p class="text-center">No se encontraron resultados</p>';
+            searchResults.style.display = "block";
+            selectedPersonInfo.style.display = "none";
+        }
+    }
+    
+    if (personSearchInput) {
+        personSearchInput.addEventListener("input", searchPerson);
+    }
+    if (searchPersonBtn) {
+        searchPersonBtn.addEventListener("click", searchPerson);
+    }
+    
+    // Confirmar cambio de persona
+    if (confirmPersonChangeBtn) {
+        confirmPersonChangeBtn.addEventListener("click", function() {
+            if (!personIdInput.value) {
+                alert("Debes seleccionar una persona");
+                return;
+            }
+            
+            const newPersonId = personIdInput.value;
+            alert("Persona cambiada. Al guardar se actualizará la venta.");
+            
+            // Ocultar sección de búsqueda
+            personSearchSection.style.display = "none";
+            
+            // Mostrar sección confirmada
+            confirmedPersonSection.style.display = "block";
+            
+            // Mostrar todas las demás secciones
+            document.getElementById("ticket-info-section").style.display = "block";
+            document.getElementById("payment-status-section").style.display = "block";
+            document.getElementById("payment-method-section").style.display = "block";
+            itemsSection.style.display = "block";
+            document.getElementById("total-div").style.display = "block";
+            
+            // Mostrar botones del formulario
+            document.getElementById("form-buttons").style.display = "block";
+            document.getElementById("cancel-button-container").style.display = "block";
+            
+            // Actualizar la visualización con los nuevos datos
+            const selectedPerson = allPersons.find(p => p.id === newPersonId);
+            if (selectedPerson) {
+                confirmedPersonSection.querySelectorAll("p")[0].innerHTML = `Nombre/Empresa: <strong>${selectedPerson.name}</strong>`;
+                confirmedPersonSection.querySelectorAll("p")[1].innerHTML = `CUIT: <strong>${selectedPerson.cuit}</strong>`;
+                confirmedPersonSection.querySelectorAll("p")[2].innerHTML = `Teléfono: <strong>${selectedPerson.phone}</strong>`;
+                confirmedPersonSection.querySelectorAll("p")[3].innerHTML = `Ciudad: <strong>${selectedPerson.city}</strong>`;
+                confirmedPersonSection.querySelectorAll("p")[4].innerHTML = `Cta Cte: <strong>Por determinar</strong>`;
+            }
+        });
+    }
+    
+    // Botón cancelar cambio de persona
+    const cancelPersonChangeBtn = document.getElementById("cancel-person-change-btn");
+    if (cancelPersonChangeBtn) {
+        cancelPersonChangeBtn.addEventListener("click", function() {
+            // Ocultar sección de búsqueda
+            personSearchSection.style.display = "none";
+            
+            // Mostrar sección confirmada
+            confirmedPersonSection.style.display = "block";
+            
+            // Mostrar todas las demás secciones
+            document.getElementById("ticket-info-section").style.display = "block";
+            document.getElementById("payment-status-section").style.display = "block";
+            document.getElementById("payment-method-section").style.display = "block";
+            itemsSection.style.display = "block";
+            document.getElementById("total-div").style.display = "block";
+            
+            // Mostrar botones del formulario
+            document.getElementById("form-buttons").style.display = "block";
+            document.getElementById("cancel-button-container").style.display = "block";
+            
+            // Limpiar búsqueda
+            personSearchInput.value = "";
+            searchResults.style.display = "none";
+            selectedPersonInfo.style.display = "none";
+        });
+    }
+});
 </script>
 
 {% endblock %}

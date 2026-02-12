@@ -7,6 +7,20 @@ class Person(models.Model):
     phone = models.IntegerField(null=True, blank=True)
     city = models.CharField(max_length=100, null=True, blank=True, verbose_name='Ciudad')
     
+    def get_full_name(self):
+        """Retorna el nombre completo/empresa según el tipo de persona"""
+        try:
+            # Intentar obtener como Client
+            client = Client.objects.get(pk=self.pk)
+            return f"{client.first_name} {client.last_name}" if client.last_name else client.first_name
+        except Client.DoesNotExist:
+            try:
+                # Intentar obtener como Supplier
+                supplier = Supplier.objects.get(pk=self.pk)
+                return supplier.company
+            except Supplier.DoesNotExist:
+                return str(self)
+    
     def __str__(self):
         return f'Cuit: {self.cuit} — Teléfono: {self.phone}'
     
@@ -29,6 +43,7 @@ class Supplier(Person):
 
 # -------[ MODELS CURRENT ACCOUNT ]-------
 class CurrentAccount(models.Model):
+    account_number = models.PositiveIntegerField(unique=True, null=True, blank=True, verbose_name='Número de Cuenta')
     person = models.ForeignKey(Person, on_delete=models.CASCADE, null=True, blank=True)
     notes = models.TextField(blank=True, verbose_name='Notas')  # Nuevo campo (antes era resumen)
     created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
@@ -37,9 +52,20 @@ class CurrentAccount(models.Model):
     class Meta:
         verbose_name = 'Cuenta Corriente'
         verbose_name_plural = 'Cuentas Corrientes'
+    
+    def save(self, *args, **kwargs):
+        # Solo asignar número automáticamente si es nueva cuenta y no tiene número
+        if not self.pk and self.account_number is None:
+            # Obtener el último número de cuenta
+            last_account = CurrentAccount.objects.all().order_by('-account_number').first()
+            if last_account and last_account.account_number is not None:
+                self.account_number = last_account.account_number + 1
+            else:
+                self.account_number = 1  # Primera cuenta corriente
+        super().save(*args, **kwargs)
 
     def __str__(self):
-        return f'Cuenta Corriente de {self.person}'
+        return f'Cuenta Corriente #{self.account_number} - {self.person}'
     
     def get_balance(self):
         """Calcula el balance en tiempo real: (ventas pendientes/parciales + compras) - pagos"""
