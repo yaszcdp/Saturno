@@ -214,16 +214,19 @@
     .item-quantity-edit, .item-product-edit, .item-price-edit {
         background: transparent !important;
         border: none !important;
+        border-bottom: .1rem solid white !important;
         color: white !important;
-        font-size: 1rem !important;
+        font-size: 1.6rem !important;
         padding: 0.25rem !important;
         text-align: center;
         box-shadow: none !important;
+        width: 90%;
     }
     
     .item-quantity-edit:focus, .item-product-edit:focus, .item-price-edit:focus {
-        background: rgba(255, 255, 255, 0.1) !important;
+        background: transparent !important;
         border: none !important;
+        border-bottom: .2rem solid #ffa755 !important;
         outline: none !important;
         box-shadow: none !important;
     }
@@ -326,13 +329,13 @@ document.addEventListener("DOMContentLoaded", function () {
             const originalPrice = item.price;
             
             targetRow.innerHTML = `
-            <td><input type="number" class="form-control item-quantity-edit" value="${item.quantity}" step="any"></td>
-            <td><input type="text" class="form-control item-product-edit" value="${item.product_name}" list="productos"></td>
-            <td><input type="number" class="form-control item-price-edit" value="${item.price}" step="any"></td>
+            <td><input type="number" class="item-quantity-edit" value="${item.quantity}" step="any"></td>
+            <td><input type="text" class="item-product-edit" value="${item.product_name}" list="productos"></td>
+            <td><input type="number" class="item-price-edit" value="${item.price}" step="any"></td>
             <td class="item-subtotal-display">$${(item.quantity * item.price).toFixed(2)}</td>
             <td>
                 <button type="button" class="btn save-item-btn" title="Guardar" style="color: #14ae2e;"><i class="bi bi-check-circle" style="font-size: 2.2rem;"></i></button>
-                <button type="button" class="btn cancel-edit-btn" title="Cancelar" style="color: #da7a21;"><i class="bi bi-x-circle" style="font-size: 2.2rem;"></i></button>
+                <button type="button" class="btn cancel-edit-btn" title="Cancelar" style="color: #a10202;"><i class="bi bi-x-circle" style="font-size: 2.2rem;"></i></button>
             </td>
             `;
             
