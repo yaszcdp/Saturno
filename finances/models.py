@@ -10,17 +10,15 @@ from django.core.exceptions import ValidationError
 #----------------[ GLOBAL ]----------------
 
 PAYMENT_METHODS_CHOICES = [
-    ('CA', 'Cash'),
-    ('TR', 'Transfer'),
-    ('CH', 'Check'),
-    ('AC', 'Account'),
+    ('CA', 'Efectivo'),
+    ('TR', 'Transferencia'),
+    ('CH', 'Cheque'),
 ]
 
 PAYMENT_METHODS_DICT = {
     'CA': 'cash',
     'TR': 'transfer',
     'CH': 'check',
-    'AC': 'account',
 }
 
 TICKET_TYPE_CHOICES = [
@@ -32,6 +30,22 @@ TICKET_TYPE_CHOICES = [
     ('CN', 'CreditNote'),
 ]
 
+# Estados de entrega para Sale
+DELIVERY_STATUS_CHOICES = [
+    ('PE', 'Pendiente'),
+    ('CO', 'Completado'),
+    ('IN', 'Incompleto'),
+    ('CA', 'Cancelado'),
+]
+
+# Estados de pago para Sale
+PAYMENT_STATUS_CHOICES = [
+    ('PE', 'Pendiente'),
+    ('PP', 'Pago Parcial'),
+    ('PA', 'Pagado'),
+]
+
+# Estados legacy (para Purchase, CreditNote, etc)
 STATUS_CHOICES = [
     ('PE', 'Pending'),
     ('CA', 'Canceled'),
@@ -134,9 +148,15 @@ class Ticket(models.Model):
 
 
 class Sale(Ticket):
-    ticket_code = models.OneToOneField(NumTicket, on_delete=models.CASCADE, null=True, blank=True)#quitar null y blank una vez reseteada la base de datos
+    ticket_code = models.OneToOneField(NumTicket, on_delete=models.CASCADE, null=True, blank=True)
     temporal_name = models.CharField(max_length=100, null=True, blank=True)
-    status = models.CharField(max_length=2, choices=STATUS_CHOICES, default='PE')
+    
+    # Nuevos estados separados
+    delivery_status = models.CharField(max_length=2, choices=DELIVERY_STATUS_CHOICES, default='PE', verbose_name='Estado de Entrega')
+    payment_status = models.CharField(max_length=2, choices=PAYMENT_STATUS_CHOICES, default='PE', verbose_name='Estado de Pago')
+    
+    # Campos legacy (mantener temporalmente para compatibilidad)
+    status = models.CharField(max_length=2, choices=STATUS_CHOICES, default='PE', null=True, blank=True)
     payment_method = models.CharField(max_length=2, choices=PAYMENT_METHODS_CHOICES, null=True, blank=True)
 
     def calculate_total(self):
@@ -144,6 +164,29 @@ class Sale(Ticket):
         self.amount = total
         self.save()
         return total
+    
+    def get_total_paid(self):
+        """Retorna el total pagado vía PaymentDetails"""
+        from django.db.models import Sum
+        total = self.payment_details.filter(is_reverted=False).aggregate(Sum('amount'))['amount__sum'] or 0
+        return total
+    
+    def get_pending_amount(self):
+        """Retorna el monto pendiente de pago"""
+        return self.amount - self.get_total_paid()
+    
+    def update_payment_status(self):
+        """Actualiza automáticamente el estado de pago según PaymentDetails"""
+        total_paid = self.get_total_paid()
+        
+        if total_paid == 0:
+            self.payment_status = 'PE'  # Pendiente
+        elif total_paid >= self.amount:
+            self.payment_status = 'PA'  # Pagado completo
+        else:
+            self.payment_status = 'PP'  # Pago parcial
+        
+        self.save(update_fields=['payment_status'])
 
 
 class Purchase(Ticket):
@@ -171,6 +214,40 @@ class CreditNote(Ticket):
         person_info = f' — {self.person}' if self.person else ''
         type_name = 'Venta' if self.note_type == 'S' else 'Compra'
         return f'NC {type_name} {self.ticket_code} — ${self.amount}{person_info}'
+
+
+#----------------[ PAYMENT DETAIL ]----------------
+
+class PaymentDetail(models.Model):
+    """Detalle de pagos realizados sobre una venta (permite pagos mixtos y parciales)"""
+    sale = models.ForeignKey(Sale, related_name='payment_details', on_delete=models.CASCADE)
+    amount = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Monto')
+    payment_method = models.CharField(max_length=2, choices=PAYMENT_METHODS_CHOICES, verbose_name='Método de Pago')
+    notes = models.TextField(blank=True, verbose_name='Notas')
+    user_created = models.ForeignKey('auth.User', on_delete=models.SET_NULL, null=True, blank=True, verbose_name='Usuario')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Fecha de Pago')
+    is_reverted = models.BooleanField(default=False, verbose_name='Revertido')
+    
+    class Meta:
+        verbose_name = 'Detalle de Pago'
+        verbose_name_plural = 'Detalles de Pago'
+        ordering = ['created_at']
+    
+    def __str__(self):
+        method_name = dict(PAYMENT_METHODS_CHOICES).get(self.payment_method, self.payment_method)
+        reverted = ' (REVERTIDO)' if self.is_reverted else ''
+        return f'${self.amount} - {method_name}{reverted}'
+    
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        # Actualizar automáticamente el payment_status de la venta
+        self.sale.update_payment_status()
+    
+    def delete(self, *args, **kwargs):
+        sale = self.sale
+        super().delete(*args, **kwargs)
+        # Actualizar payment_status después de eliminar
+        sale.update_payment_status()
 
 
 #----------------[ ITEM ]----------------

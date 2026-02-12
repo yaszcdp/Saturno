@@ -42,13 +42,16 @@ class CurrentAccount(models.Model):
         return f'Cuenta Corriente de {self.person}'
     
     def get_balance(self):
-        """Calcula el balance en tiempo real: (ventas + compras) - pagos"""
+        """Calcula el balance en tiempo real: (ventas pendientes/parciales + compras) - pagos"""
         from django.db.models import Sum
         from finances.models import Sale, Purchase, Payment
         
-        # Ventas - cliente debe (todas las ventas con persona asignada)
+        # Ventas pendientes o con pago parcial - cliente debe
+        # Solo suma ventas con payment_status='PE' (Pendiente) o 'PP' (Pago Parcial)
+        # Las ventas con payment_status='PA' (Pagado) NO suman
         sales = Sale.objects.filter(
-            person=self.person
+            person=self.person,
+            payment_status__in=['PE', 'PP']  # Solo pendientes y pagos parciales
         ).aggregate(total=Sum('amount'))['total'] or 0
         
         # Compras a cuenta corriente - nosotros debemos al proveedor

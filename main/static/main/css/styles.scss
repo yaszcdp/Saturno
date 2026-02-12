@@ -649,6 +649,41 @@ table td a{
 
 table td a:hover{
     cursor: pointer;
+    color: #ffffff;
+}
+
+/* Estilos para tablas con filas clickeables */
+.table-dark {
+    color: #fff;
+    background-color: transparent;
+}
+
+.table-dark th {
+    border-bottom: 2px solid rgba(255,255,255,0.2);
+    padding: 12px;
+    font-weight: 600;
+}
+
+.table-dark td {
+    border-top: 1px solid rgba(255,255,255,0.1);
+    padding: 10px;
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(255,255,255,0.05);
+}
+
+.clickeable-row {
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.clickeable-row:hover {
+    background-color: rgba(255,255,255,0.1) !important;
+}
+
+.table-responsive {
+    overflow-x: auto;
 }
 
 /* ------------------------[ USUARIOS CARDS ]------------------------*/

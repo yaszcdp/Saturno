@@ -28,7 +28,7 @@
         {% endif %}
         
         <!-- Datos del Cliente/Proveedor -->
-        <div class="row mx-2 mb-4 custom-card justify-content-center">
+        <div class="row mx-2 mb-4 justify-content-center">
             <div class="col-12 pt-4 pe-4 info-card">
                 <div class="text-center">
                     {% if account.person.client %}
@@ -42,34 +42,14 @@
             </div>
         </div>
         
-        <!-- Balance Actual -->
-        <div class="row mx-2 mb-4">
-            <div class="col-12 info-card py-3">
-                <h3>Balance Actual: 
-                    <span style="color: {% if balance > 0 %}#da7a21{% elif balance < 0 %}#14ae2e{% else %}#fff{% endif %};">
-                        ${{ balance|floatformat:2 }}
-                    </span>
-                </h3>
-                <p class="small">
-                    {% if balance > 0 %}
-                        (Cliente debe)
-                    {% elif balance < 0 %}
-                        (Nosotros debemos)
-                    {% else %}
-                        (Cuenta saldada)
-                    {% endif %}
-                </p>
-            </div>
-        </div>
-        
         <!-- Listado de Movimientos -->
-        <div class="row mx-2 mb-4 custom-card justify-content-center">
+        <div class="row mx-2 mb-4 justify-content-center">
             <div class="col-12 pt-4 info-card">
-                <h2 class="text-start mb-3">Movimientos de Cuenta:</h2>
+                <h2 class="text-start mb-3" style="font-size: 1.8rem; letter-spacing: 0rem;">Movimientos de Cuenta:</h2>
                 
                 {% if ledger %}
                 <div class="table-responsive">
-                    <table class="table table-dark table-hover">
+                    <table class="table-hover">
                         <thead>
                             <tr>
                                 <th>Fecha</th>
@@ -81,7 +61,7 @@
                         </thead>
                         <tbody>
                             {% for entry in ledger %}
-                            <tr class="clickeable-row" style="cursor: pointer;" 
+                            <tr class="clickeable-row" 
                                 onclick="window.location='{% if entry.ticket.sale %}{% url 'DetailSale' pk=entry.ticket.sale.pk %}{% elif entry.ticket.purchase %}{% url 'DetailPurchase' pk=entry.ticket.purchase.pk %}{% elif entry.ticket.payment %}{% url 'DetailPayment' pk=entry.ticket.payment.pk %}{% elif entry.ticket.creditnote %}{% url 'DetailCreditNote' pk=entry.ticket.creditnote.pk %}{% endif %}'">
                                 <td>{{ entry.date|date:"d/m/Y" }}</td>
                                 <td>
@@ -120,6 +100,26 @@
                 {% endif %}
             </div>
         </div>
+
+        <!-- Balance Actual -->
+        <div class="row mx-2 mb-4">
+            <div class="col-12 info-card py-3">
+                <h3>Balance Actual: 
+                    <span style="color: {% if balance > 0 %}#da7a21{% elif balance < 0 %}#14ae2e{% else %}#fff{% endif %};">
+                        ${{ balance|floatformat:2 }}
+                    </span>
+                </h3>
+                <p class="small">
+                    {% if balance > 0 %}
+                        (Cliente debe)
+                    {% elif balance < 0 %}
+                        (Nosotros debemos)
+                    {% else %}
+                        (Cuenta saldada)
+                    {% endif %}
+                </p>
+            </div>
+        </div>
         
         <!-- Notas -->
         {% if account.notes %}
@@ -134,36 +134,5 @@
         <a class="btn btn-outline-green col-10 my-3 mt-4" href="javascript:history.back()">Volver</a>
     </div>
 </section>
-
-<style>
-    .table-dark {
-        color: #fff;
-        background-color: transparent;
-    }
-    
-    .table-dark th {
-        border-bottom: 2px solid rgba(255,255,255,0.2);
-        padding: 12px;
-        font-weight: 600;
-    }
-    
-    .table-dark td {
-        border-top: 1px solid rgba(255,255,255,0.1);
-        padding: 10px;
-    }
-    
-    .table-hover tbody tr:hover {
-        background-color: rgba(255,255,255,0.05);
-    }
-    
-    .clickeable-row:hover {
-        background-color: rgba(20, 174, 46, 0.1) !important;
-        transition: background-color 0.3s ease;
-    }
-    
-    .table-responsive {
-        overflow-x: auto;
-    }
-</style>
 
 {% endblock %}

@@ -66,16 +66,14 @@
                                     Estado
                                 {% endif %}        
                             </th>
-                            {% if request.user.is_superuser %}
-                                <th></th>
-                            {% endif %}
                         </tr>
                     </thead>
 
                     <tbody>
                         {% if tickets %}
                             {% for ticket in tickets %}
-                            <tr>
+                            <tr class="clickeable-row"
+                                onclick="window.location='{% if form_type == 'Ventas' %}{% url 'DetailSale' pk=ticket.pk %}{% elif form_type == 'Compras' %}{% url 'DetailPurchase' pk=ticket.pk %}{% elif form_type == 'Pagos' %}{% url 'DetailPayment' pk=ticket.pk %}{% elif form_type == 'Notas de Credito' %}{% url 'DetailCreditNote' pk=ticket.pk %}{% endif %}'">
                                 <td>{{ ticket.ticket_code.number|stringformat:"06d" }}
                                 <td>{{ ticket.date_time|date:"d/m/Y" }}</td>
                                 <td>{{ ticket.temporal_name|default:"-" }}</td>
@@ -94,13 +92,6 @@
                                         {% endif %}
                                     {% endif %}
                                 </td>
-                                    {% if request.user.is_superuser %}
-                                    <td>
-                                        <a href="{% url 'Tickets' %}"> <!--generalilzar después-->
-                                            <i class="bi bi-eye"></i>
-                                        </a>
-                                    </td>
-                                {% endif %}
                             </tr>
                             {% endfor %}
                         {% else %}
@@ -134,13 +125,22 @@
             </div>
         </div>
         <div class="row justify-content-around mt-4">
-            {% if request.user.is_superuser %} <!--Agregar para vendedor y cajero-->
-                <a class="btn btn-outline-green col-10 col-md-5 my-3 mx-2" href="{% url 'CreateSale' %}">Nueva Venta</a>
+            {% if request.user.is_superuser %}
+                {% if form_type == 'Ventas' %}
+                    <a class="btn btn-outline-green col-10 col-md-5 my-3 mx-2" href="{% url 'CreateSale' %}">Nueva Venta</a>
+                {% elif form_type == 'Compras' %}
+                    <a class="btn btn-outline-green col-10 col-md-5 my-3 mx-2" href="{% url 'CreatePurchase' %}">Nueva Compra</a>
+                {% elif form_type == 'Pagos' %}
+                    <a class="btn btn-outline-green col-10 col-md-5 my-3 mx-2" href="{% url 'CreatePayment' %}">Nuevo Pago</a>
+                {% elif form_type == 'Notas de Credito' %}
+                    <a class="btn btn-outline-green col-10 col-md-5 my-3 mx-2" href="{% url 'CreateCreditNote' %}">Nueva Nota de Crédito</a>
+                {% endif %}
             {% endif %}
             <a class="btn btn-outline-orange col-10 col-md-5 my-3 mx-2" href="{% url 'Tickets' %}">Volver</a>
         </div>
     </div>
 </section>
+
 <script>
     function updateSearchFields () {
         const searchBy = document.getElementById('search_by').value;
