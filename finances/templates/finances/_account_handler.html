@@ -1,0 +1,49 @@
+{# Partial template para lógica de radio buttons de Cuenta Corriente #}
+{# Maneja el cambio entre cuenta corriente SÍ/NO y muestra las secciones correspondientes #}
+
+<script>
+// JavaScript para control de radio buttons de Cuenta Corriente
+(function() {
+    const accountYes = document.getElementById("account-yes");
+    const accountNo = document.getElementById("account-no");
+    const accountSection = document.getElementById("account-section");
+    const personSection = document.getElementById("person-section");
+    const temporalNameSection = document.getElementById("temporal-name-section");
+    const itemsSection = document.getElementById("items-section");
+    const personSearchInput = document.getElementById("person-search");
+    const personIdInput = document.getElementById("id_person");
+    const temporalNameInput = document.getElementById("id_temporal_name");
+    const selectedPersonInfo = document.getElementById("selected-person-info");
+
+    // Variable global para tracking de confirmación de persona
+    window.personConfirmed = false;
+
+    // Cambio de opción de Cuenta Corriente - SÍ
+    if (accountYes) {
+        accountYes.addEventListener("change", function() {
+            if (this.checked) {
+                if (personSection) personSection.style.display = "block";
+                if (temporalNameSection) temporalNameSection.style.display = "none";
+                if (itemsSection) itemsSection.style.display = "none";
+                if (temporalNameInput) temporalNameInput.value = "";
+                window.personConfirmed = false;
+            }
+        });
+    }
+
+    // Cambio de opción de Cuenta Corriente - NO
+    if (accountNo) {
+        accountNo.addEventListener("change", function() {
+            if (this.checked) {
+                if (personSection) personSection.style.display = "none";
+                if (temporalNameSection) temporalNameSection.style.display = "block";
+                if (itemsSection) itemsSection.style.display = "block";
+                if (personSearchInput) personSearchInput.value = "";
+                if (personIdInput) personIdInput.value = "";
+                if (selectedPersonInfo) selectedPersonInfo.style.display = "none";
+                window.personConfirmed = true; // Con nombre temporal, puede continuar
+            }
+        });
+    }
+})();
+</script>

@@ -41,7 +41,6 @@
                             <div class="form-check mb-0">
                                 <input class="form-check-input" type="radio" name="account_option" id="account-no" value="no">
                                 <label class="form-check-label" for="account-no">NO</label>
-                                </label>
                             </div>
                         </div>
                     </div>
@@ -66,53 +65,8 @@
                     </div>
                 </div>
                 
-                <!-- Sección de Persona (Cliente/Proveedor) - Se muestra solo si se marca Cta Cte SÍ -->
-                <div id="person-section" style="display: none;" class="row">
-                    <div class="align-items-center py-3">
-                        <div class="col-md-10 col-12 mx-auto">
-                            <div class="row mb-3 mx-2 info-card">
-                                <input type="text" id="person-search" class="form-search col-10 col-md-6" placeholder="Buscar cliente..." autocomplete="off">
-                                <a id="search-button" class="col-1">    
-                                    <button class="btn" type="button" id="search-person-btn">
-                                        <i class="bi bi-search-heart"></i>
-                                    </button>
-                                </a>
-                            </div>
-                            <input type="hidden" id="id_person" name="person">
-                            
-                            <br>
-                            <!-- Resultados de la búsqueda -->
-                            <div id="search-results" style="display: none;" class="info-card my-2">
-                                <div class="col-11 mb-2">
-                                    <h2 class="col-md-11 text-start" style="font-size: 1.8rem; letter-spacing: 0rem;">Resultados de la búsqueda:</h2>
-                                    <hr style="width:98%;">
-                                </div>
-                                <div id="results-list" class="pt-2"></div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Datos del cliente seleccionado -->
-                    <div id="selected-person-info" style="display: none;">
-                        <div class="col-10 info-card align-items-center py-3 my-2 mx-auto">
-                            <div class="col-11 mb-2">
-                                <h2 class="text-start" style="font-size: 1.8rem; letter-spacing: 0rem;">Cliente Seleccionado:</h2>
-                                <hr style="width:98%;">
-                            </div>
-                            <div class="col-11 align-items-center me-1 text-start ps-4">
-                                <p>Nombre: <span id="person-name-display"></span></p>
-                                <p>Cuit: <span id="person-cuit-display"></span></p>
-                                <p>Teléfono: <span id="person-phone-display"></span></p>
-                                <p>Ciudad: <span id="person-city-display"></span></p>
-                            </div>
-                        </div>
-                        <div class="col-12 text-center">
-                            <button type="button" class="btn btn-outline-green col-8 mt-4" id="confirm-person-btn">
-                                Confirmar Cliente
-                            </button>
-                        </div>
-                    </div>
-                </div>
+                <!-- Sección de Persona (Cliente/Proveedor) - MODULARIZADO -->
+                {% include 'finances/_person_search.html' with clients=clients suppliers=suppliers %}
                 
                 <!-- Nombre del cliente temporal (solo si NO usa Cta Cte) -->
                 <div id="temporal-name-section" style="display: none;">
@@ -128,75 +82,17 @@
                     </div>
                 </div>
                 
-                <!-- Sección de Items - Se muestra después de confirmar cliente o nombre temporal -->
+                <!-- Sección de Items - MODULARIZADO -->
                 <div id="items-section" style="display: none;">
-                <br>
-                <!-- Formulario carga rapida de ítems-->
-                <div class="row custom-card text-center justify-content-center py-4 my-3 mx-2" style="border:none;">
-                    <!-- *** error No hay items en la venta-->
-                    <div class="row align-items-center">
-                        <div id="items-error" class="col-1 p-0 m-0" style="display:none; color:#a10202; font-size: 2.4rem;">*</div>
-                        <h2 class="col-md-11 col-5 text-start" style="font-size: 1.8rem;">Ítem:</h2>
+                    <br>
+                    {% include 'finances/_items_manager.html' with products=products %}
+                    
+                    <div class="col-12 text-center">
+                        <button type="submit" class="btn btn-outline-green col-8 mt-4">Guardar</button>
                     </div>
-                    <hr style="width:98%;">
+                    <br>
 
-                    <div class="col-md-2 col-8 mt-2">
-                        <label for="quantity-input" class="form-label">Cant</label>
-                        <input type="number" id="quantity-input" step="any">
-                    </div>
-
-                    <div class="col-md-6 col-10 mt-2">
-                        <label for="product-input" class="form-label">Producto</label>
-                        <input type="text" id="product-input" list="productos">
-                        <datalist id="productos">
-                            {% for product in products %}
-                                <option value="{{ product.name }}" data-price="{{ product.price }}">
-                            {% endfor %}
-                        </datalist>
-                    </div>
-
-                    <div class="col-md-3 col-8 mt-2">
-                        <label for="price-input" class="form-label">Precio</label>
-                        <input type="number" id="price-input" step="any">
-                    </div>
-                    <!-- Botón para confirmar el ítem --> 
-                    <div class="col-md-1 col-12 my-3">
-                        <button type="button" id="confirm-item-btn" class="btn add-item-btn">
-                            <i class="bi bi-plus-circle"></i>
-                        </button>
-                    </div>
-                </div>
-                <!--Tabla Items agregados-->
-                <div id="items-table" class="row custom-card text-center justify-content-center py-4 my-4 mx-2" style="border:none;display:none;">
-                    <h2 class="text-start ps-4" style="font-size: 1.8rem;">Productos agregados:</h2>
-                    <hr style="width:98%;">
-                    <table class="justify-content-center">
-                        <thead>
-                            <tr>
-                                <th class="col-2">Cant</th>
-                                <th class="col-4">Producto</th>
-                                <th class="col-3">Precio</th>
-                                <th class="col-3">Subtotal</th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        <tbody id="items-body"></tbody>
-                    </table>
-                </div>
-                
-                    <!-- Total -->
-                <div id="total-div" class="text-end me-4 pe-4 mb-3" style="display: none;">
-                    <label>Total: <span id="total-label">$0.00</span></label>
-                </div>
-
-                <input type="hidden" name="items_json" id="items-json">
-                
-                <div class="col-12 text-center">
-                    <button type="submit" class="btn btn-outline-green col-8 mt-4">Guardar</button>
-                </div>
-                <br>
-
-                <div id="message-error" class="alert alert-danger" style="display: none;"></div>
+                    <div id="message-error" class="alert alert-danger" style="display: none;"></div>
                 </div> <!-- Cierre de items-section -->
             </form>
         </div>
@@ -218,6 +114,58 @@
         border-color: #14ae2e !important;
         box-shadow: 0 0 0 0.25rem rgba(20, 174, 46, 0.25) !important;
     }
+    
+    /* Botones de acción en tabla de items */
+    .edit-item-btn, .delete-item-btn {
+        background: none;
+        border: none;
+        color: white;
+        cursor: pointer;
+        padding: 0.25rem 0.5rem;
+        transition: color 0.3s ease;
+    }
+    
+    .edit-item-btn:hover {
+        color: #da7a21 !important;
+    }
+    
+    .delete-item-btn:hover {
+        color: #da7a21 !important;
+    }
+    
+    .save-item-btn, .cancel-edit-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 0.25rem 0.5rem;
+        transition: opacity 0.3s ease;
+    }
+    
+    .save-item-btn:hover, .cancel-edit-btn:hover {
+        opacity: 0.7;
+    }
+    
+    /* Inputs de edición dentro de la tabla */
+    .item-quantity-edit, .item-product-edit, .item-price-edit {
+        background: transparent !important;
+        border: none !important;
+        color: white !important;
+        font-size: 1rem !important;
+        padding: 0.25rem !important;
+        text-align: center;
+        box-shadow: none !important;
+    }
+    
+    .item-quantity-edit:focus, .item-product-edit:focus, .item-price-edit:focus {
+        background: rgba(255, 255, 255, 0.1) !important;
+        border: none !important;
+        outline: none !important;
+        box-shadow: none !important;
+    }
+    
+    .item-product-edit {
+        text-align: left !important;
+    }
 </style>
 
 <script>
@@ -232,7 +180,6 @@ document.addEventListener("DOMContentLoaded", function () {
     const itemsTable = document.getElementById("items-table");
     const totalDiv = document.getElementById("total-div");
     //inputs fields
-    
     const productInput = document.getElementById("product-input");
     const quantityInput = document.getElementById("quantity-input");
     const priceInput = document.getElementById("price-input");
@@ -254,8 +201,9 @@ document.addEventListener("DOMContentLoaded", function () {
     //Calcular Total
     function calculateTotal() {
         const total = items.reduce((acc, item) => acc +(item.price * item.quantity), 0);
-        document.getElementById("total-label").textContent = `$${total.toFixed(2)}`;
+        document.getElementById("total-label").textContent = `\$${total.toFixed(2)}`;
     }
+    
     //Agregar Item
     document.getElementById("confirm-item-btn").addEventListener("click", function() {
         const product = productInput.value.trim();
@@ -269,6 +217,41 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if(!(product in validProducts)){
             alert("El producto ingresado no existe en el listado.");
+            return;
+        }
+
+        // Verificar si el item ya existe con el mismo precio
+        const existingIndex = items.findIndex(item => 
+            item.product_name === product && item.price === price
+        );
+        
+        if (existingIndex !== -1) {
+            // Sumar cantidad al item existente
+            items[existingIndex].quantity += quantity;
+            
+            // Actualizar la fila existente
+            const existingRow = itemsBody.children[existingIndex];
+            const newQuantity = items[existingIndex].quantity;
+            const newSubtotal = newQuantity * price;
+            
+            existingRow.innerHTML = `
+            <td class="item-quantity-display">${newQuantity}</td>
+            <td class="item-product-display">${product}</td>
+            <td class="item-price-display">\$${price.toFixed(2)}</td>
+            <td class="item-subtotal-display">\$${newSubtotal.toFixed(2)}</td>
+            <td>
+                <button type="button" class="btn edit-item-btn" title="Editar"><i class="bi bi-pen" style="font-size: 1.8rem;"></i></button>
+                <button type="button" class="btn delete-item-btn" title="Eliminar"><i class="bi bi-trash3" style="font-size: 1.8rem;"></i></button>
+            </td>
+            `;
+            
+            attachRowEventListeners(existingRow);
+            calculateTotal();
+            
+            productInput.value = "";
+            quantityInput.value = "";
+            priceInput.value = "";
+            productInput.focus();
             return;
         }
 
@@ -288,14 +271,120 @@ document.addEventListener("DOMContentLoaded", function () {
         
         const row = document.createElement("tr");
         row.innerHTML = `
-        <td>${quantity}</td>
-        <td>${product}</td>
-        <td>$${price.toFixed(2)}</td>
-        <td>$${subtotal.toFixed(2)}</td>
-        <td><button type="button" class="btn delete-item-btn"><i class="bi bi-trash3"></i></button></td>
+        <td class="item-quantity-display">${quantity}</td>
+        <td class="item-product-display">${product}</td>
+        <td class="item-price-display">\$${price.toFixed(2)}</td>
+        <td class="item-subtotal-display">\$${subtotal.toFixed(2)}</td>
+        <td>
+            <button type="button" class="btn edit-item-btn" title="Editar"><i class="bi bi-pen" style="font-size: 1.8rem;"></i></button>
+            <button type="button" class="btn delete-item-btn" title="Eliminar"><i class="bi bi-trash3" style="font-size: 1.8rem;"></i></button>
+        </td>
         `;
-        
 
+        // Botón editar item
+        row.querySelector(".edit-item-btn").addEventListener("click", () => {
+            const index = [...itemsBody.children].indexOf(row);
+            const item = items[index];
+            
+            // Guardar valores originales
+            const originalQuantity = item.quantity;
+            const originalProduct = item.product_name;
+            const originalPrice = item.price;
+            
+            // Convertir a modo edición
+            row.innerHTML = `
+            <td><input type="number" class="form-control item-quantity-edit" value="${item.quantity}" step="any"></td>
+            <td><input type="text" class="form-control item-product-edit" value="${item.product_name}" list="productos"></td>
+            <td><input type="number" class="form-control item-price-edit" value="${item.price}" step="any"></td>
+            <td class="item-subtotal-display">\$${(item.quantity * item.price).toFixed(2)}</td>
+            <td>
+                <button type="button" class="btn save-item-btn" title="Guardar" style="color: #14ae2e;"><i class="bi bi-check-circle" style="font-size: 2.2rem;"></i></button>
+                <button type="button" class="btn cancel-edit-btn" title="Cancelar" style="color: #da7a21;"><i class="bi bi-x-circle" style="font-size: 2.2rem;"></i></button>
+            </td>
+            `;
+            
+            const quantityEditInput = row.querySelector(".item-quantity-edit");
+            const productEditInput = row.querySelector(".item-product-edit");
+            const priceEditInput = row.querySelector(".item-price-edit");
+            const subtotalDisplay = row.querySelector(".item-subtotal-display");
+            
+            // Actualizar subtotal en tiempo real
+            function updateSubtotalPreview() {
+                const q = parseFloat(quantityEditInput.value) || 0;
+                const p = parseFloat(priceEditInput.value) || 0;
+                subtotalDisplay.textContent = `\$${(q * p).toFixed(2)}`;
+            }
+            
+            quantityEditInput.addEventListener("input", updateSubtotalPreview);
+            priceEditInput.addEventListener("input", updateSubtotalPreview);
+            
+            // Autocompletar precio al cambiar producto
+            productEditInput.addEventListener("input", function() {
+                const selectedProduct = productEditInput.value.trim();
+                if (selectedProduct in validProducts) {
+                    priceEditInput.value = validProducts[selectedProduct];
+                    updateSubtotalPreview();
+                }
+            });
+            
+            // Botón guardar cambios
+            row.querySelector(".save-item-btn").addEventListener("click", () => {
+                const newQuantity = parseFloat(quantityEditInput.value);
+                const newProduct = productEditInput.value.trim();
+                const newPrice = parseFloat(priceEditInput.value);
+                
+                if (!newProduct || isNaN(newQuantity) || isNaN(newPrice) || newQuantity <= 0) {
+                    alert("Completa todos los campos correctamente");
+                    return;
+                }
+                
+                if (!(newProduct in validProducts)) {
+                    alert("El producto ingresado no existe en el listado.");
+                    return;
+                }
+                
+                // Actualizar item en el array
+                items[index] = { product_name: newProduct, quantity: newQuantity, price: newPrice };
+                calculateTotal();
+                
+                // Volver a modo display
+                const newSubtotal = newQuantity * newPrice;
+                row.innerHTML = `
+                <td class="item-quantity-display">${newQuantity}</td>
+                <td class="item-product-display">${newProduct}</td>
+                <td class="item-price-display">\$${newPrice.toFixed(2)}</td>
+                <td class="item-subtotal-display">\$${newSubtotal.toFixed(2)}</td>
+                <td>
+                    <button type="button" class="btn edit-item-btn" title="Editar"><i class="bi bi-pen" style="font-size: 1.8rem;"></i></button>
+                    <button type="button" class="btn delete-item-btn" title="Eliminar"><i class="bi bi-trash3" style="font-size: 1.8rem;"></i></button>
+                </td>
+                `;
+                
+                // Re-agregar event listeners
+                attachRowEventListeners(row);
+            });
+            
+            // Botón cancelar edición
+            row.querySelector(".cancel-edit-btn").addEventListener("click", () => {
+                // Restaurar valores originales
+                const subtotal = originalQuantity * originalPrice;
+                row.innerHTML = `
+                <td class="item-quantity-display">${originalQuantity}</td>
+                <td class="item-product-display">${originalProduct}</td>
+                <td class="item-price-display">\$${originalPrice.toFixed(2)}</td>
+                <td class="item-subtotal-display">\$${subtotal.toFixed(2)}</td>
+                <td>
+                    <button type="button" class="btn edit-item-btn" title="Editar"><i class="bi bi-pen" style="font-size: 1.8rem;"></i></button>
+                    <button type="button" class="btn delete-item-btn" title="Eliminar"><i class="bi bi-trash3" style="font-size: 1.8rem;"></i></button>
+                </td>
+                `;
+                
+                // Re-agregar event listeners
+                attachRowEventListeners(row);
+            });
+        });
+
+        // Botón eliminar item
         row.querySelector(".delete-item-btn").addEventListener("click", () => {
             if (confirm("¿Seguro quieres eliminar este ítem?")){
                 const index = [...itemsBody.children].indexOf(row);
@@ -311,6 +400,117 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
             }
         });
+        
+        // Función para re-agregar event listeners después de editar
+        function attachRowEventListeners(targetRow) {
+            // Editar
+            targetRow.querySelector(".edit-item-btn").addEventListener("click", () => {
+                const idx = [...itemsBody.children].indexOf(targetRow);
+                const item = items[idx];
+                
+                const originalQuantity = item.quantity;
+                const originalProduct = item.product_name;
+                const originalPrice = item.price;
+                
+                targetRow.innerHTML = `
+                <td><input type="number" class="form-control item-quantity-edit" value="${item.quantity}" step="any"></td>
+                <td><input type="text" class="form-control item-product-edit" value="${item.product_name}" list="productos"></td>
+                <td><input type="number" class="form-control item-price-edit" value="${item.price}" step="any"></td>
+                <td class="item-subtotal-display">\$${(item.quantity * item.price).toFixed(2)}</td>
+                <td>
+                    <button type="button" class="btn save-item-btn" title="Guardar" style="color: #14ae2e;"><i class="bi bi-check-circle" style="font-size: 2.2rem;"></i></button>
+                    <button type="button" class="btn cancel-edit-btn" title="Cancelar" style="color: #da7a21;"><i class="bi bi-x-circle" style="font-size: 2.2rem;"></i></button>
+                </td>
+                `;
+                
+                const quantityEditInput = targetRow.querySelector(".item-quantity-edit");
+                const productEditInput = targetRow.querySelector(".item-product-edit");
+                const priceEditInput = targetRow.querySelector(".item-price-edit");
+                const subtotalDisplay = targetRow.querySelector(".item-subtotal-display");
+                
+                function updateSubtotalPreview() {
+                    const q = parseFloat(quantityEditInput.value) || 0;
+                    const p = parseFloat(priceEditInput.value) || 0;
+                    subtotalDisplay.textContent = `\$${(q * p).toFixed(2)}`;
+                }
+                
+                quantityEditInput.addEventListener("input", updateSubtotalPreview);
+                priceEditInput.addEventListener("input", updateSubtotalPreview);
+                
+                productEditInput.addEventListener("input", function() {
+                    const selectedProduct = productEditInput.value.trim();
+                    if (selectedProduct in validProducts) {
+                        priceEditInput.value = validProducts[selectedProduct];
+                        updateSubtotalPreview();
+                    }
+                });
+                
+                targetRow.querySelector(".save-item-btn").addEventListener("click", () => {
+                    const newQuantity = parseFloat(quantityEditInput.value);
+                    const newProduct = productEditInput.value.trim();
+                    const newPrice = parseFloat(priceEditInput.value);
+                    
+                    if (!newProduct || isNaN(newQuantity) || isNaN(newPrice) || newQuantity <= 0) {
+                        alert("Completa todos los campos correctamente");
+                        return;
+                    }
+                    
+                    if (!(newProduct in validProducts)) {
+                        alert("El producto ingresado no existe en el listado.");
+                        return;
+                    }
+                    
+                    items[idx] = { product_name: newProduct, quantity: newQuantity, price: newPrice };
+                    calculateTotal();
+                    
+                    const newSubtotal = newQuantity * newPrice;
+                    targetRow.innerHTML = `
+                    <td class="item-quantity-display">${newQuantity}</td>
+                    <td class="item-product-display">${newProduct}</td>
+                    <td class="item-price-display">\$${newPrice.toFixed(2)}</td>
+                    <td class="item-subtotal-display">\$${newSubtotal.toFixed(2)}</td>
+                    <td>
+                        <button type="button" class="btn edit-item-btn" title="Editar"><i class="bi bi-pen" style="font-size: 1.8rem;"></i></button>
+                        <button type="button" class="btn delete-item-btn" title="Eliminar"><i class="bi bi-trash3" style="font-size: 1.8rem;"></i></button>
+                    </td>
+                    `;
+                    
+                    attachRowEventListeners(targetRow);
+                });
+                
+                targetRow.querySelector(".cancel-edit-btn").addEventListener("click", () => {
+                    const subtotal = originalQuantity * originalPrice;
+                    targetRow.innerHTML = `
+                    <td class="item-quantity-display">${originalQuantity}</td>
+                    <td class="item-product-display">${originalProduct}</td>
+                    <td class="item-price-display">\$${originalPrice.toFixed(2)}</td>
+                    <td class="item-subtotal-display">\$${subtotal.toFixed(2)}</td>
+                    <td>
+                        <button type="button" class="btn edit-item-btn" title="Editar"><i class="bi bi-pen" style="font-size: 1.8rem;"></i></button>
+                        <button type="button" class="btn delete-item-btn" title="Eliminar"><i class="bi bi-trash3" style="font-size: 1.8rem;"></i></button>
+                    </td>
+                    `;
+                    attachRowEventListeners(targetRow);
+                });
+            });
+            
+            // Eliminar
+            targetRow.querySelector(".delete-item-btn").addEventListener("click", () => {
+                if (confirm("¿Seguro quieres eliminar este ítem?")){
+                    const index = [...itemsBody.children].indexOf(targetRow);
+                    if (index > -1){
+                        items.splice(index, 1);
+                        targetRow.remove();
+                        calculateTotal();
+                        if(items.length === 0){
+                            itemsTable.style.display = "none";
+                            totalDiv.style.display = "none";
+                        }
+                        console.log("Items después de eliminar:", items);
+                    }
+                }
+            });
+        }
 
         itemsBody.appendChild(row);
         
@@ -332,7 +532,7 @@ document.addEventListener("DOMContentLoaded", function () {
         event.preventDefault(); //Detiene el envío del formulario para validación
         
         // Validar que si usa cuenta corriente, haya confirmado la persona O si no usa cuenta, tenga nombre temporal
-        const hasValidIdentification = useAccount ? (personId && personConfirmed) : temporalName;
+        const hasValidIdentification = useAccount ? (personId && window.personConfirmed) : temporalName;
         
         if (!hasValidIdentification && items.length === 0) {
             const identificationType = useAccount ? "un Cliente/Proveedor" : "el nombre del cliente";
@@ -358,213 +558,18 @@ document.addEventListener("DOMContentLoaded", function () {
             console.log("Items JSON:", itemsJson.value);
             form.submit(); // Envía el formulario manualmente
         }
-
     });
 
-    // Control de radio buttons para Cuenta Corriente
-    const accountYes = document.getElementById("account-yes");
-    const accountNo = document.getElementById("account-no");
-    const accountSection = document.getElementById("account-section");
-    const personSection = document.getElementById("person-section");
-    const temporalNameSection = document.getElementById("temporal-name-section");
-    const itemsSection = document.getElementById("items-section");
-    const personSearchInput = document.getElementById("person-search");
-    const personIdInput = document.getElementById("id_person");
-    const temporalNameInput = document.getElementById("id_temporal_name");
-    const selectedPersonInfo = document.getElementById("selected-person-info");
-    const confirmPersonBtn = document.getElementById("confirm-person-btn");
-    const searchPersonBtn = document.getElementById("search-person-btn");
-    
-    let personConfirmed = false;
-
-    // Cambio de opción de Cuenta Corriente
-    accountYes.addEventListener("change", function() {
-        if (this.checked) {
-            personSection.style.display = "block";
-            temporalNameSection.style.display = "none";
-            itemsSection.style.display = "none";
-            temporalNameInput.value = "";
-            personConfirmed = false;
-        }
-    });
-
-    accountNo.addEventListener("change", function() {
-        if (this.checked) {
-            personSection.style.display = "none";
-            temporalNameSection.style.display = "block";
-            itemsSection.style.display = "block";
-            personSearchInput.value = "";
-            personIdInput.value = "";
-            selectedPersonInfo.style.display = "none";
-            personConfirmed = true; // Con nombre temporal, puede continuar
-        }
-    });
-
-    // Array de todas las personas (clientes y proveedores)
-    const allPersons = [
-        {% for client in clients %}
-        {
-            id: "{{ client.person_ptr_id }}",
-            name: "{{ client.first_name }} {{ client.last_name }}",
-            city: "{{ client.city|default:'-' }}",
-            cuit: "{{ client.cuit }}",
-            phone: "{{ client.phone|default:'-' }}",
-            type: "cliente"
-        },
-        {% endfor %}
-        {% for supplier in suppliers %}
-        {
-            id: "{{ supplier.person_ptr_id }}",
-            name: "{{ supplier.company }}",
-            city: "{{ supplier.city|default:'-' }}",
-            cuit: "{{ supplier.cuit }}",
-            phone: "{{ supplier.phone|default:'-' }}",
-            type: "proveedor"
-        },
-        {% endfor %}
-    ];
-
-    const searchResults = document.getElementById("search-results");
-    const resultsList = document.getElementById("results-list");
-
-    // Buscar persona con coincidencia parcial
-    function searchPerson() {
-        const searchTerm = personSearchInput.value.trim().toLowerCase();
-        
-        if (searchTerm.length < 2) {
-            searchResults.style.display = "none";
-            selectedPersonInfo.style.display = "none";
-            return;
-        }
-        
-        // Filtrar personas que coincidan con el término de búsqueda
-        const matches = allPersons.filter(person => 
-            person.name.toLowerCase().includes(searchTerm)
-        );
-        
-        if (matches.length > 0) {
-            resultsList.innerHTML = "";
-            
-            matches.forEach((person, index) => {
-                const resultItem = document.createElement("div");
-                resultItem.className = "custom-card p-3 mb-2";
-                resultItem.style = "cursor: pointer; transition: border-color 0.3s ease, color 0.3s ease;";
-                
-                // Agregar efecto hover
-                resultItem.addEventListener("mouseenter", function() {
-                    this.style.borderColor = "#14ae2e";
-                    this.style.color = "#14ae2e";
-                });
-                resultItem.addEventListener("mouseleave", function() {
-                    this.style.borderColor = "rgba(255,255,255,0.2)";
-                    this.style.color = "white";
-                });
-                
-                resultItem.innerHTML = `
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div class="text-start">
-                            <h3 style="font-family: 'Cutive Mono', monospace; font-size:1.6rem; transition: color 0.3s ease;">${person.name}</h3>
-                            <h4 style="font-family: 'Zen Kaku Gothic New', sans-serif; font-size:1.4rem; transition: color 0.3s ease;"><small>${person.city}</small></h4>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="radio" name="person_selection" 
-                                id="person-${person.id}" value="${person.id}"
-                                data-name="${person.name}" data-cuit="${person.cuit}">
-                            <label class="form-check-label" for="person-${person.id}"></label>
-                        </div>
-                    </div>
-                `;
-                
-                // Hacer toda la tarjeta clickeable
-                resultItem.addEventListener("click", function(e) {
-                    if (e.target.type !== "radio") {
-                        const radio = resultItem.querySelector('input[type="radio"]');
-                        radio.checked = true;
-                        radio.dispatchEvent(new Event('change'));
-                    }
-                });
-                
-                // Al seleccionar un radio button
-                const radioInput = resultItem.querySelector('input[type="radio"]');
-                radioInput.addEventListener("change", function() {
-                    if (this.checked) {
-                        personIdInput.value = this.value;
-                        const selectedPerson = allPersons.find(p => p.id === this.value);
-                        document.getElementById("person-name-display").textContent = selectedPerson.name;
-                        document.getElementById("person-cuit-display").textContent = selectedPerson.cuit || '-';
-                        document.getElementById("person-phone-display").textContent = selectedPerson.phone || '-';
-                        document.getElementById("person-city-display").textContent = selectedPerson.city || '-';
-                        selectedPersonInfo.style.display = "block";
-                    }
-                });
-                
-                resultsList.appendChild(resultItem);
-            });
-            
-            searchResults.style.display = "block";
-        } else {
-            resultsList.innerHTML = '<p class="text-center">No se encontraron resultados</p>';
-            searchResults.style.display = "block";
-            selectedPersonInfo.style.display = "none";
-        }
-    }
-
-    personSearchInput.addEventListener("input", searchPerson);
-    searchPersonBtn.addEventListener("click", searchPerson);
-
-    // Confirmar persona y mostrar sección de items
-    confirmPersonBtn.addEventListener("click", function() {
-        if (personIdInput.value) {
-            personConfirmed = true;
-            const selectedPerson = allPersons.find(p => p.id === personIdInput.value);
-            
-            // Copiar datos a la sección de cliente confirmado
-            document.getElementById("confirmed-person-name").textContent = selectedPerson.name;
-            document.getElementById("confirmed-person-cuit").textContent = selectedPerson.cuit || '-';
-            document.getElementById("confirmed-person-phone").textContent = selectedPerson.phone || '-';
-            document.getElementById("confirmed-person-city").textContent = selectedPerson.city || '-';
-            
-            // Ocultar sección de Cuenta Corriente
-            document.getElementById("account-section").style.display = "none";
-            // Ocultar sección de búsqueda
-            personSection.style.display = "none";
-            // Mostrar sección de datos confirmados
-            document.getElementById("confirmed-client-section").style.display = "block";
-            // Mostrar sección de items
-            itemsSection.style.cssText = "display: block !important;";
-            
-            // Hacer scroll a la sección de items
-            setTimeout(() => {
-                itemsSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-                window.scrollBy(0, -100);
-            }, 200);
-        } else {
-            alert("Debe seleccionar un cliente válido");
-        }
-    });
-    
-    // Botón para editar cliente (volver atrás)
-    document.getElementById("edit-client-btn").addEventListener("click", function() {
-        // Mostrar secciones ocultas
-        document.getElementById("account-section").style.display = "block";
-        personSection.style.display = "block";
-        // Ocultar datos confirmados
-        document.getElementById("confirmed-client-section").style.display = "none";
-        // Ocultar items
-        itemsSection.style.display = "none";
-        // Resetear confirmación
-        personConfirmed = false;
-        // Limpiar selección
-        personIdInput.value = "";
-        personSearchInput.value = "";
-        searchResults.style.display = "none";
-        selectedPersonInfo.style.display = "none";
-    });
-
+    // Exportar items para que los handlers de partials puedan acceder
+    window.itemsManager = {
+        items: items,
+        calculateTotal: calculateTotal
+    };
 });
 </script>
 
-
-
+<!-- SCRIPTS MODULARES -->
+{% include 'finances/_account_handler.html' %}
+{% include 'finances/_person_confirm_handler.html' %}
 
 {% endblock main %}

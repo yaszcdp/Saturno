@@ -1,0 +1,63 @@
+{# Partial template para formulario de items (solo el formulario de entrada y tabla) #}
+{# Variables esperadas: products #}
+{# JavaScript externo debe manejar la lógica de agregar items #}
+
+<!-- Formulario carga rapida de ítems-->
+<div class="row custom-card text-center justify-content-center py-4 my-3 mx-2" style="border:none;">
+    <!-- *** error No hay items en la venta-->
+    <div class="row align-items-center">
+        <div id="items-error" class="col-1 p-0 m-0" style="display:none; color:#a10202; font-size: 2.4rem;">*</div>
+        <h2 class="col-md-11 col-5 text-start" style="font-size: 1.8rem;">Ítem:</h2>
+    </div>
+    <hr style="width:98%;">
+
+    <div class="col-md-2 col-8 mt-2">
+        <label for="quantity-input" class="form-label">Cant</label>
+        <input type="number" id="quantity-input" step="any">
+    </div>
+
+    <div class="col-md-6 col-10 mt-2">
+        <label for="product-input" class="form-label">Producto</label>
+        <input type="text" id="product-input" list="productos">
+        <datalist id="productos">
+            {% for product in products %}
+                <option value="{{ product.name }}" data-price="{{ product.price }}">
+            {% endfor %}
+        </datalist>
+    </div>
+
+    <div class="col-md-3 col-8 mt-2">
+        <label for="price-input" class="form-label">Precio</label>
+        <input type="number" id="price-input" step="any">
+    </div>
+    <!-- Botón para confirmar el ítem --> 
+    <div class="col-md-1 col-12 my-3">
+        <button type="button" id="confirm-item-btn" class="btn add-item-btn">
+            <i class="bi bi-plus-circle"></i>
+        </button>
+    </div>
+</div>
+<!--Tabla Items agregados-->
+<div id="items-table" class="row custom-card text-center justify-content-center py-4 my-4 mx-2" style="border:none;display:none;">
+    <h2 class="text-start ps-4" style="font-size: 1.8rem;">Productos agregados:</h2>
+    <hr style="width:98%;">
+    <table class="justify-content-center">
+        <thead>
+            <tr>
+                <th class="col-2">Cant</th>
+                <th class="col-4">Producto</th>
+                <th class="col-2">Precio</th>
+                <th class="col-2">Subtotal</th>
+                <th class="col-2"></th>
+            </tr>
+        </thead>
+        <tbody id="items-body"></tbody>
+    </table>
+</div>
+
+<!-- Total -->
+<div id="total-div" class="text-end me-4 pe-4 mb-3" style="display: none;">
+    <label>Total: <span id="total-label">$0.00</span></label>
+</div>
+
+<input type="hidden" name="items_json" id="items-json">

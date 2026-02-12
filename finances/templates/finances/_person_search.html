@@ -1,0 +1,184 @@
+{# Partial template para búsqueda de cliente/proveedor #}
+{# Variables esperadas: clients, suppliers, show_edit_btn (opcional), confirm_btn_id (opcional), confirm_btn_text (opcional), initial_person_id (opcional) #}
+
+<!-- Sección de Persona (Cliente/Proveedor) -->
+<div id="person-section" style="display: none;" class="row">
+    <div class="align-items-center py-3">
+        <div class="col-md-10 col-12 mx-auto">
+            <div class="row mb-3 mx-2 info-card">
+                <input type="text" id="person-search" class="form-search col-10 col-md-6" placeholder="Buscar cliente/proveedor..." autocomplete="off">
+                <a id="search-button" class="col-1">    
+                    <button class="btn" type="button" id="search-person-btn">
+                        <i class="bi bi-search-heart"></i>
+                    </button>
+                </a>
+            </div>
+            <input type="hidden" id="id_person" name="person" value="{{ initial_person_id|default:'' }}">
+            
+            <br>
+            <!-- Resultados de la búsqueda -->
+            <div id="search-results" style="display: none;" class="info-card my-2">
+                <div class="col-11 mb-2">
+                    <h2 class="col-md-11 text-start" style="font-size: 1.8rem; letter-spacing: 0rem;">Resultados de la búsqueda:</h2>
+                    <hr style="width:98%;">
+                </div>
+                <div id="results-list" class="pt-2"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Datos del cliente/proveedor seleccionado -->
+    <div id="selected-person-info" style="display: none;">
+        <div class="col-10 info-card align-items-center py-3 my-2 mx-auto">
+            <div class="col-11 mb-2">
+                <h2 class="text-start" style="font-size: 1.8rem; letter-spacing: 0rem;">Seleccionado:</h2>
+                <hr style="width:98%;">
+            </div>
+            <div class="col-11 align-items-center me-1 text-start ps-4">
+                <p>Nombre: <span id="person-name-display"></span></p>
+                <p>Cuit: <span id="person-cuit-display"></span></p>
+                <p>Teléfono: <span id="person-phone-display"></span></p>
+                <p>Ciudad: <span id="person-city-display"></span></p>
+            </div>
+        </div>
+        <div class="col-12 text-center">
+            <button type="button" class="btn btn-outline-green col-8 mt-4" id="{% if confirm_btn_id %}{{ confirm_btn_id }}{% else %}confirm-person-btn{% endif %}">
+                {% if confirm_btn_text %}{{ confirm_btn_text }}{% else %}Confirmar Cliente{% endif %}
+            </button>
+        </div>
+        {% if show_edit_btn %}
+        <div class="col-12 text-center">
+            <button type="button" class="btn btn-outline-orange col-8 mt-2" id="cancel-person-change-btn">
+                Volver
+            </button>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+// JavaScript para búsqueda de persona
+(function() {
+    const personSearchInput = document.getElementById("person-search");
+    const personIdInput = document.getElementById("id_person");
+    const searchPersonBtn = document.getElementById("search-person-btn");
+    const searchResults = document.getElementById("search-results");
+    const resultsList = document.getElementById("results-list");
+    const selectedPersonInfo = document.getElementById("selected-person-info");
+
+    // Array de todas las personas (clientes y proveedores)
+    const allPersons = [
+        {% for client in clients %}
+        {
+            id: "{{ client.person_ptr_id }}",
+            name: "{{ client.first_name }} {{ client.last_name }}",
+            city: "{{ client.city|default:'-' }}",
+            cuit: "{{ client.cuit }}",
+            phone: "{{ client.phone|default:'-' }}",
+            type: "cliente"
+        },
+        {% endfor %}
+        {% for supplier in suppliers %}
+        {
+            id: "{{ supplier.person_ptr_id }}",
+            name: "{{ supplier.company }}",
+            city: "{{ supplier.city|default:'-' }}",
+            cuit: "{{ supplier.cuit }}",
+            phone: "{{ supplier.phone|default:'-' }}",
+            type: "proveedor"
+        },
+        {% endfor %}
+    ];
+
+    // Función de búsqueda
+    function searchPerson() {
+        const searchTerm = personSearchInput.value.trim().toLowerCase();
+        
+        if (searchTerm.length < 2) {
+            searchResults.style.display = "none";
+            selectedPersonInfo.style.display = "none";
+            return;
+        }
+        
+        const matches = allPersons.filter(person => 
+            person.name.toLowerCase().includes(searchTerm) ||
+            person.cuit.includes(searchTerm)
+        );
+        
+        if (matches.length > 0) {
+            resultsList.innerHTML = "";
+            
+            matches.forEach((person) => {
+                const resultItem = document.createElement("div");
+                resultItem.className = "custom-card p-3 mb-2";
+                resultItem.style = "cursor: pointer; transition: border-color 0.3s ease, color 0.3s ease;";
+                
+                resultItem.addEventListener("mouseenter", function() {
+                    this.style.borderColor = "#14ae2e";
+                    this.style.color = "#14ae2e";
+                });
+                resultItem.addEventListener("mouseleave", function() {
+                    this.style.borderColor = "rgba(255,255,255,0.2)";
+                    this.style.color = "white";
+                });
+                
+                resultItem.innerHTML = `
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="text-start">
+                            <h3 style="font-family: 'Cutive Mono', monospace; font-size:1.6rem;">${person.name}</h3>
+                            <h4 style="font-family: 'Zen Kaku Gothic New', sans-serif; font-size:1.4rem;"><small>${person.city}</small></h4>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="person_selection" 
+                                id="person-${person.id}" value="${person.id}"
+                                data-name="${person.name}" data-cuit="${person.cuit}" 
+                                data-phone="${person.phone}" data-city="${person.city}">
+                        </div>
+                    </div>
+                `;
+                
+                resultItem.addEventListener("click", function(e) {
+                    if (e.target.type !== "radio") {
+                        const radio = resultItem.querySelector('input[type="radio"]');
+                        radio.checked = true;
+                        radio.dispatchEvent(new Event('change'));
+                    }
+                });
+                
+                const radioInput = resultItem.querySelector('input[type="radio"]');
+                radioInput.addEventListener("change", function() {
+                    if (this.checked) {
+                        personIdInput.value = this.value;
+                        document.getElementById("person-name-display").textContent = this.dataset.name;
+                        document.getElementById("person-cuit-display").textContent = this.dataset.cuit || '-';
+                        document.getElementById("person-phone-display").textContent = this.dataset.phone || '-';
+                        document.getElementById("person-city-display").textContent = this.dataset.city || '-';
+                        selectedPersonInfo.style.display = "block";
+                    }
+                });
+                
+                resultsList.appendChild(resultItem);
+            });
+            
+            searchResults.style.display = "block";
+        } else {
+            resultsList.innerHTML = '<p class="text-center">No se encontraron resultados</p>';
+            searchResults.style.display = "block";
+            selectedPersonInfo.style.display = "none";
+        }
+    }
+
+    if (personSearchInput) {
+        personSearchInput.addEventListener("input", searchPerson);
+    }
+    if (searchPersonBtn) {
+        searchPersonBtn.addEventListener("click", searchPerson);
+    }
+
+    // Exportar funciones y datos para uso externo
+    window.personSearchModule = {
+        allPersons: allPersons,
+        searchPerson: searchPerson
+    };
+})();
+</script>

@@ -1,0 +1,122 @@
+{# Partial template para lógica de confirmación de persona #}
+{# Maneja el botón "Confirmar Cliente" y muestra la sección de items #}
+
+<script>
+// JavaScript para confirmación de persona
+(function() {
+    const confirmPersonBtn = document.getElementById("confirm-person-btn");
+    const personSection = document.getElementById("person-section");
+    const itemsSection = document.getElementById("items-section");
+    const personIdInput = document.getElementById("id_person");
+    const personSearchInput = document.getElementById("person-search");
+    const searchResults = document.getElementById("search-results");
+    const selectedPersonInfo = document.getElementById("selected-person-info");
+
+    // Confirmar persona y mostrar sección de items
+    if (confirmPersonBtn) {
+        confirmPersonBtn.addEventListener("click", function() {
+            if (personIdInput.value && window.personSearchModule && window.personSearchModule.allPersons) {
+                window.personConfirmed = true;
+                const selectedPerson = window.personSearchModule.allPersons.find(p => p.id === personIdInput.value);
+                
+                // Copiar datos a la sección de cliente confirmado (si existe)
+                const confirmedPersonName = document.getElementById("confirmed-person-name");
+                const confirmedPersonCuit = document.getElementById("confirmed-person-cuit");
+                const confirmedPersonPhone = document.getElementById("confirmed-person-phone");
+                const confirmedPersonCity = document.getElementById("confirmed-person-city");
+                
+                if (confirmedPersonName && selectedPerson) {
+                    confirmedPersonName.textContent = selectedPerson.name;
+                    if (confirmedPersonCuit) confirmedPersonCuit.textContent = selectedPerson.cuit || '-';
+                    if (confirmedPersonPhone) confirmedPersonPhone.textContent = selectedPerson.phone || '-';
+                    if (confirmedPersonCity) confirmedPersonCity.textContent = selectedPerson.city || '-';
+                }
+                
+                // Ocultar sección de Cuenta Corriente (si existe)
+                const accountSection = document.getElementById("account-section");
+                if (accountSection) {
+                    accountSection.style.display = "none";
+                }
+                
+                // Ocultar sección de búsqueda
+                if (personSection) {
+                    personSection.style.display = "none";
+                }
+                
+                // Mostrar sección de datos confirmados (si existe)
+                const confirmedClientSection = document.getElementById("confirmed-client-section");
+                if (confirmedClientSection) {
+                    confirmedClientSection.style.display = "block";
+                }
+                
+                // Mostrar sección de items
+                if (itemsSection) {
+                    itemsSection.style.cssText = "display: block !important;";
+                }
+                
+                // Hacer scroll a la sección de items
+                setTimeout(() => {
+                    if (itemsSection) {
+                        itemsSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                        window.scrollBy(0, -100);
+                    }
+                }, 200);
+            } else {
+                alert("Debe seleccionar un cliente válido");
+            }
+        });
+    }
+
+    // Botón para editar cliente (volver atrás)
+    const editClientBtn = document.getElementById("edit-client-btn");
+    if (editClientBtn) {
+        editClientBtn.addEventListener("click", function() {
+            // Mostrar secciones ocultas
+            const accountSection = document.getElementById("account-section");
+            if (accountSection) {
+                accountSection.style.display = "block";
+            }
+            if (personSection) {
+                personSection.style.display = "block";
+            }
+            
+            // Ocultar datos confirmados
+            const confirmedClientSection = document.getElementById("confirmed-client-section");
+            if (confirmedClientSection) {
+                confirmedClientSection.style.display = "none";
+            }
+            
+            // Ocultar items
+            if (itemsSection) {
+                itemsSection.style.display = "none";
+            }
+            
+            // Resetear confirmación
+            window.personConfirmed = false;
+            
+            // Limpiar selección
+            if (personIdInput) personIdInput.value = "";
+            if (personSearchInput) personSearchInput.value = "";
+            if (searchResults) searchResults.style.display = "none";
+            if (selectedPersonInfo) selectedPersonInfo.style.display = "none";
+        });
+    }
+
+    // Botón para cancelar cambio de persona (en modo edición)
+    const cancelPersonChangeBtn = document.getElementById("cancel-person-change-btn");
+    if (cancelPersonChangeBtn) {
+        cancelPersonChangeBtn.addEventListener("click", function() {
+            if (personSection) {
+                personSection.style.display = "none";
+            }
+            const confirmedClientSection = document.getElementById("confirmed-client-section");
+            if (confirmedClientSection) {
+                confirmedClientSection.style.display = "block";
+            }
+            if (itemsSection) {
+                itemsSection.style.display = "block";
+            }
+        });
+    }
+})();
+</script>

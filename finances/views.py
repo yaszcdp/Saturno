@@ -220,7 +220,7 @@ class SaleCreateView(LoginRequiredMixin, CreateView):
 
         messages.success(self.request, f"Venta {self.object.ticket_code} agregada correctamente")
         return redirect(self.success_url)
-    
+
 
 class SaleUpdateView(LoginRequiredMixin, UpdateView):
     model = Sale
