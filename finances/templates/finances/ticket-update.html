@@ -50,42 +50,83 @@
                     </div>
                 </div>
                 
-                <!-- Datos del Cliente/Proveedor (si existe) -->
-                {% if sale.person %}
-                <div id="confirmed-person-section" class="row info-card align-items-center py-3 my-2 mx-auto">
+                <!-- Opción de Cuenta Corriente (oculta hasta que se clickee edit-person) -->
+                <div id="account-section" class="row custom-card align-items-center mb-3" style="background: none; border: none; display: none;">
+                    <div class="col-12">
+                        <div class="d-flex justify-content-center align-items-center mt-2 gap-5">
+                            <h2 class="mb-0">Cuenta Corriente:</h2>
+                            <div class="form-check mb-0">
+                                <input class="form-check-input" type="radio" name="account_option" id="account-yes" value="yes"
+                                    {% if sale.person %}checked{% endif %}>
+                                <label class="form-check-label" for="account-yes">SÍ</label>
+                            </div>
+                            <div class="form-check mb-0">
+                                <input class="form-check-input" type="radio" name="account_option" id="account-no" value="no"
+                                    {% if sale.temporal_name %}checked{% endif %}>
+                                <label class="form-check-label" for="account-no">NO</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Datos del Cliente/Proveedor (siempre presentes, controlados por display) -->
+                <div id="confirmed-person-section" class="row info-card align-items-center py-3 my-2 mx-auto" style="{% if not sale.person %}display: none;{% endif %}">
                     <div class="col-11 mb-2">
                         <h2 class="text-start" style="font-size: 1.8rem; letter-spacing: 0rem;">
                             {% if form_type == 'Venta' %}Datos Cliente:{% elif form_type == 'Compra' %}Datos Proveedor:{% else %}Datos:{% endif %}
                         </h2>
                         <hr style="width:98%;">
                     </div>
-                    <a id="edit-person-btn" class="col-1">
-                        <i class="bi bi-pen"></i>
+                    <a class="edit-person-btn col-1">
+                        <i class="bi bi-pen" style="font-size: 1.8rem;"></i>
                     </a>
                     <div class="col-11 align-items-center me-1 ps-4 text-start">
-                        <p>Nombre/Empresa: <strong>{{ sale.person.get_full_name }}</strong></p>
+                        <p>Nombre/Empresa: <strong>{{ sale.person.get_full_name|default:"-" }}</strong></p>
                         <p>CUIT: <strong>{{ sale.person.cuit|default:"-" }}</strong></p>
                         <p>Teléfono: <strong>{{ sale.person.phone|default:"-" }}</strong></p>
                         <p>Ciudad: <strong>{{ sale.person.city|default:"-" }}</strong></p>
                         <p>Cta Cte: <strong>{% if sale.current_account %}{{ sale.current_account.account_number }}{% else %}0{% endif %}</strong></p>
                     </div>
                 </div>
-                {% elif sale.temporal_name %}
-                <!-- Cliente temporal -->
-                <div class="row info-card align-items-center py-3 my-2 mx-auto">
-                    <div class="col-12 mb-2">
+                
+                <!-- Cliente temporal (siempre presente, controlado por display) -->
+                <div id="confirmed-temporal-section" class="row info-card align-items-center py-3 my-2 mx-auto" style="{% if not sale.temporal_name %}display: none;{% endif %}">
+                    <div class="col-11 mb-2">
                         <h2 class="text-start" style="font-size: 1.8rem;">Cliente:</h2>
                         <hr style="width:98%;">
                     </div>
-                    <div class="col-12 align-items-center ps-4 text-start">
-                        <p>Nombre: <strong>{{ sale.temporal_name }}</strong></p>
+                    <a class="edit-person-btn col-1">
+                        <i class="bi bi-pen" style="font-size: 1.8rem;"></i>
+                    </a>
+                    <div class="col-11 align-items-center ps-4 text-start">
+                        <p>Nombre: <strong>{{ sale.temporal_name|default:"-" }}</strong></p>
                     </div>
                 </div>
-                {% endif %}
                 
                 <!-- Sección de búsqueda de persona (oculta por defecto, se muestra al editar) - MODULARIZADO -->
                 <div id="person-search-section" style="display: none;">
                     {% include 'finances/_person_search.html' with clients=clients suppliers=suppliers show_edit_btn=True confirm_btn_id='confirm-person-change-btn' confirm_btn_text='Confirmar Cambio' initial_person_id=sale.person.person_ptr_id|default:'' %}
+                </div>
+                
+                <!-- Nombre del cliente temporal (solo si NO usa Cta Cte) -->
+                <div id="temporal-name-section" style="display: none;">
+                    <div class="row custom-card align-items-center" style="background: none; border: none;">
+                        <div id="name-error" class="col-1 p-0 m-0" style="display:none; color:#a10202; font-size: 2.4rem;">*</div>
+                        <div class="col-md-3 col-8 text-start ms-3">
+                            <label for="id_temporal_name">Nombre del Cliente:</label>
+                        </div>
+                        <div class="col-md-7 col-11 px-5 ms-3 text-center">
+                            <input type="text" name="temporal_name" id="id_temporal_name" class="form-control" value="{{ sale.temporal_name|default:'' }}">
+                        </div>
+                    </div>
+                    
+                    <!-- Botones de confirmación para nombre temporal -->
+                    <div class="row mt-3">
+                        <div class="col-12 text-center">
+                            <button type="button" class="confirm-change-btn btn btn-outline-green col-md-4 col-8 mb-2">Confirmar Cambio</button>
+                            <button type="button" class="cancel-change-btn btn btn-outline-orange col-md-4 col-8">Cancelar</button>
+                        </div>
+                    </div>
                 </div>
                 
                 <!-- Estado de Pago (editable) -->
@@ -512,18 +553,34 @@ document.addEventListener("DOMContentLoaded", function () {
         console.log("Items JSON:", itemsJson.value);
         form.submit();
     });
-    
+});
+</script>
+
+<!-- SCRIPT PARA EDICIÓN DE PERSONA/TEMPORAL -->
+<script>
+(function() {
     // ========== FUNCIONALIDAD DE EDITAR PERSONA ==========
-    const editPersonBtn = document.getElementById("edit-person-btn");
+    const editPersonBtns = document.querySelectorAll(".edit-person-btn");
     const confirmedPersonSection = document.getElementById("confirmed-person-section");
+    const confirmedTemporalSection = document.getElementById("confirmed-temporal-section");
     const personSearchSection = document.getElementById("person-search-section");
+    const temporalNameSection = document.getElementById("temporal-name-section");
     const confirmPersonChangeBtn = document.getElementById("confirm-person-change-btn");
+    const accountSection = document.getElementById("account-section");
+    const accountYesRadio = document.getElementById("account-yes");
+    const accountNoRadio = document.getElementById("account-no");
     
-    // Botón editar persona
-    if (editPersonBtn) {
-        editPersonBtn.addEventListener("click", function() {
-            // Ocultar sección confirmada
-            confirmedPersonSection.style.display = "none";
+    console.log("Edit person buttons found:", editPersonBtns.length);
+    
+    // Botones editar persona (puede haber en person o temporal)
+    editPersonBtns.forEach(btn => {
+        btn.addEventListener("click", function(e) {
+            e.preventDefault();
+            console.log("Edit person button clicked!");
+            
+            // Ocultar secciones confirmadas
+            if (confirmedPersonSection) confirmedPersonSection.style.display = "none";
+            if (confirmedTemporalSection) confirmedTemporalSection.style.display = "none";
             
             // Ocultar todas las demás secciones (productos, estado, pagos)
             document.getElementById("ticket-info-section").style.display = "none";
@@ -535,30 +592,122 @@ document.addEventListener("DOMContentLoaded", function () {
             document.getElementById("form-buttons").style.display = "none";
             document.getElementById("cancel-button-container").style.display = "none";
             
-            // Mostrar sección de búsqueda
-            personSearchSection.style.display = "block";
-            document.getElementById("person-section").style.display = "block";
-        });
-    }
-    
-    // Confirmar cambio de persona
-    if (confirmPersonChangeBtn) {
-        confirmPersonChangeBtn.addEventListener("click", function() {
-            const personIdInput = document.getElementById("id_person");
-            if (!personIdInput.value) {
-                alert("Debes seleccionar una persona");
-                return;
+            // MOSTRAR account-section para elegir entre SÍ/NO
+            if (accountSection) {
+                accountSection.style.display = "block";
+                console.log("Account section shown");
             }
             
-            const newPersonId = personIdInput.value;
-            alert("Persona cambiada. Al guardar se actualizará la venta.");
+            // Mostrar la sección correspondiente según el radio pre-seleccionado
+            if (accountYesRadio && accountYesRadio.checked) {
+                console.log("Showing person search section");
+                // Si tiene cuenta corriente, mostrar buscador
+                if (personSearchSection) personSearchSection.style.display = "block";
+                const personSection = document.getElementById("person-section");
+                if (personSection) {
+                    personSection.style.display = "block";
+                }
+                if (temporalNameSection) temporalNameSection.style.display = "none";
+            } else if (accountNoRadio && accountNoRadio.checked) {
+                console.log("Showing temporal name section");
+                // Si NO tiene cuenta corriente, mostrar input temporal
+                if (temporalNameSection) temporalNameSection.style.display = "block";
+                if (personSearchSection) personSearchSection.style.display = "none";
+                const personSection = document.getElementById("person-section");
+                if (personSection) {
+                    personSection.style.display = "none";
+                }
+            }
+        });
+    });
+    
+    // Confirmar cambio de persona O nombre temporal
+    if (confirmPersonChangeBtn) {
+        confirmPersonChangeBtn.addEventListener("click", function() {
+            // Verificar si se seleccionó cuenta corriente SÍ (persona) o NO (temporal)
+            const useAccount = accountYesRadio && accountYesRadio.checked;
             
-            // Ocultar sección de búsqueda
-            personSearchSection.style.display = "none";
-            document.getElementById("person-section").style.display = "none";
+            if (useAccount) {
+                // Validar que se haya seleccionado una persona
+                const personIdInput = document.getElementById("id_person");
+                if (!personIdInput || !personIdInput.value) {
+                    alert("Debes seleccionar una persona");
+                    return;
+                }
+                
+                const newPersonId = personIdInput.value;
+                
+                // Actualizar visualización con los nuevos datos
+                console.log("Updating person display...");
+                console.log("personSearchModule:", window.personSearchModule);
+                console.log("confirmedPersonSection:", confirmedPersonSection);
+                
+                if (window.personSearchModule && window.personSearchModule.allPersons && confirmedPersonSection) {
+                    const selectedPerson = window.personSearchModule.allPersons.find(p => p.id === newPersonId);
+                    console.log("Selected person:", selectedPerson);
+                    
+                    if (selectedPerson) {
+                        // Buscar los párrafos dentro del div de contenido
+                        // Usar selector más específico que incluya todas las clases
+                        const contentDiv = confirmedPersonSection.querySelector("div.col-11.ps-4");
+                        console.log("Content div found:", contentDiv);
+                        
+                        if (contentDiv) {
+                            const paragraphs = contentDiv.querySelectorAll("p");
+                            console.log("Paragraphs found:", paragraphs.length);
+                            
+                            if (paragraphs.length >= 5) {
+                                paragraphs[0].innerHTML = `Nombre/Empresa: <strong>${selectedPerson.name}</strong>`;
+                                paragraphs[1].innerHTML = `CUIT: <strong>${selectedPerson.cuit || "-"}</strong>`;
+                                paragraphs[2].innerHTML = `Teléfono: <strong>${selectedPerson.phone || "-"}</strong>`;
+                                paragraphs[3].innerHTML = `Ciudad: <strong>${selectedPerson.city || "-"}</strong>`;
+                                paragraphs[4].innerHTML = `Cta Cte: <strong>Por determinar</strong>`;
+                                console.log("Paragraphs updated!");
+                            } else {
+                                console.log("Not enough paragraphs found");
+                            }
+                        } else {
+                            console.log("Content div not found!");
+                        }
+                    } else {
+                        console.log("Person not found in allPersons array");
+                    }
+                } else {
+                    console.log("Missing required objects");
+                }
+                
+                // Mostrar sección confirmada de person
+                if (confirmedPersonSection) confirmedPersonSection.style.display = "block";
+                if (confirmedTemporalSection) confirmedTemporalSection.style.display = "none";
+            } else {
+                // Validar que se haya ingresado nombre temporal
+                const temporalNameInput = document.getElementById("id_temporal_name");
+                if (!temporalNameInput || !temporalNameInput.value.trim()) {
+                    alert("Debes ingresar el nombre del cliente");
+                    return;
+                }
+                
+                // Actualizar visualización con el nombre temporal
+                if (confirmedTemporalSection) {
+                    const temporalName = temporalNameInput.value.trim();
+                    const nameElement = confirmedTemporalSection.querySelector("p strong");
+                    if (nameElement) {
+                        nameElement.textContent = temporalName;
+                    }
+                }
+                
+                // Mostrar sección confirmada temporal
+                if (confirmedTemporalSection) confirmedTemporalSection.style.display = "block";
+                if (confirmedPersonSection) confirmedPersonSection.style.display = "none";
+            }
             
-            // Mostrar sección confirmada
-            confirmedPersonSection.style.display = "block";
+            // Ocultar secciones de edición
+            if (accountSection) accountSection.style.display = "none";
+            if (personSearchSection) personSearchSection.style.display = "none";
+            if (document.getElementById("person-section")) {
+                document.getElementById("person-section").style.display = "none";
+            }
+            if (temporalNameSection) temporalNameSection.style.display = "none";
             
             // Mostrar todas las demás secciones
             document.getElementById("ticket-info-section").style.display = "block";
@@ -569,18 +718,6 @@ document.addEventListener("DOMContentLoaded", function () {
             // Mostrar botones del formulario
             document.getElementById("form-buttons").style.display = "block";
             document.getElementById("cancel-button-container").style.display = "block";
-            
-            // Actualizar la visualización con los nuevos datos
-            if (window.personSearchModule && window.personSearchModule.allPersons) {
-                const selectedPerson = window.personSearchModule.allPersons.find(p => p.id === newPersonId);
-                if (selectedPerson) {
-                    confirmedPersonSection.querySelectorAll("p")[0].innerHTML = `Nombre/Empresa: <strong>${selectedPerson.name}</strong>`;
-                    confirmedPersonSection.querySelectorAll("p")[1].innerHTML = `CUIT: <strong>${selectedPerson.cuit}</strong>`;
-                    confirmedPersonSection.querySelectorAll("p")[2].innerHTML = `Teléfono: <strong>${selectedPerson.phone}</strong>`;
-                    confirmedPersonSection.querySelectorAll("p")[3].innerHTML = `Ciudad: <strong>${selectedPerson.city}</strong>`;
-                    confirmedPersonSection.querySelectorAll("p")[4].innerHTML = `Cta Cte: <strong>Por determinar</strong>`;
-                }
-            }
         });
     }
     
@@ -588,12 +725,27 @@ document.addEventListener("DOMContentLoaded", function () {
     const cancelPersonChangeBtn = document.getElementById("cancel-person-change-btn");
     if (cancelPersonChangeBtn) {
         cancelPersonChangeBtn.addEventListener("click", function() {
-            // Ocultar sección de búsqueda
-            personSearchSection.style.display = "none";
-            document.getElementById("person-section").style.display = "none";
+            // Ocultar secciones de edición
+            if (accountSection) accountSection.style.display = "none";
+            if (personSearchSection) personSearchSection.style.display = "none";
+            const personSection = document.getElementById("person-section");
+            if (personSection) {
+                personSection.style.display = "none";
+            }
+            if (temporalNameSection) temporalNameSection.style.display = "none";
             
-            // Mostrar sección confirmada
-            confirmedPersonSection.style.display = "block";
+            // Restaurar la sección que estaba visible originalmente
+            // Usar variables JavaScript en lugar de Django template tags
+            const hasPerson = {% if sale.person %}true{% else %}false{% endif %};
+            const hasTemporalName = {% if sale.temporal_name %}true{% else %}false{% endif %};
+            
+            if (hasPerson) {
+                if (confirmedPersonSection) confirmedPersonSection.style.display = "block";
+                if (confirmedTemporalSection) confirmedTemporalSection.style.display = "none";
+            } else if (hasTemporalName) {
+                if (confirmedPersonSection) confirmedPersonSection.style.display = "none";
+                if (confirmedTemporalSection) confirmedTemporalSection.style.display = "block";
+            }
             
             // Mostrar todas las demás secciones
             document.getElementById("ticket-info-section").style.display = "block";
@@ -614,7 +766,69 @@ document.addEventListener("DOMContentLoaded", function () {
             if (selectedPersonInfo) selectedPersonInfo.style.display = "none";
         });
     }
-});
+    
+    // ========== MANEJO DE RADIO BUTTONS DE CUENTA CORRIENTE ==========
+    // (Similar a _account_handler.html pero adaptado para edición)
+    
+    if (accountYesRadio) {
+        accountYesRadio.addEventListener("change", function() {
+            if (this.checked) {
+                // Mostrar buscador, ocultar input temporal
+                if (personSearchSection) personSearchSection.style.display = "block";
+                if (document.getElementById("person-section")) {
+                    document.getElementById("person-section").style.display = "block";
+                }
+                if (temporalNameSection) temporalNameSection.style.display = "none";
+                
+                // Limpiar nombre temporal
+                const temporalNameInput = document.getElementById("id_temporal_name");
+                if (temporalNameInput) temporalNameInput.value = "";
+            }
+        });
+    }
+    
+    if (accountNoRadio) {
+        accountNoRadio.addEventListener("change", function() {
+            if (this.checked) {
+                // Mostrar input temporal, ocultar buscador
+                if (temporalNameSection) temporalNameSection.style.display = "block";
+                if (personSearchSection) personSearchSection.style.display = "none";
+                if (document.getElementById("person-section")) {
+                    document.getElementById("person-section").style.display = "none";
+                }
+                
+                // Limpiar búsqueda de persona
+                const personIdInput = document.getElementById("id_person");
+                const personSearchInput = document.getElementById("person-search");
+                const selectedPersonInfo = document.getElementById("selected-person-info");
+                if (personIdInput) personIdInput.value = "";
+                if (personSearchInput) personSearchInput.value = "";
+                if (selectedPersonInfo) selectedPersonInfo.style.display = "none";
+            }
+        });
+    }
+    
+    // Agregar mismo handler a los botones de temporal-name-section
+    const confirmChangeBtns = document.querySelectorAll(".confirm-change-btn");
+    confirmChangeBtns.forEach(btn => {
+        btn.addEventListener("click", function() {
+            // Reutilizar la misma lógica del confirmPersonChangeBtn
+            if (confirmPersonChangeBtn) {
+                confirmPersonChangeBtn.click();
+            }
+        });
+    });
+    
+    const cancelChangeBtns = document.querySelectorAll(".cancel-change-btn");
+    cancelChangeBtns.forEach(btn => {
+        btn.addEventListener("click", function() {
+            // Reutilizar la misma lógica del cancelPersonChangeBtn
+            if (cancelPersonChangeBtn) {
+                cancelPersonChangeBtn.click();
+            }
+        });
+    });
+})();
 </script>
 
 {% endblock %}
