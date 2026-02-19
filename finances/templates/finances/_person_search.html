@@ -41,11 +41,13 @@
                 <p>Ciudad: <span id="person-city-display"></span></p>
             </div>
         </div>
+        {% if not hide_confirm_btn %}
         <div class="col-12 text-center">
             <button type="button" class="btn btn-outline-green col-8 mt-4" id="{% if confirm_btn_id %}{{ confirm_btn_id }}{% else %}confirm-person-btn{% endif %}">
                 {% if confirm_btn_text %}{{ confirm_btn_text }}{% else %}Confirmar Cliente{% endif %}
             </button>
         </div>
+        {% endif %}
         {% if show_edit_btn %}
         <div class="col-12 text-center">
             <button type="button" class="btn btn-outline-orange col-8 mt-2" id="cancel-person-change-btn">

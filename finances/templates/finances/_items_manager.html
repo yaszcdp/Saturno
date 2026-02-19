@@ -1,13 +1,14 @@
 {# Partial template para formulario de items (solo el formulario de entrada y tabla) #}
 {# Variables esperadas: products #}
 {# JavaScript externo debe manejar la lógica de agregar items #}
+{% load l10n %}
 
 <!-- Formulario carga rapida de ítems-->
 <div class="row custom-card text-center justify-content-center py-4 my-3 mx-2" style="border:none;">
     <!-- *** error No hay items en la venta-->
     <div class="row align-items-center">
         <div id="items-error" class="col-1 p-0 m-0" style="display:none; color:#a10202; font-size: 2.4rem;">*</div>
-        <h2 class="col-md-11 col-5 text-start" style="font-size: 1.8rem;">Ítem:</h2>
+        <h2 class="col-md-11 col-5 text-start" style="font-size: 1.8rem;">Agregar ítem:</h2>
     </div>
     <hr style="width:98%;">
 
@@ -21,7 +22,7 @@
         <input type="text" id="product-input" list="productos">
         <datalist id="productos">
             {% for product in products %}
-                <option value="{{ product.name }}" data-price="{{ product.price }}">
+                <option value="{{ product.name }}" data-price="{{ product.price|unlocalize }}">
             {% endfor %}
         </datalist>
     </div>

@@ -1,4 +1,5 @@
-{% extends 'main/base.html'  %}
+{% extends 'main/base.html' %}
+{% load l10n %}
 
 {% block title %} Saturno | Editar {{ form_type }} {% endblock title %}
 
@@ -6,222 +7,298 @@
 
 <section class="page-section">
     <div class="container container-box py-4 pb-4 mb-5 px-lg-5 text-white text-center">
-        <!-- Encabezado con NRO de Venta/Compra -->
+
         <h1 class="pb-2">EDITAR {{ form_type|upper }}</h1>
         <h1 class="pb-2" style="font-size: 1.6rem; letter-spacing: 0.1rem;">NRO: {{ sale.ticket_code }}</h1>
         <hr>
-        
-        <!-- Mensajes -->
-        <div class="row gx-4 gx-lg-5 mx-2 mb-2">
-            {% if messages %}
-                <div class="col-12 mb-3">
-                    {% for message in messages %}
-                        {% if message.tags == 'success' %}
-                        <div class="alert alert-success text-center">
-                            {{ message }}
-                        </div>
-                        {% else %}
-                            <div class="alert alert-danger text-center">
-                                {{ message }}
-                            </div>
-                        {% endif %}
-                    {% endfor %}
-                </div>
-                {% endif %}
-                
-            <form id="form" method="post" class="custom-card col-12">
-                {% csrf_token %}
 
-                <!-- Información del Ticket -->
-                <div id="ticket-info-section" class="row info-card align-items-center py-3 my-2 mx-auto">
-                    <div class="col-6 text-start">
-                        <p><strong>{{ sale.date_time|date:"d/m/Y H:i" }}</strong></p>
-                    </div>
-                    <div class="col-6 text-end">
-                        <p><strong>
-                            {% if sale.delivery_status == 'PE' %}
-                                <span class="status-pendiente">Pendiente de Entrega</span>
-                            {% elif sale.delivery_status == 'CO' %}
-                                <span class="status-completado">Completado</span>
-                            {% elif sale.delivery_status == 'IN' %}
-                                <span class="status-incompleto">Incompleto</span>
-                            {% endif %}
-                        </strong></p>
-                    </div>
+        <!-- Mensajes -->
+        {% if messages %}
+        <div class="row gx-4 gx-lg-5 mx-2 mb-2">
+            <div class="col-12 mb-3">
+                {% for message in messages %}
+                    {% if message.tags == 'success' %}
+                        <div class="alert alert-success text-center">{{ message }}</div>
+                    {% else %}
+                        <div class="alert alert-danger text-center">{{ message }}</div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <form id="form" method="post" class="custom-card col-12">
+            {% csrf_token %}
+
+            <!-- ======================================================== -->
+            <!-- HEADER: Fecha + Estado de envío (siempre visible)        -->
+            <!-- ======================================================== -->
+            <div id="ticket-header" class="row info-card align-items-center py-3 my-2 mx-auto">
+                <div class="col-6 text-start">
+                    <p><strong>{{ sale.date_time|date:"d/m/Y H:i" }}</strong></p>
                 </div>
-                
-                <!-- Opción de Cuenta Corriente (oculta hasta que se clickee edit-person) -->
-                <div id="account-section" class="row custom-card align-items-center mb-3" style="background: none; border: none; display: none;">
-                    <div class="col-12">
-                        <div class="d-flex justify-content-center align-items-center mt-2 gap-5">
-                            <h2 class="mb-0">Cuenta Corriente:</h2>
-                            <div class="form-check mb-0">
-                                <input class="form-check-input" type="radio" name="account_option" id="account-yes" value="yes"
-                                    {% if sale.person %}checked{% endif %}>
-                                <label class="form-check-label" for="account-yes">SÍ</label>
-                            </div>
-                            <div class="form-check mb-0">
-                                <input class="form-check-input" type="radio" name="account_option" id="account-no" value="no"
-                                    {% if sale.temporal_name %}checked{% endif %}>
-                                <label class="form-check-label" for="account-no">NO</label>
-                            </div>
-                        </div>
-                    </div>
+                <div class="col-6 text-end">
+                    <p><strong>
+                        {% if sale.delivery_status == 'PE' %}
+                            <span class="status-pendiente">Pendiente de Entrega</span>
+                        {% elif sale.delivery_status == 'CO' %}
+                            <span class="status-completado">Completado</span>
+                        {% elif sale.delivery_status == 'IN' %}
+                            <span class="status-incompleto">Incompleto</span>
+                        {% endif %}
+                    </strong></p>
                 </div>
-                
-                <!-- Datos del Cliente/Proveedor (siempre presentes, controlados por display) -->
-                <div id="confirmed-person-section" class="row info-card align-items-center py-3 my-2 mx-auto" style="{% if not sale.person %}display: none;{% endif %}">
-                    <div class="col-11 mb-2">
-                        <h2 class="text-start" style="font-size: 1.8rem; letter-spacing: 0rem;">
-                            {% if form_type == 'Venta' %}Datos Cliente:{% elif form_type == 'Compra' %}Datos Proveedor:{% else %}Datos:{% endif %}
-                        </h2>
-                        <hr style="width:98%;">
-                    </div>
-                    <a class="edit-person-btn col-1">
-                        <i class="bi bi-pen" style="font-size: 1.8rem;"></i>
-                    </a>
-                    <div class="col-11 align-items-center me-1 ps-4 text-start">
+            </div>
+
+
+            <!-- ======================================================== -->
+            <!-- VISTA: Cliente                                           -->
+            <!-- ======================================================== -->
+            <div id="view-person" class="section-card row info-card align-items-center py-3 my-2 mx-auto">
+                <div class="col-11 mb-2">
+                    <h2 class="text-start" style="font-size: 1.8rem; letter-spacing: 0rem;">
+                        {% if form_type == 'Venta' %}Datos Cliente:{% elif form_type == 'Compra' %}Datos Proveedor:{% else %}Datos:{% endif %}
+                    </h2>
+                    <hr style="width:98%;">
+                </div>
+                <button type="button" class="btn-edit col-1 p-0" data-section="person">
+                    <i class="bi bi-pen" style="font-size: 1.8rem;"></i>
+                </button>
+                <div id="person-view-content" class="col-11 align-items-center me-1 ps-4 text-start">
+                    {% if sale.person %}
                         <p>Nombre/Empresa: <strong>{{ sale.person.get_full_name|default:"-" }}</strong></p>
                         <p>CUIT: <strong>{{ sale.person.cuit|default:"-" }}</strong></p>
                         <p>Teléfono: <strong>{{ sale.person.phone|default:"-" }}</strong></p>
                         <p>Ciudad: <strong>{{ sale.person.city|default:"-" }}</strong></p>
-                        <p>Cta Cte: <strong>{% if sale.current_account %}{{ sale.current_account.account_number }}{% else %}0{% endif %}</strong></p>
+                        <p>Cta Cte: <strong>{{ sale.current_account.account_number|default:"—" }}</strong></p>
+                    {% elif sale.temporal_name %}
+                        <p>Nombre: <strong>{{ sale.temporal_name }}</strong></p>
+                        <p><em>Sin cuenta corriente</em></p>
+                    {% else %}
+                        <p><em>Sin cliente asignado</em></p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- ======================================================== -->
+            <!-- EDICIÓN: Cliente                                         -->
+            <!-- ======================================================== -->
+            <div id="edit-person" class="d-none">
+
+                <!-- Opción Cuenta Corriente SÍ/NO -->
+                <div class="row align-items-center justify-content-center py-3 my-2">
+                    <div class="d-flex justify-content-center align-items-center gap-5">
+                        <h2 class="mb-0">Cuenta Corriente:</h2>
+                        <div class="form-check mb-0">
+                            <input class="form-check-input" type="radio" name="account_option" id="account-yes" value="yes"
+                                {% if sale.person %}checked{% endif %}>
+                            <label class="form-check-label" for="account-yes">SÍ</label>
+                        </div>
+                        <div class="form-check mb-0">
+                            <input class="form-check-input" type="radio" name="account_option" id="account-no" value="no"
+                                {% if not sale.person %}checked{% endif %}>
+                            <label class="form-check-label" for="account-no">NO</label>
+                        </div>
                     </div>
                 </div>
-                
-                <!-- Cliente temporal (siempre presente, controlado por display) -->
-                <div id="confirmed-temporal-section" class="row info-card align-items-center py-3 my-2 mx-auto" style="{% if not sale.temporal_name %}display: none;{% endif %}">
-                    <div class="col-11 mb-2">
-                        <h2 class="text-start" style="font-size: 1.8rem;">Cliente:</h2>
-                        <hr style="width:98%;">
-                    </div>
-                    <a class="edit-person-btn col-1">
-                        <i class="bi bi-pen" style="font-size: 1.8rem;"></i>
-                    </a>
-                    <div class="col-11 align-items-center ps-4 text-start">
-                        <p>Nombre: <strong>{{ sale.temporal_name|default:"-" }}</strong></p>
-                    </div>
+
+                <!-- Buscador de persona (cuando SÍ) -->
+                <div id="person-search-wrapper" {% if not sale.person %}style="display:none;"{% endif %}>
+                    {% include 'finances/_person_search.html' with clients=clients suppliers=suppliers show_edit_btn=False hide_confirm_btn=True initial_person_id=sale.person.person_ptr_id|default:'' %}
                 </div>
-                
-                <!-- Sección de búsqueda de persona (oculta por defecto, se muestra al editar) - MODULARIZADO -->
-                <div id="person-search-section" style="display: none;">
-                    {% include 'finances/_person_search.html' with clients=clients suppliers=suppliers show_edit_btn=True confirm_btn_id='confirm-person-change-btn' confirm_btn_text='Confirmar Cambio' initial_person_id=sale.person.person_ptr_id|default:'' %}
-                </div>
-                
-                <!-- Nombre del cliente temporal (solo si NO usa Cta Cte) -->
-                <div id="temporal-name-section" style="display: none;">
-                    <div class="row custom-card align-items-center" style="background: none; border: none;">
-                        <div id="name-error" class="col-1 p-0 m-0" style="display:none; color:#a10202; font-size: 2.4rem;">*</div>
+
+                <!-- Nombre temporal (cuando NO) -->
+                <div id="temporal-name-wrapper" {% if sale.person %}style="display:none;"{% endif %}>
+                    <div class="row align-items-center justify-content-center py-2">
                         <div class="col-md-3 col-8 text-start ms-3">
-                            <label for="id_temporal_name">Nombre del Cliente:</label>
+                            <label for="edit-temporal-name">Nombre del Cliente:</label>
                         </div>
-                        <div class="col-md-7 col-11 px-5 ms-3 text-center">
-                            <input type="text" name="temporal_name" id="id_temporal_name" class="form-control" value="{{ sale.temporal_name|default:'' }}">
-                        </div>
-                    </div>
-                    
-                    <!-- Botones de confirmación para nombre temporal -->
-                    <div class="row mt-3">
-                        <div class="col-12 text-center">
-                            <button type="button" class="confirm-change-btn btn btn-outline-green col-md-4 col-8 mb-2">Confirmar Cambio</button>
-                            <button type="button" class="cancel-change-btn btn btn-outline-orange col-md-4 col-8">Cancelar</button>
+                        <div class="col-md-7 col-11 px-5 ms-3">
+                            <input type="text" id="edit-temporal-name" class="form-control"
+                                value="{{ sale.temporal_name|default:'' }}">
                         </div>
                     </div>
                 </div>
-                
-                <!-- Estado de Pago (editable) -->
-                <div id="payment-status-section" class="row custom-card align-items-center py-3 my-3 mx-2" style="border:none;">
+
+                <!-- Confirmar único para ambos casos (SÍ y NO) -->
+                <div class="col-12 text-center mt-3 mb-2">
+                    <button type="button" id="confirm-person" class="btn btn-outline-green col-8">
+                        Confirmar
+                    </button>
+                </div>
+
+            </div>
+            
+            <!-- ======================================================== -->
+            <!-- VISTA: Estado de Pago                                    -->
+            <!-- ======================================================== -->
+            <div id="view-payment" class="section-card row custom-card align-items-center py-3 my-3 mx-2" style="border:none;">
+                <div class="row align-items-center mb-2">
+                    <h2 class="col-11 text-start ps-4" style="font-size: 1.8rem;">Estado de Pago:</h2>
+                    <button type="button" class="btn-edit col-1 p-0" data-section="payment">
+                        <i class="bi bi-pen" style="font-size: 1.8rem;"></i>
+                    </button>
+                </div>
+                <hr style="width:98%;">
+                <div class="ps-4 text-start">
+                    <label>Estado: <strong id="view-payment-status-label"></strong></label>
+                    <br>
+                    <label>Método: <strong id="view-payment-method-label"></strong></label>
+                </div>
+            </div>
+
+            <!-- ======================================================== -->
+            <!-- EDICIÓN: Estado de Pago                                  -->
+            <!-- ======================================================== -->
+            <div id="edit-payment" class="d-none">
+                <div class="row custom-card align-items-center py-3 my-3 mx-2" style="border:none;">
+
                     <h2 class="text-start ps-4" style="font-size: 1.8rem;">Estado de Pago:</h2>
                     <hr style="width:98%;">
-                    
-                    <div class="col-12 mb-3">
-                        <select name="payment_status" id="id_payment_status" class="form-select">
+                    <div class="col-12 mb-4">
+                        <select id="edit-payment-status" class="form-select">
                             <option value="PE" {% if sale.payment_status == 'PE' %}selected{% endif %}>Pendiente</option>
                             <option value="PP" {% if sale.payment_status == 'PP' %}selected{% endif %}>Pago Parcial</option>
                             <option value="PA" {% if sale.payment_status == 'PA' %}selected{% endif %}>Pagado</option>
                         </select>
                     </div>
-                </div>
-                
-                <!-- Métodos de Pago -->
-                <div id="payment-method-section" class="row custom-card align-items-center py-3 my-3 mx-2" style="border:none;">
+
                     <h2 class="text-start ps-4" style="font-size: 1.8rem;">Método de Pago:</h2>
                     <hr style="width:98%;">
-                    
                     <div class="col-12 mb-3 text-start ps-4">
                         <div class="d-flex flex-wrap gap-4">
                             <div class="form-check">
-                                <input class="form-check-input" type="radio" name="payment_method" id="payment-cash" value="CA" 
-                                    {% if sale.payment_method == 'CA' %}checked{% endif %}>
-                                <label class="form-check-label" for="payment-cash">Efectivo</label>
+                                <input class="form-check-input" type="radio" name="edit_payment_method" id="edit-pay-cash" value="CA"
+                                    {% if sale.payment_method == 'CA' or not sale.payment_method %}checked{% endif %}>
+                                <label class="form-check-label" for="edit-pay-cash">Efectivo</label>
                             </div>
                             <div class="form-check">
-                                <input class="form-check-input" type="radio" name="payment_method" id="payment-transfer" value="TR"
+                                <input class="form-check-input" type="radio" name="edit_payment_method" id="edit-pay-transfer" value="TR"
                                     {% if sale.payment_method == 'TR' %}checked{% endif %}>
-                                <label class="form-check-label" for="payment-transfer">Transferencia</label>
+                                <label class="form-check-label" for="edit-pay-transfer">Transferencia</label>
                             </div>
                             <div class="form-check">
-                                <input class="form-check-input" type="radio" name="payment_method" id="payment-check" value="CH"
+                                <input class="form-check-input" type="radio" name="edit_payment_method" id="edit-pay-check" value="CH"
                                     {% if sale.payment_method == 'CH' %}checked{% endif %}>
-                                <label class="form-check-label" for="payment-check">Cheque</label>
+                                <label class="form-check-label" for="edit-pay-check">Cheque</label>
                             </div>
                         </div>
                     </div>
                 </div>
-                
-                <!-- Sección de Items - MODULARIZADO -->
-                <div id="items-section">
-                    {% include 'finances/_items_manager.html' with products=products %}
-                </div>
 
-                <!-- Hidden fields para items -->
-                <input type="hidden" name="items_json" id="items-json">
-                
-                <div id="form-buttons" class="col-12 text-center">
-                    <button type="submit" class="btn btn-outline-green col-8 mt-4">Guardar</button>
+                <div class="col-12 text-center mt-3 mb-2">
+                    <button type="button" id="confirm-payment" class="btn btn-outline-green col-md-4 col-8">Confirmar</button>
                 </div>
-                <br>
+            </div>
 
-                <div id="message-error" class="alert alert-danger" style="display: none;"></div>
-            </form>
+            <!-- ======================================================== -->
+            <!-- VISTA: Ítems                                             -->
+            <!-- ======================================================== -->
+            <div id="view-items" class="section-card row custom-card align-items-center py-3 my-3 mx-2" style="border:none;">
+                <div class="row align-items-center mb-2">
+                    <h2 class="col-11 text-start ps-4" style="font-size: 1.8rem;">Ítems:</h2>
+                    <button type="button" class="btn-edit col-1 p-0" data-section="items">
+                        <i class="bi bi-pen" style="font-size: 1.8rem;"></i>
+                    </button>
+                </div>
+                <hr style="width:98%;">
+                <table id="view-items-table" class="justify-content-center" style="display:none;">
+                    <thead>
+                        <tr>
+                            <th class="col-2">Cant</th>
+                            <th class="col-4">Producto</th>
+                            <th class="col-2">Precio</th>
+                            <th class="col-2">Subtotal</th>
+                        </tr>
+                    </thead>
+                    <tbody id="view-items-body"></tbody>
+                </table>
+                <p id="view-items-empty" class="text-center mt-2 fst-italic" style="display:none;">Sin ítems cargados</p>
+                <div id="view-total-div" class="text-end me-4 pe-4 mt-2" style="display:none;">
+                    <label>Total: <strong id="view-total-label">$0.00</strong></label>
+                </div>
+            </div>
+
+            <!-- ======================================================== -->
+            <!-- EDICIÓN: Ítems                                           -->
+            <!-- ======================================================== -->
+            <div id="edit-items" class="d-none">
+                {% include 'finances/_items_manager.html' with products=products %}
+                <div class="col-12 text-center mt-3 mb-2">
+                    <button type="button" id="confirm-items" class="btn btn-outline-green col-md-4 col-8">Confirmar</button>
+                </div>
+            </div>
+
+
+
+
+            <!-- ======================================================== -->
+            <!-- INPUTS OCULTOS (valores confirmados para submit)         -->
+            <!-- ======================================================== -->
+            <!-- person: enviado por id_person dentro de _person_search.html -->
+            <input type="hidden" name="temporal_name" id="hidden-temporal-name" value="{{ sale.temporal_name|default:'' }}">
+            <input type="hidden" name="payment_status" id="hidden-payment-status" value="{{ sale.payment_status|default:'PE' }}">
+            <input type="hidden" name="payment_method" id="hidden-payment-method" value="{{ sale.payment_method|default:'CA' }}">
+            <!-- items_json: incluido por _items_manager.html -->
+
+            <!-- ======================================================== -->
+            <!-- ACCIONES GLOBALES                                        -->
+            <!-- ======================================================== -->
+            <div id="global-actions" class="col-12 text-center mt-4 mb-2">
+                <button type="submit" class="btn btn-outline-green col-8">Guardar</button>
+            </div>
+
+            <div id="message-error" class="alert alert-danger mt-3" style="display:none;"></div>
+
+        </form>
+
+        <!-- Cancelar edición (visible solo mientras se edita una sección) -->
+        <div id="edit-cancel-container" class="text-center d-none">
+            <button type="button" id="btn-cancel-edit" class="btn btn-outline-orange col-10 my-3 mt-4">Cancelar</button>
         </div>
-        
-        <div id="cancel-button-container" class="text-center">
+
+        <!-- Cancelar global (volver atrás, visible en modo vista) -->
+        <div id="global-cancel" class="text-center">
             <a href="javascript:history.back()" class="btn btn-outline-orange col-10 my-3 mt-4">Cancelar</a>
         </div>
+
     </div>
 </section>
 
+
+<!-- ============================================================ -->
+<!-- ESTILOS                                                      -->
+<!-- ============================================================ -->
 <style>
+    /* Pen button en tarjetas */
+    .btn-edit {
+        background: none;
+        border: none;
+        color: white;
+        cursor: pointer;
+        transition: color 0.2s ease;
+    }
+    .btn-edit:hover {
+        color: #da7a21;
+    }
+
+    /* Badges de estado */
+    .status-completado  { color: #14ae2e !important; }
+    .status-pendiente   { color: #da7a21 !important; }
+    .status-incompleto  { color: #a10202 !important; }
+    .status-parcial     { color: #e8c000 !important; }
+
+    /* Form-check verde */
     .form-check-input:checked {
         background-color: #14ae2e !important;
         border-color: #14ae2e !important;
     }
-    
     .form-check-input:focus {
         border-color: #14ae2e !important;
         box-shadow: 0 0 0 0.25rem rgba(20, 174, 46, 0.25) !important;
     }
-    
-    .item-quantity, .item-price {
-        max-width: 100px;
-        text-align: center;
-    }
-    
-    /* Estados de entrega con colores */
-    .status-completado {
-        color: #14ae2e !important; /* Verde */
-    }
-    
-    .status-pendiente {
-        color: #da7a21 !important; /* Naranja */
-    }
-    
-    .status-incompleto {
-        color: #a10202 !important; /* Rojo */
-    }
-    
-    /* Botones de acción en tabla de items */
+
+    /* Botones de fila en tabla de ítems */
     .edit-item-btn, .delete-item-btn {
         background: none;
         border: none;
@@ -230,15 +307,9 @@
         padding: 0.25rem 0.5rem;
         transition: color 0.3s ease;
     }
-    
-    .edit-item-btn:hover {
-        color: #da7a21 !important;
-    }
-    
-    .delete-item-btn:hover {
-        color: #da7a21 !important;
-    }
-    
+    .edit-item-btn:hover  { color: #da7a21 !important; }
+    .delete-item-btn:hover { color: #a10202 !important; }
+
     .save-item-btn, .cancel-edit-btn {
         background: none;
         border: none;
@@ -246,12 +317,9 @@
         padding: 0.25rem 0.5rem;
         transition: opacity 0.3s ease;
     }
-    
-    .save-item-btn:hover, .cancel-edit-btn:hover {
-        opacity: 0.7;
-    }
-    
-    /* Inputs de edición dentro de la tabla */
+    .save-item-btn:hover, .cancel-edit-btn:hover { opacity: 0.7; }
+
+    /* Inputs inline en tabla de ítems */
     .item-quantity-edit, .item-product-edit, .item-price-edit {
         background: transparent !important;
         border: none !important;
@@ -263,7 +331,6 @@
         box-shadow: none !important;
         width: 90%;
     }
-    
     .item-quantity-edit:focus, .item-product-edit:focus, .item-price-edit:focus {
         background: transparent !important;
         border: none !important;
@@ -271,564 +338,503 @@
         outline: none !important;
         box-shadow: none !important;
     }
-    
-    .item-product-edit {
-        text-align: left !important;
-    }
+    .item-product-edit { text-align: left !important; }
 </style>
 
+
+<!-- ============================================================ -->
+<!-- JAVASCRIPT                                                   -->
+<!-- ============================================================ -->
 <script>
-document.addEventListener("DOMContentLoaded", function () {
-    // ========== ELEMENTOS DEL DOM ==========
-    const form = document.getElementById("form");
+document.addEventListener('DOMContentLoaded', function () {
+
+    // ================================================================
+    // SECTION MANAGER — controla el modo vista/edición
+    // ================================================================
+    const SECTIONS = ['person', 'items', 'payment'];
+    let currentEditMode = null;
+
+    function enterEditMode(section) {
+        currentEditMode = section;
+        // Ocultar header, todas las tarjetas vista y acciones globales
+        document.getElementById('ticket-header').classList.add('d-none');
+        SECTIONS.forEach(s => document.getElementById('view-' + s).classList.add('d-none'));
+        document.getElementById('global-actions').classList.add('d-none');
+        document.getElementById('global-cancel').classList.add('d-none');
+        // Mostrar área de edición y botón cancelar externo
+        document.getElementById('edit-' + section).classList.remove('d-none');
+        document.getElementById('edit-cancel-container').classList.remove('d-none');
+    }
+
+    function exitEditMode() {
+        currentEditMode = null;
+        // Ocultar todos los editores y el cancelar externo
+        SECTIONS.forEach(s => document.getElementById('edit-' + s).classList.add('d-none'));
+        document.getElementById('edit-cancel-container').classList.add('d-none');
+        // Mostrar header, tarjetas vista y acciones globales
+        document.getElementById('ticket-header').classList.remove('d-none');
+        SECTIONS.forEach(s => document.getElementById('view-' + s).classList.remove('d-none'));
+        document.getElementById('global-actions').classList.remove('d-none');
+        document.getElementById('global-cancel').classList.remove('d-none');
+        // Sincronizar vistas
+        renderItemsView();
+        renderPaymentView();
+    }
+
+    // Cancelar único externo — restaura según la sección activa y sale
+    document.getElementById('btn-cancel-edit').addEventListener('click', function () {
+        if (currentEditMode === 'items') restoreItems();
+        if (currentEditMode === 'payment' && paymentSnapshot) {
+            editPaymentStatus.value = paymentSnapshot.status;
+            const radio = document.querySelector('input[name="edit_payment_method"][value="' + paymentSnapshot.method + '"]');
+            if (radio) radio.checked = true;
+            paymentSnapshot = null;
+        }
+        exitEditMode();
+    });
+
+    // Listeners de los botones pen
+    document.querySelectorAll('.btn-edit').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            const section = this.dataset.section;
+            if (section === 'items')   snapshotItems();
+            if (section === 'payment') snapshotPayment();
+            if (section === 'person') {
+                // _person_search.html envuelve todo en #person-section con display:none
+                const personSection = document.getElementById('person-section');
+                if (personSection && accountYes.checked) {
+                    personSection.style.display = 'block';
+                }
+            }
+            enterEditMode(section);
+        });
+    });
+
+
+    // ================================================================
+    // GESTIÓN DE ÍTEMS
+    // ================================================================
     const items = [];
-    const itemsJson = document.getElementById("items-json");
-    const itemsBody = document.getElementById("items-body");
-    const itemsTable = document.getElementById("items-table");
-    const totalDiv = document.getElementById("total-div");
-    const productInput = document.getElementById("product-input");
-    const quantityInput = document.getElementById("quantity-input");
-    const priceInput = document.getElementById("price-input");
-    
-    // ========== PRODUCTOS VÁLIDOS ==========
+    let itemsSnapshot = null;
+
+    const itemsBody    = document.getElementById('items-body');
+    const itemsTable   = document.getElementById('items-table');
+    const totalDiv     = document.getElementById('total-div');
+    const productInput = document.getElementById('product-input');
+    const quantityInput = document.getElementById('quantity-input');
+    const priceInput   = document.getElementById('price-input');
+
+    // Mapa nombre → precio de referencia
     const validProducts = {};
-    document.querySelectorAll("#productos option").forEach(opt => {
+    document.querySelectorAll('#productos option').forEach(function (opt) {
         validProducts[opt.value] = parseFloat(opt.dataset.price || 0);
     });
-    
-    // Autocompletar precio al seleccionar producto
-    productInput.addEventListener("input", function() {
-        const selectedProduct = productInput.value.trim();
-        if (selectedProduct in validProducts) {
-            priceInput.value = validProducts[selectedProduct];
-        }
+
+    // Autocompletar precio al tipear producto
+    productInput.addEventListener('input', function () {
+        if (this.value in validProducts) priceInput.value = validProducts[this.value];
     });
-    
-    // ========== PRE-CARGAR ITEMS EXISTENTES ==========
-    const existingItems = [
-        {% for item in sale.items.all %}
-        {
-            id: "{{ item.id }}",
-            product_name: "{{ item.product_name_cache }}",
-            quantity: {{ item.quantity }},
-            price: {{ item.price }}
-        }{% if not forloop.last %},{% endif %}
-        {% endfor %}
-    ];
-    
-    // Cargar items existentes en la tabla
-    existingItems.forEach(item => {
-        items.push(item);
-        addItemRow(item.product_name, item.quantity, item.price, item.id);
-    });
-    
-    if (items.length > 0) {
-        itemsTable.style.display = "";
-        totalDiv.style.display = "";
-        calculateTotal();
-    }
-    
-    // ========== CALCULAR TOTAL ==========
+
+    // ---------- Calcular total en tabla de edición ----------
     function calculateTotal() {
-        const total = items.reduce((acc, item) => acc + (item.price * item.quantity), 0);
-        document.getElementById("total-label").textContent = `$${total.toFixed(2)}`;
+        const total = items.reduce(function (acc, item) {
+            return acc + item.price * item.quantity;
+        }, 0);
+        document.getElementById('total-label').textContent = '$' + total.toFixed(2);
     }
-    
-    // ========== FUNCIÓN PARA AGREGAR FILA ==========
-    function addItemRow(product, quantity, price, itemId = null) {
+
+    // ---------- Renderizar tabla de vista (read-only) ----------
+    function renderItemsView() {
+        const viewBody       = document.getElementById('view-items-body');
+        const viewTable      = document.getElementById('view-items-table');
+        const viewTotalDiv   = document.getElementById('view-total-div');
+        const viewEmpty      = document.getElementById('view-items-empty');
+        const viewTotalLabel = document.getElementById('view-total-label');
+
+        viewBody.innerHTML = '';
+
+        if (items.length === 0) {
+            viewTable.style.display    = 'none';
+            viewTotalDiv.style.display = 'none';
+            viewEmpty.style.display    = 'block';
+        } else {
+            viewEmpty.style.display    = 'none';
+            viewTable.style.display    = '';
+            viewTotalDiv.style.display = '';
+            let total = 0;
+            items.forEach(function (item) {
+                const subtotal = item.quantity * item.price;
+                total += subtotal;
+                const tr = document.createElement('tr');
+                tr.innerHTML =
+                    '<td>' + item.quantity + '</td>' +
+                    '<td>' + item.product_name + '</td>' +
+                    '<td>$' + item.price.toFixed(2) + '</td>' +
+                    '<td>$' + subtotal.toFixed(2) + '</td>';
+                viewBody.appendChild(tr);
+            });
+            viewTotalLabel.textContent = '$' + total.toFixed(2);
+        }
+    }
+
+    // ---------- Snapshot para cancelar ----------
+    function snapshotItems() {
+        itemsSnapshot = items.map(function (i) { return Object.assign({}, i); });
+    }
+
+    function restoreItems() {
+        if (itemsSnapshot === null) return;
+        items.length = 0;
+        itemsSnapshot.forEach(function (i) { items.push(i); });
+        itemsBody.innerHTML = '';
+        items.forEach(function (item) {
+            addItemRow(item.product_name, item.quantity, item.price, item.id);
+        });
+        if (items.length > 0) {
+            itemsTable.style.display = '';
+            totalDiv.style.display   = '';
+            calculateTotal();
+        } else {
+            itemsTable.style.display = 'none';
+            totalDiv.style.display   = 'none';
+        }
+    }
+
+    // ---------- Agregar fila a tabla de edición ----------
+    function addItemRow(product, quantity, price, itemId) {
         const subtotal = quantity * price;
-        
-        const row = document.createElement("tr");
+        const row = document.createElement('tr');
         if (itemId) row.dataset.itemId = itemId;
-        
-        row.innerHTML = `
-        <td class="item-quantity-display">${quantity}</td>
-        <td class="item-product-display">${product}</td>
-        <td class="item-price-display">$${price.toFixed(2)}</td>
-        <td class="item-subtotal-display">$${subtotal.toFixed(2)}</td>
-        <td>
-            <button type="button" class="btn edit-item-btn" title="Editar"><i class="bi bi-pen" style="font-size: 1.8rem;"></i></button>
-            <button type="button" class="btn delete-item-btn" title="Eliminar"><i class="bi bi-trash3" style="font-size: 1.8rem;"></i></button>
-        </td>
-        `;
-        
+        row.innerHTML =
+            '<td class="item-quantity-display">' + quantity + '</td>' +
+            '<td class="item-product-display">' + product + '</td>' +
+            '<td class="item-price-display">$' + price.toFixed(2) + '</td>' +
+            '<td class="item-subtotal-display">$' + subtotal.toFixed(2) + '</td>' +
+            '<td>' +
+                '<button type="button" class="btn edit-item-btn" title="Editar"><i class="bi bi-pen" style="font-size:1.8rem;"></i></button>' +
+                '<button type="button" class="btn delete-item-btn" title="Eliminar"><i class="bi bi-trash3" style="font-size:1.8rem;"></i></button>' +
+            '</td>';
         attachRowEventListeners(row);
         itemsBody.appendChild(row);
     }
-    
-    // ========== EVENT LISTENERS DE FILA ==========
+
     function attachRowEventListeners(targetRow) {
-        const index = () => [...itemsBody.children].indexOf(targetRow);
-        
-        // Botón editar
-        targetRow.querySelector(".edit-item-btn").addEventListener("click", () => {
-            const idx = index();
+        const index = function () { return Array.from(itemsBody.children).indexOf(targetRow); };
+
+        // Editar ítem
+        targetRow.querySelector('.edit-item-btn').addEventListener('click', function () {
+            const idx  = index();
             const item = items[idx];
-            
-            const originalQuantity = item.quantity;
-            const originalProduct = item.product_name;
-            const originalPrice = item.price;
-            
-            targetRow.innerHTML = `
-            <td><input type="number" class="item-quantity-edit" value="${item.quantity}" step="any"></td>
-            <td><input type="text" class="item-product-edit" value="${item.product_name}" list="productos"></td>
-            <td><input type="number" class="item-price-edit" value="${item.price}" step="any"></td>
-            <td class="item-subtotal-display">$${(item.quantity * item.price).toFixed(2)}</td>
-            <td>
-                <button type="button" class="btn save-item-btn" title="Guardar" style="color: #14ae2e;"><i class="bi bi-check-circle" style="font-size: 2.2rem;"></i></button>
-                <button type="button" class="btn cancel-edit-btn" title="Cancelar" style="color: #a10202;"><i class="bi bi-x-circle" style="font-size: 2.2rem;"></i></button>
-            </td>
-            `;
-            
-            const quantityEditInput = targetRow.querySelector(".item-quantity-edit");
-            const productEditInput = targetRow.querySelector(".item-product-edit");
-            const priceEditInput = targetRow.querySelector(".item-price-edit");
-            const subtotalDisplay = targetRow.querySelector(".item-subtotal-display");
-            
-            function updateSubtotalPreview() {
-                const q = parseFloat(quantityEditInput.value) || 0;
-                const p = parseFloat(priceEditInput.value) || 0;
-                subtotalDisplay.textContent = `$${(q * p).toFixed(2)}`;
+            const origQty     = item.quantity;
+            const origProduct = item.product_name;
+            const origPrice   = item.price;
+
+            targetRow.innerHTML =
+                '<td><input type="number" class="item-quantity-edit" value="' + item.quantity + '" step="any"></td>' +
+                '<td><input type="text" class="item-product-edit" value="' + item.product_name + '" list="productos"></td>' +
+                '<td><input type="number" class="item-price-edit" value="' + item.price + '" step="any"></td>' +
+                '<td class="item-subtotal-display">$' + (item.quantity * item.price).toFixed(2) + '</td>' +
+                '<td>' +
+                    '<button type="button" class="btn save-item-btn" title="Guardar" style="color:#14ae2e;"><i class="bi bi-check-circle" style="font-size:2.2rem;"></i></button>' +
+                    '<button type="button" class="btn cancel-edit-btn" title="Cancelar" style="color:#a10202;"><i class="bi bi-x-circle" style="font-size:2.2rem;"></i></button>' +
+                '</td>';
+
+            const qInput   = targetRow.querySelector('.item-quantity-edit');
+            const pInput   = targetRow.querySelector('.item-product-edit');
+            const prInput  = targetRow.querySelector('.item-price-edit');
+            const subDisp  = targetRow.querySelector('.item-subtotal-display');
+
+            function updateSub() {
+                const q = parseFloat(qInput.value)  || 0;
+                const p = parseFloat(prInput.value) || 0;
+                subDisp.textContent = '$' + (q * p).toFixed(2);
             }
-            
-            quantityEditInput.addEventListener("input", updateSubtotalPreview);
-            priceEditInput.addEventListener("input", updateSubtotalPreview);
-            
-            productEditInput.addEventListener("input", function() {
-                const selectedProduct = productEditInput.value.trim();
-                if (selectedProduct in validProducts) {
-                    priceEditInput.value = validProducts[selectedProduct];
-                    updateSubtotalPreview();
+            qInput.addEventListener('input', updateSub);
+            prInput.addEventListener('input', updateSub);
+            pInput.addEventListener('input', function () {
+                if (this.value in validProducts) {
+                    prInput.value = validProducts[this.value];
+                    updateSub();
                 }
             });
-            
+
             // Guardar
-            targetRow.querySelector(".save-item-btn").addEventListener("click", () => {
-                const newQuantity = parseFloat(quantityEditInput.value);
-                const newProduct = productEditInput.value.trim();
-                const newPrice = parseFloat(priceEditInput.value);
-                
-                if (!newProduct || isNaN(newQuantity) || isNaN(newPrice) || newQuantity <= 0) {
-                    alert("Completa todos los campos correctamente");
+            targetRow.querySelector('.save-item-btn').addEventListener('click', function () {
+                const newQty   = parseFloat(qInput.value);
+                const newProd  = pInput.value.trim();
+                const newPrice = parseFloat(prInput.value);
+                if (!newProd || isNaN(newQty) || isNaN(newPrice) || newQty <= 0) {
+                    alert('Completa todos los campos correctamente');
                     return;
                 }
-                
-                if (!(newProduct in validProducts)) {
-                    alert("El producto ingresado no existe en el listado.");
+                if (!(newProd in validProducts)) {
+                    alert('El producto ingresado no existe en el listado.');
                     return;
                 }
-                
-                items[idx] = { 
-                    id: item.id || null,
-                    product_name: newProduct, 
-                    quantity: newQuantity, 
-                    price: newPrice 
-                };
+                items[idx] = { id: item.id || null, product_name: newProd, quantity: newQty, price: newPrice };
                 calculateTotal();
-                
-                const newSubtotal = newQuantity * newPrice;
-                targetRow.innerHTML = `
-                <td class="item-quantity-display">${newQuantity}</td>
-                <td class="item-product-display">${newProduct}</td>
-                <td class="item-price-display">$${newPrice.toFixed(2)}</td>
-                <td class="item-subtotal-display">$${newSubtotal.toFixed(2)}</td>
-                <td>
-                    <button type="button" class="btn edit-item-btn" title="Editar"><i class="bi bi-pen" style="font-size: 1.8rem;"></i></button>
-                    <button type="button" class="btn delete-item-btn" title="Eliminar"><i class="bi bi-trash3" style="font-size: 1.8rem;"></i></button>
-                </td>
-                `;
-                
+                const newSub = newQty * newPrice;
+                targetRow.innerHTML =
+                    '<td class="item-quantity-display">' + newQty + '</td>' +
+                    '<td class="item-product-display">' + newProd + '</td>' +
+                    '<td class="item-price-display">$' + newPrice.toFixed(2) + '</td>' +
+                    '<td class="item-subtotal-display">$' + newSub.toFixed(2) + '</td>' +
+                    '<td>' +
+                        '<button type="button" class="btn edit-item-btn" title="Editar"><i class="bi bi-pen" style="font-size:1.8rem;"></i></button>' +
+                        '<button type="button" class="btn delete-item-btn" title="Eliminar"><i class="bi bi-trash3" style="font-size:1.8rem;"></i></button>' +
+                    '</td>';
                 attachRowEventListeners(targetRow);
             });
-            
-            // Cancelar
-            targetRow.querySelector(".cancel-edit-btn").addEventListener("click", () => {
-                const subtotal = originalQuantity * originalPrice;
-                targetRow.innerHTML = `
-                <td class="item-quantity-display">${originalQuantity}</td>
-                <td class="item-product-display">${originalProduct}</td>
-                <td class="item-price-display">$${originalPrice.toFixed(2)}</td>
-                <td class="item-subtotal-display">${subtotal.toFixed(2)}</td>
-                <td>
-                    <button type="button" class="btn edit-item-btn" title="Editar"><i class="bi bi-pen" style="font-size: 1.8rem;"></i></button>
-                    <button type="button" class="btn delete-item-btn" title="Eliminar"><i class="bi bi-trash3" style="font-size: 1.8rem;"></i></button>
-                </td>
-                `;
-                
+
+            // Cancelar edición de fila
+            targetRow.querySelector('.cancel-edit-btn').addEventListener('click', function () {
+                const sub = origQty * origPrice;
+                targetRow.innerHTML =
+                    '<td class="item-quantity-display">' + origQty + '</td>' +
+                    '<td class="item-product-display">' + origProduct + '</td>' +
+                    '<td class="item-price-display">$' + origPrice.toFixed(2) + '</td>' +
+                    '<td class="item-subtotal-display">$' + sub.toFixed(2) + '</td>' +
+                    '<td>' +
+                        '<button type="button" class="btn edit-item-btn" title="Editar"><i class="bi bi-pen" style="font-size:1.8rem;"></i></button>' +
+                        '<button type="button" class="btn delete-item-btn" title="Eliminar"><i class="bi bi-trash3" style="font-size:1.8rem;"></i></button>' +
+                    '</td>';
                 attachRowEventListeners(targetRow);
             });
         });
-        
-        // Botón eliminar
-        targetRow.querySelector(".delete-item-btn").addEventListener("click", () => {
-            if (confirm("¿Seguro quieres eliminar este ítem?")) {
+
+        // Eliminar ítem
+        targetRow.querySelector('.delete-item-btn').addEventListener('click', function () {
+            if (confirm('¿Seguro que querés eliminar este ítem?')) {
                 const idx = index();
                 items.splice(idx, 1);
-                row.remove();
+                targetRow.remove();
                 calculateTotal();
                 if (items.length === 0) {
-                    itemsTable.style.display = "none";
-                    totalDiv.style.display = "none";
+                    itemsTable.style.display = 'none';
+                    totalDiv.style.display   = 'none';
                 }
             }
         });
     }
-    
-    // ========== AGREGAR NUEVO ITEM ==========
-    document.getElementById("confirm-item-btn").addEventListener("click", function() {
-        const product = productInput.value.trim();
+
+    // ---------- Pre-cargar ítems existentes ----------
+    const existingItems = [
+        {% for item in sale.items.all %}
+        { id: "{{ item.id }}", product_name: "{{ item.product_name_cache|escapejs }}", quantity: {{ item.quantity|unlocalize }}, price: {{ item.price|unlocalize }} }{% if not forloop.last %},{% endif %}
+        {% endfor %}
+    ];
+    existingItems.forEach(function (item) {
+        items.push(item);
+        addItemRow(item.product_name, item.quantity, item.price, item.id);
+    });
+    if (items.length > 0) {
+        itemsTable.style.display = '';
+        totalDiv.style.display   = '';
+        calculateTotal();
+    }
+    renderItemsView();
+
+    // ---------- Agregar nuevo ítem ----------
+    document.getElementById('confirm-item-btn').addEventListener('click', function () {
+        const product  = productInput.value.trim();
         const quantity = parseFloat(quantityInput.value);
-        const price = parseFloat(priceInput.value);
-        
+        const price    = parseFloat(priceInput.value);
+
         if (!product || isNaN(quantity) || isNaN(price) || quantity <= 0) {
-            alert("Completa todos los campos para confirmar el ítem");
+            alert('Completa todos los campos para agregar el ítem');
             return;
         }
-        
         if (!(product in validProducts)) {
-            alert("El producto ingresado no existe en el listado.");
+            alert('El producto ingresado no existe en el listado.');
             return;
         }
-        
-        // Verificar si el item ya existe con el mismo precio
-        const existingIndex = items.findIndex(item => 
-            item.product_name === product && item.price === price
-        );
-        
+
+        const existingIndex = items.findIndex(function (i) {
+            return i.product_name === product && i.price === price;
+        });
+
         if (existingIndex !== -1) {
-            // Sumar cantidad al item existente
             items[existingIndex].quantity += quantity;
-            
-            // Actualizar la fila existente
             const existingRow = itemsBody.children[existingIndex];
-            const newQuantity = items[existingIndex].quantity;
-            const newSubtotal = newQuantity * price;
-            
-            existingRow.innerHTML = `
-            <td class="item-quantity-display">${newQuantity}</td>
-            <td class="item-product-display">${product}</td>
-            <td class="item-price-display">$${price.toFixed(2)}</td>
-            <td class="item-subtotal-display">$${newSubtotal.toFixed(2)}</td>
-            <td>
-                <button type="button" class="btn edit-item-btn" title="Editar"><i class="bi bi-pen" style="font-size: 1.8rem;"></i></button>
-                <button type="button" class="btn delete-item-btn" title="Eliminar"><i class="bi bi-trash3" style="font-size: 1.8rem;"></i></button>
-            </td>
-            `;
-            
+            const newQty = items[existingIndex].quantity;
+            const newSub = newQty * price;
+            existingRow.innerHTML =
+                '<td class="item-quantity-display">' + newQty + '</td>' +
+                '<td class="item-product-display">' + product + '</td>' +
+                '<td class="item-price-display">$' + price.toFixed(2) + '</td>' +
+                '<td class="item-subtotal-display">$' + newSub.toFixed(2) + '</td>' +
+                '<td>' +
+                    '<button type="button" class="btn edit-item-btn" title="Editar"><i class="bi bi-pen" style="font-size:1.8rem;"></i></button>' +
+                    '<button type="button" class="btn delete-item-btn" title="Eliminar"><i class="bi bi-trash3" style="font-size:1.8rem;"></i></button>' +
+                '</td>';
             attachRowEventListeners(existingRow);
             calculateTotal();
-            
-            productInput.value = "";
-            quantityInput.value = "";
-            priceInput.value = "";
-            productInput.focus();
-            return;
+        } else {
+            items.push({ id: null, product_name: product, quantity: quantity, price: price });
+            addItemRow(product, quantity, price, null);
+            calculateTotal();
+            if (items.length === 1) {
+                itemsTable.style.display = '';
+                totalDiv.style.display   = '';
+            }
         }
-        
-        items.push({ id: null, product_name: product, quantity, price });
-        addItemRow(product, quantity, price);
-        calculateTotal();
-        
-        if (items.length === 1) {
-            itemsTable.style.display = "";
-            totalDiv.style.display = "";
-        }
-        
-        productInput.value = "";
-        quantityInput.value = "";
-        priceInput.value = "";
+
+        productInput.value  = '';
+        quantityInput.value = '';
+        priceInput.value    = '';
         productInput.focus();
     });
-    
-    // ========== SUBMIT FORM ==========
-    form.addEventListener("submit", function(event) {
-        event.preventDefault();
-        
+
+    // ---------- Confirmar edición de ítems ----------
+    document.getElementById('confirm-items').addEventListener('click', function () {
+        itemsSnapshot = null;
+        exitEditMode();
+    });
+
+
+    // ================================================================
+    // GESTIÓN DE PERSONA
+    // ================================================================
+    const hiddenTemporalName  = document.getElementById('hidden-temporal-name');
+    const accountYes          = document.getElementById('account-yes');
+    const accountNo           = document.getElementById('account-no');
+    const personSearchWrapper = document.getElementById('person-search-wrapper');
+    const temporalNameWrapper = document.getElementById('temporal-name-wrapper');
+    const editTemporalInput   = document.getElementById('edit-temporal-name');
+    const personViewContent   = document.getElementById('person-view-content');
+
+    // Radio SÍ
+    accountYes.addEventListener('change', function () {
+        if (this.checked) {
+            personSearchWrapper.style.display = 'block';
+            temporalNameWrapper.style.display = 'none';
+            const personSection = document.getElementById('person-section');
+            if (personSection) personSection.style.display = 'block';
+        }
+    });
+
+    // Radio NO
+    accountNo.addEventListener('change', function () {
+        if (this.checked) {
+            personSearchWrapper.style.display = 'none';
+            temporalNameWrapper.style.display = 'block';
+            const personSection = document.getElementById('person-section');
+            if (personSection) personSection.style.display = 'none';
+            const personIdInput = document.getElementById('id_person');
+            if (personIdInput) personIdInput.value = '';
+        }
+    });
+
+    // Confirmación de persona — único botón para ambos casos (SÍ y NO)
+    function confirmPersonChange() {
+        if (accountYes.checked) {
+            const personIdInput = document.getElementById('id_person');
+            if (!personIdInput || !personIdInput.value) {
+                alert('Debes seleccionar una persona de la búsqueda');
+                return;
+            }
+            const personId = personIdInput.value;
+            hiddenTemporalName.value = '';
+
+            if (window.personSearchModule) {
+                const selected = window.personSearchModule.allPersons.find(function (p) {
+                    return p.id === personId;
+                });
+                if (selected && personViewContent) {
+                    personViewContent.innerHTML =
+                        '<p>Nombre/Empresa: <strong>' + selected.name + '</strong></p>' +
+                        '<p>CUIT: <strong>' + (selected.cuit || '-') + '</strong></p>' +
+                        '<p>Teléfono: <strong>' + (selected.phone || '-') + '</strong></p>' +
+                        '<p>Ciudad: <strong>' + (selected.city || '-') + '</strong></p>' +
+                        '<p>Cta Cte: <strong>—</strong></p>';
+                }
+            }
+        } else {
+            const tempName = editTemporalInput.value.trim();
+            if (!tempName) {
+                alert('Debes ingresar el nombre del cliente');
+                return;
+            }
+            const personIdInput = document.getElementById('id_person');
+            if (personIdInput) personIdInput.value = '';
+            hiddenTemporalName.value = tempName;
+
+            if (personViewContent) {
+                personViewContent.innerHTML =
+                    '<p>Nombre: <strong>' + tempName + '</strong></p>' +
+                    '<p><em>Sin cuenta corriente</em></p>';
+            }
+        }
+        exitEditMode();
+    }
+
+    document.getElementById('confirm-person').addEventListener('click', confirmPersonChange);
+
+
+    // ================================================================
+    // GESTIÓN DE ESTADO DE PAGO
+    // ================================================================
+    const hiddenPaymentStatus = document.getElementById('hidden-payment-status');
+    const hiddenPaymentMethod = document.getElementById('hidden-payment-method');
+    const editPaymentStatus   = document.getElementById('edit-payment-status');
+
+    let paymentSnapshot = null;
+
+    function snapshotPayment() {
+        const checkedMethod = document.querySelector('input[name="edit_payment_method"]:checked');
+        paymentSnapshot = {
+            status: editPaymentStatus.value,
+            method: checkedMethod ? checkedMethod.value : 'CA'
+        };
+    }
+
+    const PAYMENT_STATUS_LABELS = { PE: 'Pendiente', PP: 'Pago Parcial', PA: 'Pagado' };
+    const PAYMENT_METHOD_LABELS = { CA: 'Efectivo', TR: 'Transferencia', CH: 'Cheque' };
+    const PAYMENT_STATUS_CLASSES = { PE: 'status-pendiente', PP: 'status-parcial', PA: 'status-completado' };
+
+    function renderPaymentView() {
+        const statusLabel = document.getElementById('view-payment-status-label');
+        const methodLabel = document.getElementById('view-payment-method-label');
+        const ps = hiddenPaymentStatus.value;
+        const pm = hiddenPaymentMethod.value;
+        const cssClass = PAYMENT_STATUS_CLASSES[ps] || '';
+        statusLabel.innerHTML = '<span class="' + cssClass + '">' + (PAYMENT_STATUS_LABELS[ps] || ps) + '</span>';
+        methodLabel.textContent = PAYMENT_METHOD_LABELS[pm] || pm;
+    }
+
+    document.getElementById('confirm-payment').addEventListener('click', function () {
+        const checkedMethod = document.querySelector('input[name="edit_payment_method"]:checked');
+        hiddenPaymentStatus.value = editPaymentStatus.value;
+        hiddenPaymentMethod.value = checkedMethod ? checkedMethod.value : 'CA';
+        paymentSnapshot = null;
+        exitEditMode();
+    });
+
+    // Inicializar vista de pago
+    renderPaymentView();
+
+
+    // ================================================================
+    // SUBMIT DEL FORMULARIO
+    // ================================================================
+    document.getElementById('form').addEventListener('submit', function (e) {
+        e.preventDefault();
+
         if (items.length === 0) {
-            alert("Debes tener al menos un ítem en la venta");
+            const msgError = document.getElementById('message-error');
+            msgError.textContent = '* Debes agregar al menos un ítem';
+            msgError.style.display = 'block';
             return;
         }
-        
-        itemsJson.value = JSON.stringify(items);
-        console.log("Items JSON:", itemsJson.value);
-        form.submit();
-    });
-});
-</script>
 
-<!-- SCRIPT PARA EDICIÓN DE PERSONA/TEMPORAL -->
-<script>
-(function() {
-    // ========== FUNCIONALIDAD DE EDITAR PERSONA ==========
-    const editPersonBtns = document.querySelectorAll(".edit-person-btn");
-    const confirmedPersonSection = document.getElementById("confirmed-person-section");
-    const confirmedTemporalSection = document.getElementById("confirmed-temporal-section");
-    const personSearchSection = document.getElementById("person-search-section");
-    const temporalNameSection = document.getElementById("temporal-name-section");
-    const confirmPersonChangeBtn = document.getElementById("confirm-person-change-btn");
-    const accountSection = document.getElementById("account-section");
-    const accountYesRadio = document.getElementById("account-yes");
-    const accountNoRadio = document.getElementById("account-no");
-    
-    console.log("Edit person buttons found:", editPersonBtns.length);
-    
-    // Botones editar persona (puede haber en person o temporal)
-    editPersonBtns.forEach(btn => {
-        btn.addEventListener("click", function(e) {
-            e.preventDefault();
-            console.log("Edit person button clicked!");
-            
-            // Ocultar secciones confirmadas
-            if (confirmedPersonSection) confirmedPersonSection.style.display = "none";
-            if (confirmedTemporalSection) confirmedTemporalSection.style.display = "none";
-            
-            // Ocultar todas las demás secciones (productos, estado, pagos)
-            document.getElementById("ticket-info-section").style.display = "none";
-            document.getElementById("payment-status-section").style.display = "none";
-            document.getElementById("payment-method-section").style.display = "none";
-            document.getElementById("items-section").style.display = "none";
-            
-            // Ocultar botones del formulario
-            document.getElementById("form-buttons").style.display = "none";
-            document.getElementById("cancel-button-container").style.display = "none";
-            
-            // MOSTRAR account-section para elegir entre SÍ/NO
-            if (accountSection) {
-                accountSection.style.display = "block";
-                console.log("Account section shown");
-            }
-            
-            // Mostrar la sección correspondiente según el radio pre-seleccionado
-            if (accountYesRadio && accountYesRadio.checked) {
-                console.log("Showing person search section");
-                // Si tiene cuenta corriente, mostrar buscador
-                if (personSearchSection) personSearchSection.style.display = "block";
-                const personSection = document.getElementById("person-section");
-                if (personSection) {
-                    personSection.style.display = "block";
-                }
-                if (temporalNameSection) temporalNameSection.style.display = "none";
-            } else if (accountNoRadio && accountNoRadio.checked) {
-                console.log("Showing temporal name section");
-                // Si NO tiene cuenta corriente, mostrar input temporal
-                if (temporalNameSection) temporalNameSection.style.display = "block";
-                if (personSearchSection) personSearchSection.style.display = "none";
-                const personSection = document.getElementById("person-section");
-                if (personSection) {
-                    personSection.style.display = "none";
-                }
-            }
-        });
+        // Serializar items
+        const itemsJsonInput = document.getElementById('items-json');
+        if (itemsJsonInput) itemsJsonInput.value = JSON.stringify(items);
+
+        this.submit();
     });
-    
-    // Confirmar cambio de persona O nombre temporal
-    if (confirmPersonChangeBtn) {
-        confirmPersonChangeBtn.addEventListener("click", function() {
-            // Verificar si se seleccionó cuenta corriente SÍ (persona) o NO (temporal)
-            const useAccount = accountYesRadio && accountYesRadio.checked;
-            
-            if (useAccount) {
-                // Validar que se haya seleccionado una persona
-                const personIdInput = document.getElementById("id_person");
-                if (!personIdInput || !personIdInput.value) {
-                    alert("Debes seleccionar una persona");
-                    return;
-                }
-                
-                const newPersonId = personIdInput.value;
-                
-                // Actualizar visualización con los nuevos datos
-                console.log("Updating person display...");
-                console.log("personSearchModule:", window.personSearchModule);
-                console.log("confirmedPersonSection:", confirmedPersonSection);
-                
-                if (window.personSearchModule && window.personSearchModule.allPersons && confirmedPersonSection) {
-                    const selectedPerson = window.personSearchModule.allPersons.find(p => p.id === newPersonId);
-                    console.log("Selected person:", selectedPerson);
-                    
-                    if (selectedPerson) {
-                        // Buscar los párrafos dentro del div de contenido
-                        // Usar selector más específico que incluya todas las clases
-                        const contentDiv = confirmedPersonSection.querySelector("div.col-11.ps-4");
-                        console.log("Content div found:", contentDiv);
-                        
-                        if (contentDiv) {
-                            const paragraphs = contentDiv.querySelectorAll("p");
-                            console.log("Paragraphs found:", paragraphs.length);
-                            
-                            if (paragraphs.length >= 5) {
-                                paragraphs[0].innerHTML = `Nombre/Empresa: <strong>${selectedPerson.name}</strong>`;
-                                paragraphs[1].innerHTML = `CUIT: <strong>${selectedPerson.cuit || "-"}</strong>`;
-                                paragraphs[2].innerHTML = `Teléfono: <strong>${selectedPerson.phone || "-"}</strong>`;
-                                paragraphs[3].innerHTML = `Ciudad: <strong>${selectedPerson.city || "-"}</strong>`;
-                                paragraphs[4].innerHTML = `Cta Cte: <strong>Por determinar</strong>`;
-                                console.log("Paragraphs updated!");
-                            } else {
-                                console.log("Not enough paragraphs found");
-                            }
-                        } else {
-                            console.log("Content div not found!");
-                        }
-                    } else {
-                        console.log("Person not found in allPersons array");
-                    }
-                } else {
-                    console.log("Missing required objects");
-                }
-                
-                // Mostrar sección confirmada de person
-                if (confirmedPersonSection) confirmedPersonSection.style.display = "block";
-                if (confirmedTemporalSection) confirmedTemporalSection.style.display = "none";
-            } else {
-                // Validar que se haya ingresado nombre temporal
-                const temporalNameInput = document.getElementById("id_temporal_name");
-                if (!temporalNameInput || !temporalNameInput.value.trim()) {
-                    alert("Debes ingresar el nombre del cliente");
-                    return;
-                }
-                
-                // Actualizar visualización con el nombre temporal
-                if (confirmedTemporalSection) {
-                    const temporalName = temporalNameInput.value.trim();
-                    const nameElement = confirmedTemporalSection.querySelector("p strong");
-                    if (nameElement) {
-                        nameElement.textContent = temporalName;
-                    }
-                }
-                
-                // Mostrar sección confirmada temporal
-                if (confirmedTemporalSection) confirmedTemporalSection.style.display = "block";
-                if (confirmedPersonSection) confirmedPersonSection.style.display = "none";
-            }
-            
-            // Ocultar secciones de edición
-            if (accountSection) accountSection.style.display = "none";
-            if (personSearchSection) personSearchSection.style.display = "none";
-            if (document.getElementById("person-section")) {
-                document.getElementById("person-section").style.display = "none";
-            }
-            if (temporalNameSection) temporalNameSection.style.display = "none";
-            
-            // Mostrar todas las demás secciones
-            document.getElementById("ticket-info-section").style.display = "block";
-            document.getElementById("payment-status-section").style.display = "block";
-            document.getElementById("payment-method-section").style.display = "block";
-            document.getElementById("items-section").style.display = "block";
-            
-            // Mostrar botones del formulario
-            document.getElementById("form-buttons").style.display = "block";
-            document.getElementById("cancel-button-container").style.display = "block";
-        });
-    }
-    
-    // Botón cancelar cambio de persona
-    const cancelPersonChangeBtn = document.getElementById("cancel-person-change-btn");
-    if (cancelPersonChangeBtn) {
-        cancelPersonChangeBtn.addEventListener("click", function() {
-            // Ocultar secciones de edición
-            if (accountSection) accountSection.style.display = "none";
-            if (personSearchSection) personSearchSection.style.display = "none";
-            const personSection = document.getElementById("person-section");
-            if (personSection) {
-                personSection.style.display = "none";
-            }
-            if (temporalNameSection) temporalNameSection.style.display = "none";
-            
-            // Restaurar la sección que estaba visible originalmente
-            // Usar variables JavaScript en lugar de Django template tags
-            const hasPerson = {% if sale.person %}true{% else %}false{% endif %};
-            const hasTemporalName = {% if sale.temporal_name %}true{% else %}false{% endif %};
-            
-            if (hasPerson) {
-                if (confirmedPersonSection) confirmedPersonSection.style.display = "block";
-                if (confirmedTemporalSection) confirmedTemporalSection.style.display = "none";
-            } else if (hasTemporalName) {
-                if (confirmedPersonSection) confirmedPersonSection.style.display = "none";
-                if (confirmedTemporalSection) confirmedTemporalSection.style.display = "block";
-            }
-            
-            // Mostrar todas las demás secciones
-            document.getElementById("ticket-info-section").style.display = "block";
-            document.getElementById("payment-status-section").style.display = "block";
-            document.getElementById("payment-method-section").style.display = "block";
-            document.getElementById("items-section").style.display = "block";
-            
-            // Mostrar botones del formulario
-            document.getElementById("form-buttons").style.display = "block";
-            document.getElementById("cancel-button-container").style.display = "block";
-            
-            // Limpiar búsqueda
-            const personSearchInput = document.getElementById("person-search");
-            const searchResults = document.getElementById("search-results");
-            const selectedPersonInfo = document.getElementById("selected-person-info");
-            if (personSearchInput) personSearchInput.value = "";
-            if (searchResults) searchResults.style.display = "none";
-            if (selectedPersonInfo) selectedPersonInfo.style.display = "none";
-        });
-    }
-    
-    // ========== MANEJO DE RADIO BUTTONS DE CUENTA CORRIENTE ==========
-    // (Similar a _account_handler.html pero adaptado para edición)
-    
-    if (accountYesRadio) {
-        accountYesRadio.addEventListener("change", function() {
-            if (this.checked) {
-                // Mostrar buscador, ocultar input temporal
-                if (personSearchSection) personSearchSection.style.display = "block";
-                if (document.getElementById("person-section")) {
-                    document.getElementById("person-section").style.display = "block";
-                }
-                if (temporalNameSection) temporalNameSection.style.display = "none";
-                
-                // Limpiar nombre temporal
-                const temporalNameInput = document.getElementById("id_temporal_name");
-                if (temporalNameInput) temporalNameInput.value = "";
-            }
-        });
-    }
-    
-    if (accountNoRadio) {
-        accountNoRadio.addEventListener("change", function() {
-            if (this.checked) {
-                // Mostrar input temporal, ocultar buscador
-                if (temporalNameSection) temporalNameSection.style.display = "block";
-                if (personSearchSection) personSearchSection.style.display = "none";
-                if (document.getElementById("person-section")) {
-                    document.getElementById("person-section").style.display = "none";
-                }
-                
-                // Limpiar búsqueda de persona
-                const personIdInput = document.getElementById("id_person");
-                const personSearchInput = document.getElementById("person-search");
-                const selectedPersonInfo = document.getElementById("selected-person-info");
-                if (personIdInput) personIdInput.value = "";
-                if (personSearchInput) personSearchInput.value = "";
-                if (selectedPersonInfo) selectedPersonInfo.style.display = "none";
-            }
-        });
-    }
-    
-    // Agregar mismo handler a los botones de temporal-name-section
-    const confirmChangeBtns = document.querySelectorAll(".confirm-change-btn");
-    confirmChangeBtns.forEach(btn => {
-        btn.addEventListener("click", function() {
-            // Reutilizar la misma lógica del confirmPersonChangeBtn
-            if (confirmPersonChangeBtn) {
-                confirmPersonChangeBtn.click();
-            }
-        });
-    });
-    
-    const cancelChangeBtns = document.querySelectorAll(".cancel-change-btn");
-    cancelChangeBtns.forEach(btn => {
-        btn.addEventListener("click", function() {
-            // Reutilizar la misma lógica del cancelPersonChangeBtn
-            if (cancelPersonChangeBtn) {
-                cancelPersonChangeBtn.click();
-            }
-        });
-    });
-})();
+
+});
 </script>
 
 {% endblock %}

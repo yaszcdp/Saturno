@@ -245,18 +245,24 @@ class SaleUpdateView(LoginRequiredMixin, UpdateView):
         return data
     
     def form_valid(self, form):
-        # Obtener person_id del POST (puede haber cambiado)
+        from accounts.models import Client, Supplier
+        # Determinar si se usa cuenta corriente según el radio del formulario
+        account_option = self.request.POST.get('account_option', 'yes')
         person_id = self.request.POST.get('person')
         person = None
-        
-        # Si hay person_id, actualizar la persona asociada
-        if person_id:
+
+        if account_option == 'no':
+            # El usuario eligió "sin cuenta corriente": limpiar persona y cuenta
+            form.instance.person = None
+            form.instance.current_account = None
+
+        elif person_id:
+            # Actualizar la persona asociada
             try:
                 person = Person.objects.get(pk=person_id)
                 form.instance.person = person
-                
-                # Actualizar temporal_name con el nuevo nombre
-                from accounts.models import Client, Supplier
+
+                # Sincronizar temporal_name con el nombre de la persona
                 try:
                     client = Client.objects.get(pk=person_id)
                     form.instance.temporal_name = f"{client.first_name} {client.last_name}"
@@ -266,7 +272,7 @@ class SaleUpdateView(LoginRequiredMixin, UpdateView):
                         form.instance.temporal_name = supplier.company
                     except Supplier.DoesNotExist:
                         pass
-                        
+
             except Person.DoesNotExist:
                 messages.error(self.request, "Persona no encontrada")
                 return self.form_invalid(form)
