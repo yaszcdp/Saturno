@@ -33,7 +33,7 @@
             <!-- ======================================================== -->
             <!-- HEADER: Fecha + Estado de envío (siempre visible)        -->
             <!-- ======================================================== -->
-            <div id="ticket-header" class="row info-card align-items-center py-3 my-2 mx-auto">
+            <div id="ticket-header" class="row info-card align-items-center py-3 my-2 mx-2">
                 <div class="col-6 text-start">
                     <p><strong>{{ sale.date_time|date:"d/m/Y H:i" }}</strong></p>
                 </div>
@@ -54,26 +54,26 @@
             <!-- ======================================================== -->
             <!-- VISTA: Cliente                                           -->
             <!-- ======================================================== -->
-            <div id="view-person" class="section-card row info-card align-items-center py-3 my-2 mx-auto">
-                <div class="col-11 mb-2">
-                    <h2 class="text-start" style="font-size: 1.8rem; letter-spacing: 0rem;">
+            <div id="view-person" class="section-card row info-card align-items-center py-3 my-3 mx-2">
+                <div class="row align-items-center mb-2">
+                    <h2 class="col-11 text-start ps-4" style="font-size: 1.8rem; letter-spacing: 0rem;">
                         {% if form_type == 'Venta' %}Datos Cliente:{% elif form_type == 'Compra' %}Datos Proveedor:{% else %}Datos:{% endif %}
                     </h2>
-                    <hr style="width:98%;">
+                    <button type="button" class="btn-edit col-1 p-0" data-section="person">
+                        <i class="bi bi-pen" style="font-size: 2.5rem"></i>
+                    </button>
                 </div>
-                <button type="button" class="btn-edit col-1 p-0" data-section="person">
-                    <i class="bi bi-pen" style="font-size: 1.8rem;"></i>
-                </button>
+                <hr style="width:98%;">
                 <div id="person-view-content" class="col-11 align-items-center me-1 ps-4 text-start">
                     {% if sale.person %}
-                        <p>Nombre/Empresa: <strong>{{ sale.person.get_full_name|default:"-" }}</strong></p>
-                        <p>CUIT: <strong>{{ sale.person.cuit|default:"-" }}</strong></p>
-                        <p>Teléfono: <strong>{{ sale.person.phone|default:"-" }}</strong></p>
-                        <p>Ciudad: <strong>{{ sale.person.city|default:"-" }}</strong></p>
-                        <p>Cta Cte: <strong>{{ sale.current_account.account_number|default:"—" }}</strong></p>
+                        <p style="font-size: 1.6rem;">Nombre/Empresa: {{ sale.person.get_full_name|default:"-" }}</p>
+                        <p style="font-size: 1.6rem;">CUIT: {{ sale.person.cuit|default:"-" }}</p>
+                        <p style="font-size: 1.6rem;">Teléfono: {{ sale.person.phone|default:"-" }}</p>
+                        <p style="font-size: 1.6rem;">Ciudad: {{ sale.person.city|default:"-" }}</p>
+                        <p style="font-size: 1.6rem;">Cta Cte: {{ sale.current_account.account_number|default:"—" }}</p>
                     {% elif sale.temporal_name %}
-                        <p>Nombre: <strong>{{ sale.temporal_name }}</strong></p>
-                        <p><em>Sin cuenta corriente</em></p>
+                        <p>Nombre: {{ sale.temporal_name }}</p>
+                        <p>Cta Cte: —</p>
                     {% else %}
                         <p><em>Sin cliente asignado</em></p>
                     {% endif %}
@@ -129,76 +129,15 @@
 
             </div>
             
-            <!-- ======================================================== -->
-            <!-- VISTA: Estado de Pago                                    -->
-            <!-- ======================================================== -->
-            <div id="view-payment" class="section-card row custom-card align-items-center py-3 my-3 mx-2" style="border:none;">
-                <div class="row align-items-center mb-2">
-                    <h2 class="col-11 text-start ps-4" style="font-size: 1.8rem;">Estado de Pago:</h2>
-                    <button type="button" class="btn-edit col-1 p-0" data-section="payment">
-                        <i class="bi bi-pen" style="font-size: 1.8rem;"></i>
-                    </button>
-                </div>
-                <hr style="width:98%;">
-                <div class="ps-4 text-start">
-                    <label>Estado: <strong id="view-payment-status-label"></strong></label>
-                    <br>
-                    <label>Método: <strong id="view-payment-method-label"></strong></label>
-                </div>
-            </div>
-
-            <!-- ======================================================== -->
-            <!-- EDICIÓN: Estado de Pago                                  -->
-            <!-- ======================================================== -->
-            <div id="edit-payment" class="d-none">
-                <div class="row custom-card align-items-center py-3 my-3 mx-2" style="border:none;">
-
-                    <h2 class="text-start ps-4" style="font-size: 1.8rem;">Estado de Pago:</h2>
-                    <hr style="width:98%;">
-                    <div class="col-12 mb-4">
-                        <select id="edit-payment-status" class="form-select">
-                            <option value="PE" {% if sale.payment_status == 'PE' %}selected{% endif %}>Pendiente</option>
-                            <option value="PP" {% if sale.payment_status == 'PP' %}selected{% endif %}>Pago Parcial</option>
-                            <option value="PA" {% if sale.payment_status == 'PA' %}selected{% endif %}>Pagado</option>
-                        </select>
-                    </div>
-
-                    <h2 class="text-start ps-4" style="font-size: 1.8rem;">Método de Pago:</h2>
-                    <hr style="width:98%;">
-                    <div class="col-12 mb-3 text-start ps-4">
-                        <div class="d-flex flex-wrap gap-4">
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="edit_payment_method" id="edit-pay-cash" value="CA"
-                                    {% if sale.payment_method == 'CA' or not sale.payment_method %}checked{% endif %}>
-                                <label class="form-check-label" for="edit-pay-cash">Efectivo</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="edit_payment_method" id="edit-pay-transfer" value="TR"
-                                    {% if sale.payment_method == 'TR' %}checked{% endif %}>
-                                <label class="form-check-label" for="edit-pay-transfer">Transferencia</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="edit_payment_method" id="edit-pay-check" value="CH"
-                                    {% if sale.payment_method == 'CH' %}checked{% endif %}>
-                                <label class="form-check-label" for="edit-pay-check">Cheque</label>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-12 text-center mt-3 mb-2">
-                    <button type="button" id="confirm-payment" class="btn btn-outline-green col-md-4 col-8">Confirmar</button>
-                </div>
-            </div>
-
+            
             <!-- ======================================================== -->
             <!-- VISTA: Ítems                                             -->
             <!-- ======================================================== -->
-            <div id="view-items" class="section-card row custom-card align-items-center py-3 my-3 mx-2" style="border:none;">
+            <div id="view-items" class="section-card row info-card align-items-center py-3 my-3 mx-2">
                 <div class="row align-items-center mb-2">
-                    <h2 class="col-11 text-start ps-4" style="font-size: 1.8rem;">Ítems:</h2>
+                    <h2 class="col-11 text-start ps-4" style="font-size: 1.8rem; letter-spacing:0;">Ítems:</h2>
                     <button type="button" class="btn-edit col-1 p-0" data-section="items">
-                        <i class="bi bi-pen" style="font-size: 1.8rem;"></i>
+                        <i class="bi bi-pen" style="font-size: 2.5rem;"></i>
                     </button>
                 </div>
                 <hr style="width:98%;">
@@ -215,10 +154,10 @@
                 </table>
                 <p id="view-items-empty" class="text-center mt-2 fst-italic" style="display:none;">Sin ítems cargados</p>
                 <div id="view-total-div" class="text-end me-4 pe-4 mt-2" style="display:none;">
-                    <label>Total: <strong id="view-total-label">$0.00</strong></label>
+                    <label style="font-size:1.7rem;">Total: <strong id="view-total-label">$0.00</strong></label>
                 </div>
             </div>
-
+            
             <!-- ======================================================== -->
             <!-- EDICIÓN: Ítems                                           -->
             <!-- ======================================================== -->
@@ -229,7 +168,90 @@
                 </div>
             </div>
 
+            <!-- ======================================================== -->
+            <!-- VISTA: Pagos                                            -->
+            <!-- ======================================================== -->
+            <div id="view-payment" class="section-card row info-card align-items-center py-3 my-3 mx-2">
+                <div class="row align-items-center mb-2">
+                    <h2 id="payment-status-header" class="col-11 text-start ps-4" style="font-size: 1.8rem; letter-spacing:0;">
+                        <span class="{% if sale.payment_status == 'PA' %}status-completado{% elif sale.payment_status == 'PP' %}status-parcial{% else %}status-pendiente{% endif %}">
+                            {{ sale.get_payment_status_display }}
+                        </span>
+                    </h2>
+                    <button type="button" class="btn-edit col-1 p-0" data-section="payment">
+                        <i class="bi bi-pen" style="font-size: 2.5rem;"></i>
+                    </button>
+                </div>
+                <hr style="width:98%;">
+                <div id="view-payment-body" class="ps-2 text-start w-100">
+                    <!-- Renderizado por JS con renderPaymentView() -->
+                </div>
+            </div>
 
+            <!-- ======================================================== -->
+            <!-- EDICIÓN: Pagos                                          -->
+            <!-- ======================================================== -->
+            <div id="edit-payment" class="d-none section-card row align-items-center py-3 my-2 mx-2">
+                <div class="row align-items-center mb-2">
+                    <h2 id="edit-payment-status-header" class="col-11 text-start ps-4" style="font-size: 1.8rem; letter-spacing:0;"></h2>
+                    <hr style="width:98%;">
+                    <br>
+                    <!-- 1. Form registrar cobro -->
+                    <div class="col-12 info-card">
+                        <h2 class="text-start ps-4 mb-2" style="font-size: 1.8rem; letter-spacing:0;">Registrar cobro:</h2>
+                        <hr style="width:98%;">
+                        <div class="row align-items-end px-4 gap-2 mb-1">
+                            <div class="col-4">
+                                <label for="new-payment-method" class="form-label">Método</label>
+                                <select id="new-payment-method" class="form-select">
+                                    <option value="" disabled selected>Seleccionar</option>
+                                    <option value="CA">Efectivo</option>
+                                    <option value="TR">Transferencia</option>
+                                    <option value="CH">Cheque</option>
+                                </select>
+                            </div>
+                            <div id="payment-amount-col" class="col-3" style="display:none;">
+                                <label for="new-payment-amount" class="form-label">Monto</label>
+                                <input type="number" id="new-payment-amount" class="payment-amount-input" placeholder="0.00" min="0.01" step="0.01">
+                            </div>
+                            <div id="payment-notes-col" class="col-3" style="display:none;">
+                                <label id="payment-notes-label" for="new-payment-notes" class="form-label">Notas</label>
+                                <input type="text" id="new-payment-notes" class="payment-amount-input" placeholder="">
+                            </div>
+                            <div id="payment-add-col" class="col-1 my-3 text-center" style="display:none;">
+                                <button type="button" id="btn-add-payment" class="btn add-item-btn">
+                                    <i class="bi bi-plus-circle"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div id="payment-error-msg" class="alert alert-danger mx-4 py-2 mb-2" style="display:none;"></div>
+                    </div>
+                    
+
+                    <!-- 2. Tabla de cobros registrados (oculta si no hay cobros) -->
+                    <div id="edit-payment-registered" class="col-12 info-card mt-4" style="display:none;">
+                        <h2 class="text-start ps-4 mb-2" style="font-size: 1.8rem; letter-spacing:0;">Cobros registrados:</h2>
+                        <hr style="width:98%;">
+                        <div id="edit-payment-body" class="w-100 px-2 mb-3">
+                        <!-- Renderizado por JS con renderPaymentEdit() -->
+                        </div>
+                    </div>
+
+                    <!-- 3. Totales -->
+                    <div class="px-4 mb-2 text-end">
+                        <label>Total Pagado: <strong id="edit-total-paid-label">$0.00</strong></label><br>
+                        <label>Total Venta: <strong>${{ sale.amount|floatformat:2 }}</strong></label><br>
+                        <label>Pendiente: <strong id="edit-pending-label">$0.00</strong></label>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Guardar de pagos: visible solo en modo edición de pagos -->
+            <div id="payment-actions" class="d-none text-center mt-3 mb-2">
+                <button type="submit" class="btn btn-outline-green col-8">Guardar</button>
+            </div>
+            
 
 
             <!-- ======================================================== -->
@@ -237,14 +259,18 @@
             <!-- ======================================================== -->
             <!-- person: enviado por id_person dentro de _person_search.html -->
             <input type="hidden" name="temporal_name" id="hidden-temporal-name" value="{{ sale.temporal_name|default:'' }}">
+            <!-- payment_status: se recalcula desde PaymentDetails al guardar -->
             <input type="hidden" name="payment_status" id="hidden-payment-status" value="{{ sale.payment_status|default:'PE' }}">
-            <input type="hidden" name="payment_method" id="hidden-payment-method" value="{{ sale.payment_method|default:'CA' }}">
+            <input type="hidden" name="payment_method" id="hidden-payment-method" value="{{ sale.payment_method|default:'' }}">
+            <!-- staged payments: serializado por JS al hacer submit -->
+            <input type="hidden" name="payment_details_json" id="payment-details-json" value="[]">
             <!-- items_json: incluido por _items_manager.html -->
 
             <!-- ======================================================== -->
             <!-- ACCIONES GLOBALES                                        -->
             <!-- ======================================================== -->
-            <div id="global-actions" class="col-12 text-center mt-4 mb-2">
+            <br>
+            <div id="global-actions" class="col-12 text-center my-4">
                 <button type="submit" class="btn btn-outline-green col-8">Guardar</button>
             </div>
 
@@ -331,6 +357,26 @@
         box-shadow: none !important;
         width: 90%;
     }
+    /* Input de monto en sección de pagos */
+    .payment-amount-input {
+        background: transparent !important;
+        border: none !important;
+        border-bottom: .1rem solid white !important;
+        color: white !important;
+        font-size: 1.6rem !important;
+        padding: 0.25rem !important;
+        box-shadow: none !important;
+        width: 100%;
+    }
+    .payment-amount-input:focus {
+        background: transparent !important;
+        border: none !important;
+        border-bottom: .2rem solid #ffa755 !important;
+        outline: none !important;
+        box-shadow: none !important;
+    }
+    .payment-amount-input::placeholder { color: #888 !important; }
+
     .item-quantity-edit:focus, .item-product-edit:focus, .item-price-edit:focus {
         background: transparent !important;
         border: none !important;
@@ -364,12 +410,17 @@ document.addEventListener('DOMContentLoaded', function () {
         // Mostrar área de edición y botón cancelar externo
         document.getElementById('edit-' + section).classList.remove('d-none');
         document.getElementById('edit-cancel-container').classList.remove('d-none');
+        // Modo pago: mostrar su propio Guardar
+        if (section === 'payment') {
+            document.getElementById('payment-actions').classList.remove('d-none');
+        }
     }
 
     function exitEditMode() {
         currentEditMode = null;
-        // Ocultar todos los editores y el cancelar externo
+        // Ocultar todos los editores, payment-actions y el cancelar externo
         SECTIONS.forEach(s => document.getElementById('edit-' + s).classList.add('d-none'));
+        document.getElementById('payment-actions').classList.add('d-none');
         document.getElementById('edit-cancel-container').classList.add('d-none');
         // Mostrar header, tarjetas vista y acciones globales
         document.getElementById('ticket-header').classList.remove('d-none');
@@ -384,11 +435,10 @@ document.addEventListener('DOMContentLoaded', function () {
     // Cancelar único externo — restaura según la sección activa y sale
     document.getElementById('btn-cancel-edit').addEventListener('click', function () {
         if (currentEditMode === 'items') restoreItems();
-        if (currentEditMode === 'payment' && paymentSnapshot) {
-            editPaymentStatus.value = paymentSnapshot.status;
-            const radio = document.querySelector('input[name="edit_payment_method"][value="' + paymentSnapshot.method + '"]');
-            if (radio) radio.checked = true;
-            paymentSnapshot = null;
+        if (currentEditMode === 'payment') {
+            // Restaurar staged payments al estado original del servidor
+            stagedPayments.length = 0;
+            originalPaymentDetails.forEach(function(p) { stagedPayments.push(Object.assign({}, p)); });
         }
         exitEditMode();
     });
@@ -398,7 +448,7 @@ document.addEventListener('DOMContentLoaded', function () {
         btn.addEventListener('click', function () {
             const section = this.dataset.section;
             if (section === 'items')   snapshotItems();
-            if (section === 'payment') snapshotPayment();
+            if (section === 'payment') renderPaymentEdit();
             if (section === 'person') {
                 // _person_search.html envuelve todo en #person-section con display:none
                 const personSection = document.getElementById('person-section');
@@ -742,11 +792,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 });
                 if (selected && personViewContent) {
                     personViewContent.innerHTML =
-                        '<p>Nombre/Empresa: <strong>' + selected.name + '</strong></p>' +
-                        '<p>CUIT: <strong>' + (selected.cuit || '-') + '</strong></p>' +
-                        '<p>Teléfono: <strong>' + (selected.phone || '-') + '</strong></p>' +
-                        '<p>Ciudad: <strong>' + (selected.city || '-') + '</strong></p>' +
-                        '<p>Cta Cte: <strong>—</strong></p>';
+                        '<p style="font-size: 1.6rem;">Nombre/Empresa: ' + selected.name + '</p>' +
+                        '<p style="font-size: 1.6rem;">CUIT: ' + (selected.cuit || '-') + '</p>' +
+                        '<p style="font-size: 1.6rem;">Teléfono: ' + (selected.phone || '-') + '</p>' +
+                        '<p style="font-size: 1.6rem;">Ciudad: ' + (selected.city || '-') + '</p>' +
+                        '<p style="font-size: 1.6rem;">Cta Cte: ' + (selected.account || '-') + '</p>';
                 }
             }
         } else {
@@ -761,8 +811,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
             if (personViewContent) {
                 personViewContent.innerHTML =
-                    '<p>Nombre: <strong>' + tempName + '</strong></p>' +
-                    '<p><em>Sin cuenta corriente</em></p>';
+                    '<p style="font-size: 1.6rem;">Nombre: ' + tempName + '</p>' +
+                    '<p style="font-size: 1.6rem;">Cta Cte: —</p>';
             }
         }
         exitEditMode();
@@ -772,45 +822,252 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
     // ================================================================
-    // GESTIÓN DE ESTADO DE PAGO
+    // GESTIÓN DE PAGOS (staged — se guarda junto al form)
     // ================================================================
     const hiddenPaymentStatus = document.getElementById('hidden-payment-status');
-    const hiddenPaymentMethod = document.getElementById('hidden-payment-method');
-    const editPaymentStatus   = document.getElementById('edit-payment-status');
 
-    let paymentSnapshot = null;
+    const PAYMENT_STATUS_LABELS  = { PE: 'Pendiente de Pago', PP: 'Pago Parcial', PA: 'Pagado' };
+    const PAYMENT_STATUS_CLASSES = { PE: 'status-pendiente', PP: 'status-parcial', PA: 'status-completado' };
+    const METHOD_LABELS = { CA: 'Efectivo', TR: 'Transferencia', CH: 'Cheque' };
 
-    function snapshotPayment() {
-        const checkedMethod = document.querySelector('input[name="edit_payment_method"]:checked');
-        paymentSnapshot = {
-            status: editPaymentStatus.value,
-            method: checkedMethod ? checkedMethod.value : 'CA'
-        };
+    const saleAmount = {{ sale.amount|unlocalize }};
+
+    // Estado staged (trabajamos sobre esta copia hasta que se guarda el form)
+    const stagedPayments = [
+        {% for pd in active_payment_details %}
+        {
+            id: {{ pd.id }},
+            amount: {{ pd.amount|unlocalize }},
+            method: "{{ pd.payment_method }}",
+            method_label: "{{ pd.get_payment_method_display }}",
+            date: "{{ pd.created_at|date:'d/m/Y H:i' }}",
+            notes: "{{ pd.notes|default:''|escapejs }}",
+            isNew: false
+        }{% if not forloop.last %},{% endif %}
+        {% endfor %}
+    ];
+    // Copia del estado original para restaurar al cancelar
+    const originalPaymentDetails = stagedPayments.map(function(p) { return Object.assign({}, p); });
+
+    function getTotalPaid() {
+        return stagedPayments.reduce(function (s, p) { return s + p.amount; }, 0);
+    }
+    function getPending() { return saleAmount - getTotalPaid(); }
+
+    function getStatusInfo() {
+        const paid    = getTotalPaid();
+        const pending = getPending();
+        let key;
+        if (paid <= 0)         key = 'PE';
+        else if (pending <= 0) key = 'PA';
+        else                   key = 'PP';
+        return { key: key, label: PAYMENT_STATUS_LABELS[key], cssClass: PAYMENT_STATUS_CLASSES[key] };
     }
 
-    const PAYMENT_STATUS_LABELS = { PE: 'Pendiente', PP: 'Pago Parcial', PA: 'Pagado' };
-    const PAYMENT_METHOD_LABELS = { CA: 'Efectivo', TR: 'Transferencia', CH: 'Cheque' };
-    const PAYMENT_STATUS_CLASSES = { PE: 'status-pendiente', PP: 'status-parcial', PA: 'status-completado' };
+    function buildPaymentTable(withActions) {
+        if (stagedPayments.length === 0) {
+            return '<p class="fst-italic text-center py-2">Sin cobros registrados</p>';
+        }
+        let html = '<div class="table-responsive"><table style="width:100%;">' +
+            '<thead><tr><th>Fecha</th><th>Método</th><th class="text-end">Monto</th>' +
+            (withActions ? '<th></th>' : '') + '</tr></thead><tbody>';
+        stagedPayments.forEach(function (pd, idx) {
+            html += '<tr>';
+            html += '<td style="font-size:1.4rem;">' + (pd.date || '<em style="color:#aaa">nuevo</em>') + '</td>';
+            html += '<td style="font-size:1.4rem;">' + pd.method_label + '</td>';
+            html += '<td class="text-end" style="font-size:1.4rem;">$' + pd.amount.toFixed(2) + '</td>';
+            if (withActions) {
+                html += '<td class="text-center" style="white-space:nowrap;">' +
+                    '<button type="button" class="btn edit-item-btn" data-idx="' + idx + '" title="Editar">' +
+                    '<i class="bi bi-pen" style="font-size:1.8rem;"></i></button>' +
+                    '<button type="button" class="btn delete-item-btn" data-idx="' + idx + '" title="Eliminar">' +
+                    '<i class="bi bi-trash3" style="font-size:1.8rem;"></i></button></td>';
+            }
+            html += '</tr>';
+        });
+        html += '</tbody></table></div>';
+        return html;
+    }
 
     function renderPaymentView() {
-        const statusLabel = document.getElementById('view-payment-status-label');
-        const methodLabel = document.getElementById('view-payment-method-label');
-        const ps = hiddenPaymentStatus.value;
-        const pm = hiddenPaymentMethod.value;
-        const cssClass = PAYMENT_STATUS_CLASSES[ps] || '';
-        statusLabel.innerHTML = '<span class="' + cssClass + '">' + (PAYMENT_STATUS_LABELS[ps] || ps) + '</span>';
-        methodLabel.textContent = PAYMENT_METHOD_LABELS[pm] || pm;
+        const body    = document.getElementById('view-payment-body');
+        const status  = getStatusInfo();
+        const paid    = getTotalPaid();
+        const pending = getPending();
+
+        // Actualizar encabezado de la sección con el estado actual
+        document.getElementById('payment-status-header').innerHTML =
+            '<strong><span class="' + status.cssClass + '">' + status.label + '</span></strong>';
+
+        let html = buildPaymentTable(false);
+        html += '<div class="mt-2 ps-2 text-end">';
+        html += '<label style="font-size:1.7rem;">Total Pagado: <strong>$' + paid.toFixed(2) + '</strong></label>';
+        if (status.key !== 'PA') {
+            html += '<br><label style="font-size:1.7rem;">Pendiente: <strong>$' + pending.toFixed(2) + '</strong></label>';
+        }
+        html += '</div>';
+        body.innerHTML = html;
+        hiddenPaymentStatus.value = status.key;
     }
 
-    document.getElementById('confirm-payment').addEventListener('click', function () {
-        const checkedMethod = document.querySelector('input[name="edit_payment_method"]:checked');
-        hiddenPaymentStatus.value = editPaymentStatus.value;
-        hiddenPaymentMethod.value = checkedMethod ? checkedMethod.value : 'CA';
-        paymentSnapshot = null;
-        exitEditMode();
+    function updateEditTotals() {
+        const paid    = getTotalPaid();
+        const pending = getPending();
+        const status  = getStatusInfo();
+        document.getElementById('edit-payment-status-header').innerHTML =
+            '<strong><span class="' + status.cssClass + '">' + status.label + '</span></strong>';
+        document.getElementById('edit-total-paid-label').textContent = '$' + paid.toFixed(2);
+        document.getElementById('edit-pending-label').textContent    = '$' + pending.toFixed(2);
+    }
+
+    function renderPaymentEdit() {
+        const body = document.getElementById('edit-payment-body');
+        body.innerHTML = buildPaymentTable(true);
+        document.getElementById('edit-payment-registered').style.display =
+            stagedPayments.length > 0 ? '' : 'none';
+
+        body.querySelectorAll('.edit-item-btn').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                enterEditPaymentRow(parseInt(this.dataset.idx));
+            });
+        });
+        body.querySelectorAll('.delete-item-btn').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                const idx = parseInt(this.dataset.idx);
+                if (confirm('¿Eliminar este cobro?')) {
+                    stagedPayments.splice(idx, 1);
+                    renderPaymentEdit();
+                    renderPaymentView();
+                }
+            });
+        });
+
+        updateEditTotals();
+    }
+
+    function enterEditPaymentRow(idx) {
+        const pd = stagedPayments[idx];
+        if (!pd) return;
+
+        const body      = document.getElementById('edit-payment-body');
+        const allRows   = body.querySelectorAll('tbody tr');
+        const targetRow = allRows[idx];
+        if (!targetRow) return;
+
+        targetRow.innerHTML =
+            '<td><small style="color:#aaa; font-size:1.2rem;">' + (pd.date || '(nuevo)') + '</small></td>' +
+            '<td><select class="form-select" style="font-size:1.3rem; padding:0.2rem 0.4rem;">' +
+                '<option value="CA"' + (pd.method === 'CA' ? ' selected' : '') + '>Efectivo</option>' +
+                '<option value="TR"' + (pd.method === 'TR' ? ' selected' : '') + '>Transferencia</option>' +
+                '<option value="CH"' + (pd.method === 'CH' ? ' selected' : '') + '>Cheque</option>' +
+            '</select></td>' +
+            '<td class="text-end"><input type="number" class="payment-amount-input text-end" value="' +
+            pd.amount.toFixed(2) + '" step="0.01" min="0.01" style="width:110px;"></td>' +
+            '<td class="text-center" style="white-space:nowrap;">' +
+                '<button type="button" class="btn save-item-btn" title="Guardar" style="color:#14ae2e;">' +
+                '<i class="bi bi-check-circle" style="font-size:2.2rem;"></i></button>' +
+                '<button type="button" class="btn cancel-edit-btn" title="Cancelar" style="color:#a10202;">' +
+                '<i class="bi bi-x-circle" style="font-size:2.2rem;"></i></button>' +
+            '</td>';
+
+        const amountInput  = targetRow.querySelector('input[type="number"]');
+        const methodSelect = targetRow.querySelector('select');
+
+        targetRow.querySelector('.save-item-btn').addEventListener('click', function () {
+            const newAmount = parseFloat(amountInput.value);
+            const newMethod = methodSelect.value;
+            if (!newAmount || newAmount <= 0) { amountInput.focus(); return; }
+
+            // Validar que no exceda el disponible (excluyendo este cobro)
+            const otherTotal = stagedPayments.reduce(function(s, p, i) {
+                return i === idx ? s : s + p.amount;
+            }, 0);
+            const available = saleAmount - otherTotal;
+            if (newAmount > available + 0.001) {
+                alert('El monto supera el disponible ($' + available.toFixed(2) + ')');
+                return;
+            }
+
+            stagedPayments[idx].amount       = newAmount;
+            stagedPayments[idx].method       = newMethod;
+            stagedPayments[idx].method_label = METHOD_LABELS[newMethod] || newMethod;
+            renderPaymentEdit();
+            renderPaymentView();
+        });
+        targetRow.querySelector('.cancel-edit-btn').addEventListener('click', function () {
+            renderPaymentEdit();
+        });
+        amountInput.focus();
+    }
+
+    // Configuración de campos por método
+    const NOTE_CONFIG = {
+        CA: { notes: false },
+        TR: { notes: true, label: 'Referencia',       placeholder: 'CUIT · Alias · N° operación' },
+        CH: { notes: true, label: 'Info cheque', placeholder: 'Nro. · Banco · Vencimiento'  },
+    };
+
+    function resetPaymentForm() {
+        document.getElementById('new-payment-method').value         = '';
+        document.getElementById('new-payment-amount').value         = '';
+        document.getElementById('new-payment-notes').value          = '';
+        document.getElementById('payment-amount-col').style.display = 'none';
+        document.getElementById('payment-notes-col').style.display  = 'none';
+        document.getElementById('payment-add-col').style.display    = 'none';
+        document.getElementById('payment-error-msg').style.display  = 'none';
+    }
+
+    document.getElementById('new-payment-method').addEventListener('change', function () {
+        const cfg = NOTE_CONFIG[this.value];
+        if (!cfg) return;
+
+        document.getElementById('payment-amount-col').style.display = '';
+        document.getElementById('payment-add-col').style.display    = '';
+
+        const notesCol = document.getElementById('payment-notes-col');
+        if (cfg.notes) {
+            document.getElementById('payment-notes-label').textContent = cfg.label;
+            document.getElementById('new-payment-notes').placeholder   = cfg.placeholder;
+            notesCol.style.display = '';
+        } else {
+            document.getElementById('new-payment-notes').value = '';
+            notesCol.style.display = 'none';
+        }
+        document.getElementById('new-payment-amount').focus();
     });
 
-    // Inicializar vista de pago
+    // + circle: agregar cobro al staged (local, sin AJAX)
+    document.getElementById('btn-add-payment').addEventListener('click', function () {
+        const amount = parseFloat(document.getElementById('new-payment-amount').value);
+        const method = document.getElementById('new-payment-method').value;
+        const notes  = document.getElementById('new-payment-notes').value.trim();
+        const errEl  = document.getElementById('payment-error-msg');
+
+        if (!amount || amount <= 0) {
+            errEl.textContent = 'Ingresá un monto válido';
+            errEl.style.display = 'block';
+            return;
+        }
+        const pending = getPending();
+        if (amount > pending + 0.001) {
+            errEl.textContent = 'El monto ($' + amount.toFixed(2) + ') supera el pendiente ($' + pending.toFixed(2) + ')';
+            errEl.style.display = 'block';
+            return;
+        }
+
+        stagedPayments.push({ id: null, amount: amount, method: method,
+            method_label: METHOD_LABELS[method] || method, notes: notes, isNew: true });
+        resetPaymentForm();
+        renderPaymentEdit();
+        renderPaymentView();
+    });
+
+    // Enter en campo monto dispara el + circle
+    document.getElementById('new-payment-amount').addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') { e.preventDefault(); document.getElementById('btn-add-payment').click(); }
+    });
+
+    // Inicializar vista de pagos
     renderPaymentView();
 
 
@@ -830,6 +1087,13 @@ document.addEventListener('DOMContentLoaded', function () {
         // Serializar items
         const itemsJsonInput = document.getElementById('items-json');
         if (itemsJsonInput) itemsJsonInput.value = JSON.stringify(items);
+
+        // Serializar staged payments
+        document.getElementById('payment-details-json').value = JSON.stringify(
+            stagedPayments.map(function(p) {
+                return { id: p.isNew ? null : p.id, amount: p.amount, method: p.method, notes: p.notes || '' };
+            })
+        );
 
         this.submit();
     });

@@ -1,4 +1,5 @@
 import json
+from decimal import Decimal, InvalidOperation
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.views.generic import ListView
@@ -6,6 +7,7 @@ from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.views.generic.detail import DetailView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
 from django.db import models
 from django.utils import timezone
 from finances.forms import *
@@ -232,16 +234,19 @@ class SaleUpdateView(LoginRequiredMixin, UpdateView):
         data = super().get_context_data(**kwargs)
         data['form_type'] = 'Venta'
         data['sale'] = self.object
-        
+
         # Lista de productos para el datalist
         products = Product.objects.all()
         data['products'] = products
-        
+
         # Agregar clientes y proveedores para búsqueda
         from accounts.models import Client, Supplier
         data['clients'] = Client.objects.all()
         data['suppliers'] = Supplier.objects.all()
-        
+
+        # PaymentDetails activos para la sección de pagos
+        data['active_payment_details'] = self.object.payment_details.filter(is_reverted=False)
+
         return data
     
     def form_valid(self, form):
@@ -324,6 +329,56 @@ class SaleUpdateView(LoginRequiredMixin, UpdateView):
             if created:
                 messages.info(self.request, f"Cuenta corriente creada para {person}")
         
+        # --- Procesar staged PaymentDetails ---
+        payment_details_json = self.request.POST.get('payment_details_json', '[]')
+        try:
+            staged = json.loads(payment_details_json)
+        except (json.JSONDecodeError, TypeError):
+            staged = []
+
+        staged_ids = set()
+        for pd_data in staged:
+            try:
+                amount = Decimal(str(pd_data.get('amount', 0)))
+            except Exception:
+                continue
+            payment_method = pd_data.get('method', 'CA')
+            notes = pd_data.get('notes', '')
+
+            if amount <= 0 or payment_method not in ['CA', 'TR', 'CH']:
+                continue
+
+            pd_id = pd_data.get('id')
+            if pd_id:
+                try:
+                    pd = PaymentDetail.objects.get(pk=pd_id, sale=self.object, is_reverted=False)
+                    pd.amount = amount
+                    pd.payment_method = payment_method
+                    pd.notes = notes
+                    pd.save()
+                    staged_ids.add(pd.id)
+                except PaymentDetail.DoesNotExist:
+                    pass
+            else:
+                pd = PaymentDetail.objects.create(
+                    sale=self.object,
+                    amount=amount,
+                    payment_method=payment_method,
+                    notes=notes,
+                    user_created=self.request.user,
+                )
+                staged_ids.add(pd.id)
+
+        # Revertir PaymentDetails existentes que no estén en el staged
+        for pd in PaymentDetail.objects.filter(sale=self.object, is_reverted=False):
+            if pd.id not in staged_ids:
+                pd.is_reverted = True
+                pd.save()
+
+        # Recalcular payment_status desde los PaymentDetails actuales
+        self.object.update_payment_status()
+        # ---
+
         messages.success(self.request, f"Venta {self.object.ticket_code} actualizada correctamente")
         return redirect(self.success_url)
 
@@ -726,6 +781,124 @@ class CurrentAccountListView(LoginRequiredMixin, ListView):
         context['accounts_with_balance'] = accounts_with_balance
         context['search'] = self.request.GET.get('search', '')
         return context
+
+
+#-------[ VISTAS PAYMENT DETAIL (AJAX) ]-------
+
+@login_required
+def add_payment_detail(request, sale_id):
+    """AJAX POST: registra un cobro parcial sobre una venta."""
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Método no permitido'}, status=405)
+
+    sale = get_object_or_404(Sale, pk=sale_id)
+
+    try:
+        data = json.loads(request.body)
+        amount = Decimal(str(data.get('amount', 0)))
+        payment_method = data.get('payment_method', '')
+        notes = data.get('notes', '')
+    except (json.JSONDecodeError, ValueError, InvalidOperation):
+        return JsonResponse({'success': False, 'error': 'Datos inválidos'}, status=400)
+
+    if amount <= 0:
+        return JsonResponse({'success': False, 'error': 'El monto debe ser mayor a cero'}, status=400)
+
+    pending = sale.get_pending_amount()
+    if amount > pending:
+        return JsonResponse({'success': False, 'error': f'El monto (${amount}) supera el pendiente (${pending})'}, status=400)
+
+    if payment_method not in ['CA', 'TR', 'CH']:
+        return JsonResponse({'success': False, 'error': 'Método de pago inválido'}, status=400)
+
+    pd = PaymentDetail.objects.create(
+        sale=sale,
+        amount=amount,
+        payment_method=payment_method,
+        notes=notes,
+        user_created=request.user,
+    )
+
+    sale.refresh_from_db()
+    return JsonResponse({
+        'success': True,
+        'id': pd.id,
+        'amount': str(pd.amount),
+        'method': pd.payment_method,
+        'method_label': pd.get_payment_method_display(),
+        'date': pd.created_at.strftime('%d/%m/%Y %H:%M'),
+        'total_paid': str(sale.get_total_paid()),
+        'pending': str(sale.get_pending_amount()),
+        'payment_status': sale.payment_status,
+        'payment_status_label': sale.get_payment_status_display(),
+    })
+
+
+@login_required
+def revert_payment_detail(request, pd_id):
+    """AJAX POST: revierte un PaymentDetail (is_reverted=True)."""
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Método no permitido'}, status=405)
+
+    pd = get_object_or_404(PaymentDetail, pk=pd_id)
+    pd.is_reverted = True
+    pd.save()
+
+    sale = pd.sale
+    sale.refresh_from_db()
+    return JsonResponse({
+        'success': True,
+        'total_paid': str(sale.get_total_paid()),
+        'pending': str(sale.get_pending_amount()),
+        'payment_status': sale.payment_status,
+        'payment_status_label': sale.get_payment_status_display(),
+    })
+
+
+@login_required
+def update_payment_detail(request, pd_id):
+    """AJAX POST: actualiza monto/método/notas de un PaymentDetail existente."""
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Método no permitido'}, status=405)
+
+    pd = get_object_or_404(PaymentDetail, pk=pd_id)
+    try:
+        data = json.loads(request.body)
+        amount = Decimal(str(data.get('amount', 0)))
+        payment_method = data.get('payment_method', '')
+        notes = data.get('notes', '')
+    except (json.JSONDecodeError, ValueError, InvalidOperation):
+        return JsonResponse({'success': False, 'error': 'Datos inválidos'}, status=400)
+
+    if amount <= 0:
+        return JsonResponse({'success': False, 'error': 'El monto debe ser mayor a cero'}, status=400)
+
+    # El pendiente disponible = pendiente actual + lo que ya pagaba este PD
+    pending_excluding_this = pd.sale.get_pending_amount() + pd.amount
+    if amount > pending_excluding_this:
+        return JsonResponse({'success': False, 'error': f'El monto supera el pendiente disponible (${pending_excluding_this})'}, status=400)
+
+    if payment_method not in ['CA', 'TR', 'CH']:
+        return JsonResponse({'success': False, 'error': 'Método de pago inválido'}, status=400)
+
+    pd.amount = amount
+    pd.payment_method = payment_method
+    pd.notes = notes
+    pd.save()
+
+    sale = pd.sale
+    sale.refresh_from_db()
+    return JsonResponse({
+        'success': True,
+        'id': pd.id,
+        'amount': str(pd.amount),
+        'method': pd.payment_method,
+        'method_label': pd.get_payment_method_display(),
+        'total_paid': str(sale.get_total_paid()),
+        'pending': str(sale.get_pending_amount()),
+        'payment_status': sale.payment_status,
+        'payment_status_label': sale.get_payment_status_display(),
+    })
 
 
 @login_required

@@ -61,7 +61,18 @@
                         </thead>
                         <tbody>
                             {% for entry in ledger %}
-                            <tr class="clickeable-row" 
+                            {% if entry.is_payment_detail %}
+                            <tr style="color: #14ae2e;">
+                                <td>{{ entry.date|date:"d/m/Y H:i" }}</td>
+                                <td>{{ entry.sale_code }}</td>
+                                <td>{{ entry.type }}</td>
+                                <td class="text-end">${{ entry.amount|floatformat:2 }}</td>
+                                <td class="text-end" style="color: {% if entry.balance > 0 %}#da7a21{% elif entry.balance < 0 %}#14ae2e{% else %}#fff{% endif %};">
+                                    ${{ entry.balance|floatformat:2 }}
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr class="clickeable-row"
                                 onclick="window.location='{% if entry.ticket.sale %}{% url 'DetailSale' pk=entry.ticket.sale.pk %}{% elif entry.ticket.purchase %}{% url 'DetailPurchase' pk=entry.ticket.purchase.pk %}{% elif entry.ticket.payment %}{% url 'DetailPayment' pk=entry.ticket.payment.pk %}{% elif entry.ticket.creditnote %}{% url 'DetailCreditNote' pk=entry.ticket.creditnote.pk %}{% endif %}'">
                                 <td>{{ entry.date|date:"d/m/Y" }}</td>
                                 <td>
@@ -83,6 +94,7 @@
                                     ${{ entry.balance|floatformat:2 }}
                                 </td>
                             </tr>
+                            {% endif %}
                             {% endfor %}
                         </tbody>
                     </table>

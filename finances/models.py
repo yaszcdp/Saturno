@@ -85,11 +85,19 @@ class CashRegister(models.Model):
 
     def charge_tickets(self):
         #Carga los tickets, calcula los totales y el saldo final
-        sales = Sale.objects.filter(date=self.date)
-        incomes = Payment.objects.filter(date=self.date, payment_type='I')
-        expenses = Payment.objects.filter(date=self.date, payment_type='E')
+        from django.db.models import Sum
 
-        total_sales = self.calculate_total_type(sales)
+        # Ventas: usar PaymentDetails del día por método (soporta pagos mixtos)
+        pds = PaymentDetail.objects.filter(created_at__date=self.date, is_reverted=False)
+        total_sales = {'cash': 0, 'transfer': 0, 'check': 0, 'account': 0}
+        for code, key in PAYMENT_METHODS_DICT.items():
+            total_sales[key] = float(
+                pds.filter(payment_method=code).aggregate(Sum('amount'))['amount__sum'] or 0
+            )
+
+        # Pagos standalone: income/expense (sin cambios)
+        incomes = Payment.objects.filter(date_time__date=self.date, payment_type='I')
+        expenses = Payment.objects.filter(date_time__date=self.date, payment_type='E')
         total_incomes = self.calculate_total_type(incomes)
         total_expenses = self.calculate_total_type(expenses)
 

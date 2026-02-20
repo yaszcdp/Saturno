@@ -36,4 +36,8 @@ urlpatterns = [
     path('current-accounts/', views.CurrentAccountListView.as_view(), name='CurrentAccounts'),
     path('current-account/<int:pk>/', views.CurrentAccountDetailView.as_view(), name='CurrentAccountDetail'),
     path('current-account/person/<int:person_id>/', views.current_account_by_person, name='CurrentAccountByPerson'),
+
+    path('sale/<int:sale_id>/add-payment/', views.add_payment_detail, name='AddPaymentDetail'),
+    path('payment-detail/<int:pd_id>/revert/', views.revert_payment_detail, name='RevertPaymentDetail'),
+    path('payment-detail/<int:pd_id>/update/', views.update_payment_detail, name='UpdatePaymentDetail'),
 ]

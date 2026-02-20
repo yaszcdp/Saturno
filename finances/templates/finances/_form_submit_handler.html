@@ -1,0 +1,93 @@
+{# Partial template para validación de formulario y serialización de items #}
+{# Se debe incluir al final del form, antes del cierre del form #}
+
+<script>
+// JavaScript para validación y submisión del formulario
+(function() {
+    const form = document.querySelector("form");
+    
+    if (form) {
+        form.addEventListener("submit", function(event) {
+            event.preventDefault(); // Detener el envío para validación
+
+            // Obtener elementos del formulario
+            const temporalNameInput = document.getElementById("id_temporal_name");
+            const temporalName = temporalNameInput ? temporalNameInput.value.trim() : "";
+            const accountYes = document.getElementById("account-yes");
+            const useAccount = accountYes ? accountYes.checked : false;
+            const personIdInput = document.getElementById("id_person");
+            const personId = personIdInput ? personIdInput.value : "";
+            
+            // Obtener divs de error
+            const errorDivName = document.getElementById("name-error");
+            const errorDivItems = document.getElementById("items-error");
+            const errorDivMessage = document.getElementById("message-error");
+            
+            // Obtener items y validar
+            const items = window.itemsManager && window.itemsManager.items ? window.itemsManager.items : [];
+            const personConfirmed = window.personConfirmed || false;
+            
+            // Validar que si usa cuenta corriente, haya confirmado la persona O si no usa cuenta, tenga nombre temporal
+            const hasValidIdentification = useAccount ? (personId && personConfirmed) : temporalName;
+            
+            if (!hasValidIdentification && items.length === 0) {
+                // Ni identificación ni items
+                const identificationType = useAccount ? "un Cliente/Proveedor" : "el nombre del cliente";
+                if (errorDivMessage) {
+                    errorDivMessage.innerHTML = `*Completa ${identificationType}*<br>*Debes agregar al menos un ítem*`;
+                    errorDivMessage.style.display = "block";
+                }
+                if (errorDivName) errorDivName.style.display = "block";
+                if (errorDivItems) errorDivItems.style.display = "block";
+                return false;
+                
+            } else if (hasValidIdentification && items.length === 0) {
+                // Tiene identificación pero no items
+                if (errorDivMessage) {
+                    errorDivMessage.textContent = "*Debes agregar al menos un ítem*";
+                    errorDivMessage.style.display = "block";
+                }
+                if (errorDivItems) errorDivItems.style.display = "block";
+                if (errorDivName) errorDivName.style.display = "none";
+                return false;
+                
+            } else if (!hasValidIdentification && items.length > 0) {
+                // Tiene items pero no identificación
+                const identificationType = useAccount ? "un Cliente/Proveedor" : "el nombre del cliente";
+                if (errorDivMessage) {
+                    errorDivMessage.textContent = `*Completa ${identificationType}*`;
+                    errorDivMessage.style.display = "block";
+                }
+                if (errorDivName) errorDivName.style.display = "block";
+                if (errorDivItems) errorDivItems.style.display = "none";
+                return false;
+                
+            } else {
+                // Todo OK - serializar items y enviar
+                if (errorDivName) errorDivName.style.display = "none";
+                if (errorDivItems) errorDivItems.style.display = "none";
+                if (errorDivMessage) errorDivMessage.style.display = "none";
+                
+                // Serializar items a JSON
+                const itemsData = JSON.stringify(items);
+                
+                // Crear o actualizar input hidden para items
+                let itemsInput = document.getElementById("items-data");
+                if (!itemsInput) {
+                    itemsInput = document.createElement("input");
+                    itemsInput.type = "hidden";
+                    itemsInput.id = "items-data";
+                    itemsInput.name = "items";
+                    form.appendChild(itemsInput);
+                }
+                itemsInput.value = itemsData;
+                
+                console.log("Items JSON:", itemsInput.value);
+                
+                // Submit form
+                form.submit();
+            }
+        });
+    }
+})();
+</script>

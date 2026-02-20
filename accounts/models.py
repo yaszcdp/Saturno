@@ -71,34 +71,31 @@ class CurrentAccount(models.Model):
         """Calcula el balance en tiempo real: (ventas pendientes/parciales + compras) - pagos"""
         from django.db.models import Sum
         from finances.models import Sale, Purchase, Payment
-        
-        # Ventas pendientes o con pago parcial - cliente debe
-        # Solo suma ventas con payment_status='PE' (Pendiente) o 'PP' (Pago Parcial)
-        # Las ventas con payment_status='PA' (Pagado) NO suman
-        sales = Sale.objects.filter(
+
+        # Ventas PE/PP: usar get_pending_amount() para reflejar pagos parciales correctamente
+        sales_qs = Sale.objects.filter(
             person=self.person,
-            payment_status__in=['PE', 'PP']  # Solo pendientes y pagos parciales
-        ).aggregate(total=Sum('amount'))['total'] or 0
-        
+            payment_status__in=['PE', 'PP']
+        )
+        sales_balance = sum(s.get_pending_amount() for s in sales_qs)
+
         # Compras a cuenta corriente - nosotros debemos al proveedor
         purchases = Purchase.objects.filter(
             person=self.person
         ).aggregate(total=Sum('amount'))['total'] or 0
-        
-        # Pagos recibidos de clientes (positivos) o hechos a proveedores (negativos)
+
+        # Pagos standalone recibidos/realizados (no vinculados a ventas específicas)
         payments_income = Payment.objects.filter(
             person=self.person,
-            payment_type='I'  # Income - pago recibido de cliente
+            payment_type='I'
         ).aggregate(total=Sum('amount'))['total'] or 0
-        
+
         payments_expense = Payment.objects.filter(
             person=self.person,
-            payment_type='E'  # Expense - pago hecho a proveedor
+            payment_type='E'
         ).aggregate(total=Sum('amount'))['total'] or 0
-        
-        # Balance = lo que nos deben (ventas) - lo que pagaron + lo que debemos (compras) - lo que pagamos
-        balance = (sales - payments_income) + (purchases - payments_expense)
-        
+
+        balance = (sales_balance - payments_income) + (purchases - payments_expense)
         return balance
     
     def get_transactions(self):
@@ -110,49 +107,78 @@ class CurrentAccount(models.Model):
     
     def get_ledger(self):
         """Genera un libro mayor con balance corriente después de cada transacción"""
-        from finances.models import Sale, Purchase, Payment, CreditNote
-        
+        from finances.models import Sale, Purchase, Payment, CreditNote, PaymentDetail
+
         transactions = []
         running_balance = 0
-        
-        # Obtener todas las transacciones
+
+        # Construir lista combinada: tickets + PaymentDetails, ordenados por datetime
         tickets = self.get_transactions().order_by('date_time')
-        
-        for ticket in tickets:
-            # Determinar tipo, monto y código
-            trans_type = None
-            amount = ticket.amount or 0
-            
-            if hasattr(ticket, 'sale') and ticket.sale:
-                trans_type = 'Venta'
-                running_balance += amount  # Cliente debe (siempre que tenga persona asignada)
-            elif hasattr(ticket, 'purchase') and ticket.purchase:
-                trans_type = 'Compra'
-                running_balance += amount  # Nosotros debemos
-            elif hasattr(ticket, 'payment') and ticket.payment:
-                if ticket.payment.payment_type == 'I':
-                    trans_type = 'Pago Recibido'
-                    running_balance -= amount  # Cliente pagó
+        all_events = [(t.date_time, 'ticket', t) for t in tickets]
+
+        pds = PaymentDetail.objects.filter(
+            sale__person=self.person,
+            is_reverted=False
+        ).select_related('sale', 'sale__ticket_code').order_by('created_at')
+        all_events += [(pd.created_at, 'pd', pd) for pd in pds]
+
+        all_events.sort(key=lambda x: x[0])
+
+        for _dt, entry_type, entry in all_events:
+            if entry_type == 'ticket':
+                ticket = entry
+                trans_type = None
+                amount = ticket.amount or 0
+
+                if hasattr(ticket, 'sale') and ticket.sale:
+                    trans_type = 'Venta'
+                    running_balance += amount
+                elif hasattr(ticket, 'purchase') and ticket.purchase:
+                    trans_type = 'Compra'
+                    running_balance += amount
+                elif hasattr(ticket, 'payment') and ticket.payment:
+                    if ticket.payment.payment_type == 'I':
+                        trans_type = 'Pago Recibido'
+                        running_balance -= amount
+                    else:
+                        trans_type = 'Pago Realizado'
+                        running_balance -= amount
+                elif hasattr(ticket, 'creditnote') and ticket.creditnote:
+                    trans_type = 'Nota de Crédito'
+                    running_balance -= amount
                 else:
-                    trans_type = 'Pago Realizado'
-                    running_balance -= amount  # Nosotros pagamos
-            elif hasattr(ticket, 'creditnote') and ticket.creditnote:
-                trans_type = 'Nota de Crédito'
+                    continue
+
+                if trans_type:
+                    transactions.append({
+                        'date': ticket.date_time,
+                        'ticket_id': ticket.id,
+                        'type': trans_type,
+                        'description': str(ticket),
+                        'amount': amount,
+                        'balance': running_balance,
+                        'ticket': ticket,
+                        'is_payment_detail': False,
+                        'sale_code': '',
+                    })
+
+            else:  # 'pd' — PaymentDetail
+                pd = entry
+                amount = float(pd.amount)
                 running_balance -= amount
-            else:
-                continue
-            
-            if trans_type:
+                sale_code = pd.sale.ticket_code.code if pd.sale.ticket_code else '-'
                 transactions.append({
-                    'date': ticket.date_time,
-                    'ticket_id': ticket.id,
-                    'type': trans_type,
-                    'description': str(ticket),
+                    'date': pd.created_at,
+                    'ticket_id': None,
+                    'type': f'Cobro ({pd.get_payment_method_display()})',
+                    'description': f'${pd.amount} — {pd.get_payment_method_display()}',
                     'amount': amount,
                     'balance': running_balance,
-                    'ticket': ticket
+                    'ticket': None,
+                    'is_payment_detail': True,
+                    'sale_code': sale_code,
                 })
-        
+
         return transactions
     
 '''
