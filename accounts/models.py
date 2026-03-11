@@ -164,7 +164,7 @@ class CurrentAccount(models.Model):
 
             else:  # 'pd' — PaymentDetail
                 pd = entry
-                amount = float(pd.amount)
+                amount = pd.amount  # Decimal, compatible con running_balance
                 running_balance -= amount
                 sale_code = pd.sale.ticket_code.code if pd.sale.ticket_code else '-'
                 transactions.append({

@@ -245,7 +245,7 @@ class SaleUpdateView(LoginRequiredMixin, UpdateView):
         data['suppliers'] = Supplier.objects.all()
 
         # PaymentDetails activos para la sección de pagos
-        data['active_payment_details'] = self.object.payment_details.filter(is_reverted=False)
+        data['active_payment_details'] = self.object.payment_details.filter(is_reverted=False).select_related('cheque')
 
         return data
     
@@ -344,6 +344,7 @@ class SaleUpdateView(LoginRequiredMixin, UpdateView):
                 continue
             payment_method = pd_data.get('method', 'CA')
             notes = pd_data.get('notes', '')
+            cheque_data = pd_data.get('cheque') or {}
 
             if amount <= 0 or payment_method not in ['CA', 'TR', 'CH']:
                 continue
@@ -368,6 +369,36 @@ class SaleUpdateView(LoginRequiredMixin, UpdateView):
                     user_created=self.request.user,
                 )
                 staged_ids.add(pd.id)
+
+            # Crear/actualizar Cheque asociado si el método es CH
+            if payment_method == 'CH' and cheque_data.get('numero'):
+                from datetime import date as date_cls
+                librador_person_id = cheque_data.get('librador_person_id')
+                librador_person = None
+                if librador_person_id:
+                    try:
+                        from accounts.models import Person as PersonModel
+                        librador_person = PersonModel.objects.get(pk=librador_person_id)
+                    except Exception:
+                        pass
+                fecha_cobro_str = cheque_data.get('fecha_cobro', '')
+                try:
+                    from datetime import datetime as dt
+                    fecha_cobro = dt.strptime(fecha_cobro_str, '%Y-%m-%d').date()
+                except (ValueError, TypeError):
+                    fecha_cobro = date_cls.today()
+
+                cheque_defaults = dict(
+                    tipo='RE',
+                    numero=cheque_data.get('numero', ''),
+                    banco=cheque_data.get('banco', ''),
+                    fecha_cobro=fecha_cobro,
+                    librador_person=librador_person,
+                    librador_nombre=cheque_data.get('librador_nombre', ''),
+                    notas=cheque_data.get('notas', ''),
+                    user_created=self.request.user,
+                )
+                Cheque.objects.update_or_create(payment_detail=pd, defaults=cheque_defaults)
 
         # Revertir PaymentDetails existentes que no estén en el staged
         for pd in PaymentDetail.objects.filter(sale=self.object, is_reverted=False):
@@ -915,13 +946,11 @@ def current_account_by_person(request, person_id):
     )
     
     # Obtener datos para el template
-    balance = current_account.get_balance()
     ledger = current_account.get_ledger()
-    transactions = current_account.get_transactions()
-    
+    balance = ledger[-1]['balance'] if ledger else 0
+
     return render(request, 'finances/current-account-detail.html', {
         'account': current_account,
         'balance': balance,
         'ledger': ledger,
-        'transactions': transactions
     })

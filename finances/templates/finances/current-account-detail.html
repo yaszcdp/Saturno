@@ -44,7 +44,7 @@
         
         <!-- Listado de Movimientos -->
         <div class="row mx-2 mb-4 justify-content-center">
-            <div class="col-12 pt-4 info-card">
+            <div class="col-12 pt-4 info-card" style="padding: 0.5rem;">
                 <h2 class="text-start mb-3" style="font-size: 1.8rem; letter-spacing: 0rem;">Movimientos de Cuenta:</h2>
                 
                 {% if ledger %}
@@ -54,7 +54,7 @@
                             <tr>
                                 <th>Fecha</th>
                                 <th>Nro Comprobante</th>
-                                <th>Detalle</th>
+                                <th class="d-none d-md-table-cell">Detalle</th>
                                 <th class="text-end">Monto</th>
                                 <th class="text-end">Saldo</th>
                             </tr>
@@ -62,19 +62,25 @@
                         <tbody>
                             {% for entry in ledger %}
                             {% if entry.is_payment_detail %}
-                            <tr style="color: #14ae2e;">
-                                <td>{{ entry.date|date:"d/m/Y H:i" }}</td>
+                            <tr>
+                                <td>
+                                    <span class="d-md-none">{{ entry.date|date:"j/n/y H:i" }}</span>
+                                    <span class="d-none d-md-inline">{{ entry.date|date:"d/m/Y H:i" }}</span>
+                                </td>
                                 <td>{{ entry.sale_code }}</td>
-                                <td>{{ entry.type }}</td>
-                                <td class="text-end">${{ entry.amount|floatformat:2 }}</td>
-                                <td class="text-end" style="color: {% if entry.balance > 0 %}#da7a21{% elif entry.balance < 0 %}#14ae2e{% else %}#fff{% endif %};">
+                                <td class="d-none d-md-table-cell">{{ entry.type }}</td>
+                                <td class="text-end" style="color:#14ae2e;">-${{ entry.amount|floatformat:2 }}</td>
+                                <td class="text-end" style="color: {% if entry.balance > 0 %}#a10202{% elif entry.balance < 0 %}#14ae2e{% else %}#fff{% endif %};">
                                     ${{ entry.balance|floatformat:2 }}
                                 </td>
                             </tr>
                             {% else %}
                             <tr class="clickeable-row"
                                 onclick="window.location='{% if entry.ticket.sale %}{% url 'DetailSale' pk=entry.ticket.sale.pk %}{% elif entry.ticket.purchase %}{% url 'DetailPurchase' pk=entry.ticket.purchase.pk %}{% elif entry.ticket.payment %}{% url 'DetailPayment' pk=entry.ticket.payment.pk %}{% elif entry.ticket.creditnote %}{% url 'DetailCreditNote' pk=entry.ticket.creditnote.pk %}{% endif %}'">
-                                <td>{{ entry.date|date:"d/m/Y" }}</td>
+                                <td>
+                                    <span class="d-md-none">{{ entry.date|date:"j/n/y" }}</span>
+                                    <span class="d-none d-md-inline">{{ entry.date|date:"d/m/Y" }}</span>
+                                </td>
                                 <td>
                                     {% if entry.ticket.sale %}
                                         {{ entry.ticket.sale.ticket_code.code }}
@@ -88,9 +94,9 @@
                                         -
                                     {% endif %}
                                 </td>
-                                <td>{{ entry.type }}</td>
-                                <td class="text-end">${{ entry.amount|floatformat:2 }}</td>
-                                <td class="text-end" style="color: {% if entry.balance > 0 %}#da7a21{% elif entry.balance < 0 %}#14ae2e{% else %}#fff{% endif %};">
+                                <td class="d-none d-md-table-cell">{{ entry.type }}</td>
+                                <td class="text-end" style="color:#da7a21;">+${{ entry.amount|floatformat:2 }}</td>
+                                <td class="text-end" style="color: {% if entry.balance > 0 %}#a10202{% elif entry.balance < 0 %}#14ae2e{% else %}#fff{% endif %};">
                                     ${{ entry.balance|floatformat:2 }}
                                 </td>
                             </tr>
@@ -113,13 +119,11 @@
             </div>
         </div>
 
-        <!-- Balance Actual -->
+        <!-- Saldo Actual -->
         <div class="row mx-2 mb-4">
             <div class="col-12 info-card py-3">
-                <h3>Balance Actual: 
-                    <span style="color: {% if balance > 0 %}#da7a21{% elif balance < 0 %}#14ae2e{% else %}#fff{% endif %};">
-                        ${{ balance|floatformat:2 }}
-                    </span>
+                <h3 style="color: {% if balance > 0 %}#a10202{% elif balance < 0 %}#14ae2e{% else %}#fff{% endif %};">
+                    ${{ balance|floatformat:2 }}
                 </h3>
                 <p class="small">
                     {% if balance > 0 %}
@@ -132,16 +136,6 @@
                 </p>
             </div>
         </div>
-        
-        <!-- Notas -->
-        {% if account.notes %}
-        <div class="row mx-2 mb-4 custom-card justify-content-center">
-            <div class="col-12 pt-4 info-card">
-                <h3 class="text-start mb-3">Notas:</h3>
-                <p class="text-start ps-4">{{ account.notes }}</p>
-            </div>
-        </div>
-        {% endif %}
         
         <a class="btn btn-outline-green col-10 my-3 mt-4" href="javascript:history.back()">Volver</a>
     </div>
