@@ -55,7 +55,7 @@
                 {% if request.user.is_superuser %}
                 <div class="col-1 mt-sm-3 justify-content-around">
                     <div class="my-2">
-                        <a class="trash-icon" href="{% url 'DeletePerson' person_type=person_type pk=object.pk %}"><i class="bi bi-trash3"></i></a>
+                        <a class="red-icon" href="{% url 'DeletePerson' person_type=person_type pk=object.pk %}"><i class="bi bi-trash3"></i></a>
                     </div>
                 </div>
                 {% endif %}

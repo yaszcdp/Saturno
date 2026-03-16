@@ -377,17 +377,29 @@ h4{
 }
 
 
+/* Status badges */
+.status-completado  { color: #14ae2e !important; }
+.status-pendiente   { color: #da7a21 !important; }
+.status-incompleto  { color: #a10202 !important; }
+.status-parcial     { color: #e8c000 !important; }
+
 a i{
     font-size: 2.5rem;
     color: white;
+    transition: color 0.2s ease;
 }
 
-a i:hover{
+a i:hover,
+.orange-icon:hover i{
     color: #da7a21;
 }
 
-.trash-icon:hover i{
+.red-icon:hover i{
     color: #a10202;
+}
+
+.green-icon:hover i{
+    color: #14ae2e;
 }
 
 .add-item-btn i, .delete-item-btn i{
@@ -566,7 +578,7 @@ select{
 
 @media (min-width: 970px){
     .container-box{
-        width: 730px;
+        width: 850px;
     }
 
     .container-list{
@@ -734,6 +746,9 @@ table td a:hover{
 @media (max-width: 767px){
     .info-card{
         text-align: center !important;
+    }
+    .info-card--ledger{
+        padding: 0.5rem;
     }
 }
 

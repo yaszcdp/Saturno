@@ -224,6 +224,25 @@
                                 </button>
                             </div>
                         </div>
+                        <!-- Campos de cheque (visible solo cuando método = CH) -->
+                        <div id="cheque-fields-row" class="row align-items-end px-4 gap-2 mb-2" style="display:none;">
+                            <div class="col-md-2 col-5">
+                                <label class="form-label" style="font-size:1.3rem;">N° Cheque</label>
+                                <input type="text" id="new-cheque-numero" class="payment-amount-input" placeholder="12345">
+                            </div>
+                            <div class="col-md-3 col-6">
+                                <label class="form-label" style="font-size:1.3rem;">Banco</label>
+                                <input type="text" id="new-cheque-banco" class="payment-amount-input" placeholder="Nombre del banco">
+                            </div>
+                            <div class="col-md-4 col-11">
+                                <label class="form-label" style="font-size:1.3rem;">Librador</label>
+                                <input type="text" id="new-cheque-librador" class="payment-amount-input" placeholder="Nombre del librador">
+                            </div>
+                            <div class="col-md-2 col-8">
+                                <label class="form-label" style="font-size:1.3rem;">Fecha de cobro</label>
+                                <input type="date" id="new-cheque-fecha-cobro" class="payment-amount-input">
+                            </div>
+                        </div>
                         <div id="payment-error-msg" class="alert alert-danger mx-4 py-2 mb-2" style="display:none;"></div>
                     </div>
                     
@@ -830,7 +849,9 @@ document.addEventListener('DOMContentLoaded', function () {
     const PAYMENT_STATUS_CLASSES = { PE: 'status-pendiente', PP: 'status-parcial', PA: 'status-completado' };
     const METHOD_LABELS = { CA: 'Efectivo', TR: 'Transferencia', CH: 'Cheque' };
 
-    const saleAmount = {{ sale.amount|unlocalize }};
+    const saleAmount     = {{ sale.amount|unlocalize }};
+    const saleClientName = "{{ sale.temporal_name|default:''|escapejs }}";
+    const salePersonId   = {{ sale.person.person_ptr_id|default:"null" }};
 
     // Estado staged (trabajamos sobre esta copia hasta que se guarda el form)
     const stagedPayments = [
@@ -842,7 +863,14 @@ document.addEventListener('DOMContentLoaded', function () {
             method_label: "{{ pd.get_payment_method_display }}",
             date: "{{ pd.created_at|date:'d/m/Y H:i' }}",
             notes: "{{ pd.notes|default:''|escapejs }}",
-            isNew: false
+            isNew: false,
+            cheque: {% if pd.payment_method == 'CH' %}{% with ch=pd.cheque %}{% if ch %}{
+                numero: "{{ ch.numero|escapejs }}",
+                banco: "{{ ch.banco|escapejs }}",
+                librador_nombre: "{{ ch.librador_nombre|escapejs }}",
+                librador_person_id: {{ ch.librador_person_id|default:"null" }},
+                fecha_cobro: "{{ ch.fecha_cobro|date:'Y-m-d' }}"
+            }{% else %}null{% endif %}{% endwith %}{% else %}null{% endif %}
         }{% if not forloop.last %},{% endif %}
         {% endfor %}
     ];
@@ -864,15 +892,22 @@ document.addEventListener('DOMContentLoaded', function () {
         return { key: key, label: PAYMENT_STATUS_LABELS[key], cssClass: PAYMENT_STATUS_CLASSES[key] };
     }
 
+    function formatDate(dateStr) {
+        // Convierte YYYY-MM-DD a DD/MM/YYYY
+        const parts = dateStr ? dateStr.split('-') : [];
+        return parts.length === 3 ? parts[2] + '/' + parts[1] + '/' + parts[0] : (dateStr || '-');
+    }
+
     function buildPaymentTable(withActions) {
         if (stagedPayments.length === 0) {
             return '<p class="fst-italic text-center py-2">Sin cobros registrados</p>';
         }
+        const colCount = withActions ? 4 : 3;
         let html = '<div class="table-responsive"><table style="width:100%;">' +
             '<thead><tr><th>Fecha</th><th>Método</th><th class="text-end">Monto</th>' +
             (withActions ? '<th></th>' : '') + '</tr></thead><tbody>';
         stagedPayments.forEach(function (pd, idx) {
-            html += '<tr>';
+            html += '<tr data-idx="' + idx + '">';
             html += '<td style="font-size:1.4rem;">' + (pd.date || '<em style="color:#aaa">nuevo</em>') + '</td>';
             html += '<td style="font-size:1.4rem;">' + pd.method_label + '</td>';
             html += '<td class="text-end" style="font-size:1.4rem;">$' + pd.amount.toFixed(2) + '</td>';
@@ -884,6 +919,15 @@ document.addEventListener('DOMContentLoaded', function () {
                     '<i class="bi bi-trash3" style="font-size:1.8rem;"></i></button></td>';
             }
             html += '</tr>';
+            // Sub-fila con datos del cheque
+            if (pd.method === 'CH' && pd.cheque) {
+                const ch = pd.cheque;
+                html += '<tr><td colspan="' + colCount + '" style="font-size:1.2rem; color:#aaa; padding-top:0; padding-left:1.5rem;">' +
+                    'N° ' + ch.numero + ' · ' + ch.banco +
+                    ' · Cobro: ' + formatDate(ch.fecha_cobro) +
+                    ' · ' + ch.librador_nombre +
+                    '</td></tr>';
+            }
         });
         html += '</tbody></table></div>';
         return html;
@@ -945,14 +989,34 @@ document.addEventListener('DOMContentLoaded', function () {
         updateEditTotals();
     }
 
+    function buildChequeSubRow(ch) {
+        ch = ch || {};
+        return '<td colspan="4" class="py-2 px-3">' +
+            '<div class="row align-items-end gap-2">' +
+            '<div class="col-md-2 col-5"><label style="font-size:1.2rem;">N° Cheque</label>' +
+            '<input type="text" class="payment-amount-input edit-ch-numero" value="' + (ch.numero || '') + '" placeholder="12345"></div>' +
+            '<div class="col-md-3 col-6"><label style="font-size:1.2rem;">Banco</label>' +
+            '<input type="text" class="payment-amount-input edit-ch-banco" value="' + (ch.banco || '') + '" placeholder="Nombre del banco"></div>' +
+            '<div class="col-md-4 col-11"><label style="font-size:1.2rem;">Librador</label>' +
+            '<input type="text" class="payment-amount-input edit-ch-librador" value="' + (ch.librador_nombre || saleClientName) + '"></div>' +
+            '<div class="col-md-2 col-8"><label style="font-size:1.2rem;">Fecha cobro</label>' +
+            '<input type="date" class="payment-amount-input edit-ch-fecha" value="' + (ch.fecha_cobro || '') + '"></div>' +
+            '</div></td>';
+    }
+
     function enterEditPaymentRow(idx) {
         const pd = stagedPayments[idx];
         if (!pd) return;
 
         const body      = document.getElementById('edit-payment-body');
-        const allRows   = body.querySelectorAll('tbody tr');
-        const targetRow = allRows[idx];
+        const targetRow = body.querySelector('tbody tr[data-idx="' + idx + '"]');
         if (!targetRow) return;
+
+        // Eliminar sub-fila de cheque existente si la hay
+        const nextSibling = targetRow.nextElementSibling;
+        if (nextSibling && nextSibling.classList.contains('cheque-subrow')) {
+            nextSibling.remove();
+        }
 
         targetRow.innerHTML =
             '<td><small style="color:#aaa; font-size:1.2rem;">' + (pd.date || '(nuevo)') + '</small></td>' +
@@ -973,12 +1037,28 @@ document.addEventListener('DOMContentLoaded', function () {
         const amountInput  = targetRow.querySelector('input[type="number"]');
         const methodSelect = targetRow.querySelector('select');
 
+        // Insertar sub-fila de cheque si corresponde
+        let chequeSubRow = null;
+        function syncChequeSubRow(method) {
+            if (chequeSubRow) { chequeSubRow.remove(); chequeSubRow = null; }
+            if (method === 'CH') {
+                chequeSubRow = document.createElement('tr');
+                chequeSubRow.classList.add('cheque-subrow');
+                chequeSubRow.innerHTML = buildChequeSubRow(pd.method === 'CH' ? pd.cheque : null);
+                targetRow.insertAdjacentElement('afterend', chequeSubRow);
+            }
+        }
+        syncChequeSubRow(pd.method);
+
+        methodSelect.addEventListener('change', function () {
+            syncChequeSubRow(this.value);
+        });
+
         targetRow.querySelector('.save-item-btn').addEventListener('click', function () {
             const newAmount = parseFloat(amountInput.value);
             const newMethod = methodSelect.value;
             if (!newAmount || newAmount <= 0) { amountInput.focus(); return; }
 
-            // Validar que no exceda el disponible (excluyendo este cobro)
             const otherTotal = stagedPayments.reduce(function(s, p, i) {
                 return i === idx ? s : s + p.amount;
             }, 0);
@@ -988,9 +1068,23 @@ document.addEventListener('DOMContentLoaded', function () {
                 return;
             }
 
+            let newCheque = null;
+            if (newMethod === 'CH' && chequeSubRow) {
+                const numero     = chequeSubRow.querySelector('.edit-ch-numero').value.trim();
+                const banco      = chequeSubRow.querySelector('.edit-ch-banco').value.trim();
+                const librador   = chequeSubRow.querySelector('.edit-ch-librador').value.trim();
+                const fechaCobro = chequeSubRow.querySelector('.edit-ch-fecha').value;
+                if (!numero || !banco || !librador || !fechaCobro) {
+                    alert('Completá todos los datos del cheque');
+                    return;
+                }
+                newCheque = { numero, banco, librador_nombre: librador, librador_person_id: salePersonId, fecha_cobro: fechaCobro };
+            }
+
             stagedPayments[idx].amount       = newAmount;
             stagedPayments[idx].method       = newMethod;
             stagedPayments[idx].method_label = METHOD_LABELS[newMethod] || newMethod;
+            stagedPayments[idx].cheque       = newCheque;
             renderPaymentEdit();
             renderPaymentView();
         });
@@ -1008,30 +1102,45 @@ document.addEventListener('DOMContentLoaded', function () {
     };
 
     function resetPaymentForm() {
-        document.getElementById('new-payment-method').value         = '';
-        document.getElementById('new-payment-amount').value         = '';
-        document.getElementById('new-payment-notes').value          = '';
-        document.getElementById('payment-amount-col').style.display = 'none';
-        document.getElementById('payment-notes-col').style.display  = 'none';
-        document.getElementById('payment-add-col').style.display    = 'none';
-        document.getElementById('payment-error-msg').style.display  = 'none';
+        document.getElementById('new-payment-method').value          = '';
+        document.getElementById('new-payment-amount').value          = '';
+        document.getElementById('new-payment-notes').value           = '';
+        document.getElementById('new-cheque-numero').value           = '';
+        document.getElementById('new-cheque-banco').value            = '';
+        document.getElementById('new-cheque-librador').value         = '';
+        document.getElementById('new-cheque-fecha-cobro').value      = '';
+        document.getElementById('payment-amount-col').style.display  = 'none';
+        document.getElementById('payment-notes-col').style.display   = 'none';
+        document.getElementById('payment-add-col').style.display     = 'none';
+        document.getElementById('cheque-fields-row').style.display   = 'none';
+        document.getElementById('payment-error-msg').style.display   = 'none';
     }
 
     document.getElementById('new-payment-method').addEventListener('change', function () {
-        const cfg = NOTE_CONFIG[this.value];
+        const cfg       = NOTE_CONFIG[this.value];
+        const chequeRow = document.getElementById('cheque-fields-row');
         if (!cfg) return;
 
         document.getElementById('payment-amount-col').style.display = '';
         document.getElementById('payment-add-col').style.display    = '';
 
         const notesCol = document.getElementById('payment-notes-col');
-        if (cfg.notes) {
-            document.getElementById('payment-notes-label').textContent = cfg.label;
-            document.getElementById('new-payment-notes').placeholder   = cfg.placeholder;
-            notesCol.style.display = '';
-        } else {
+        if (this.value === 'CH') {
+            // Cheque: ocultar notas, mostrar campos de cheque y auto-rellenar librador
             document.getElementById('new-payment-notes').value = '';
-            notesCol.style.display = 'none';
+            notesCol.style.display  = 'none';
+            chequeRow.style.display = '';
+            document.getElementById('new-cheque-librador').value = saleClientName;
+        } else {
+            chequeRow.style.display = 'none';
+            if (cfg.notes) {
+                document.getElementById('payment-notes-label').textContent = cfg.label;
+                document.getElementById('new-payment-notes').placeholder   = cfg.placeholder;
+                notesCol.style.display = '';
+            } else {
+                document.getElementById('new-payment-notes').value = '';
+                notesCol.style.display = 'none';
+            }
         }
         document.getElementById('new-payment-amount').focus();
     });
@@ -1055,8 +1164,31 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        stagedPayments.push({ id: null, amount: amount, method: method,
-            method_label: METHOD_LABELS[method] || method, notes: notes, isNew: true });
+        let chequeData = null;
+        if (method === 'CH') {
+            const numero     = document.getElementById('new-cheque-numero').value.trim();
+            const banco      = document.getElementById('new-cheque-banco').value.trim();
+            const librador   = document.getElementById('new-cheque-librador').value.trim();
+            const fechaCobro = document.getElementById('new-cheque-fecha-cobro').value;
+            if (!numero || !banco || !librador || !fechaCobro) {
+                errEl.textContent = 'Completá todos los datos del cheque (N°, banco, librador y fecha de cobro)';
+                errEl.style.display = 'block';
+                return;
+            }
+            chequeData = {
+                numero: numero,
+                banco: banco,
+                librador_nombre: librador,
+                librador_person_id: salePersonId,
+                fecha_cobro: fechaCobro,
+            };
+        }
+
+        stagedPayments.push({
+            id: null, amount: amount, method: method,
+            method_label: METHOD_LABELS[method] || method,
+            notes: notes, isNew: true, cheque: chequeData,
+        });
         resetPaymentForm();
         renderPaymentEdit();
         renderPaymentView();
@@ -1088,10 +1220,10 @@ document.addEventListener('DOMContentLoaded', function () {
         const itemsJsonInput = document.getElementById('items-json');
         if (itemsJsonInput) itemsJsonInput.value = JSON.stringify(items);
 
-        // Serializar staged payments
+        // Serializar staged payments (incluye cheque si corresponde)
         document.getElementById('payment-details-json').value = JSON.stringify(
             stagedPayments.map(function(p) {
-                return { id: p.isNew ? null : p.id, amount: p.amount, method: p.method, notes: p.notes || '' };
+                return { id: p.isNew ? null : p.id, amount: p.amount, method: p.method, notes: p.notes || '', cheque: p.cheque || null };
             })
         );
 

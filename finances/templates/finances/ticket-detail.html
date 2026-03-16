@@ -5,176 +5,188 @@
 {% block main %}
 
 <section class="page-section">
-    <div class="container container-box py-4 px-lg-5 text-white text-center">
-        <h1 class="pb-4">DETALLE DE TICKET</h1>
-        <hr>
-        
-        {% if messages %}
-            <div class="row mb-3">
-                <div class="col-12">
-                    {% for message in messages %}
-                        {% if message.tags == 'success' %}
-                            <div class="alert alert-success text-center">
-                                {{ message }}
-                            </div>
-                        {% else %}
-                            <div class="alert alert-danger text-center">
-                                {{ message }}
-                            </div>
-                        {% endif %}
-                    {% endfor %}
-                </div>
-            </div>
+    <div class="container container-box py-4 pb-4 mb-5 px-lg-5 text-white text-center">
+
+        <h1 class="pb-2">DETALLE DE TICKET</h1>
+        {% if sale %}
+            <h1 class="pb-2" style="font-size: 1.6rem; letter-spacing: 0.1rem;">NRO: {{ sale.ticket_code }}</h1>
+        {% elif purchase %}
+            <h1 class="pb-2" style="font-size: 1.6rem; letter-spacing: 0.1rem;">NRO: {{ purchase.ticket_code }}</h1>
+        {% elif payment %}
+            <h1 class="pb-2" style="font-size: 1.6rem; letter-spacing: 0.1rem;">PAGO</h1>
+        {% elif creditnote %}
+            <h1 class="pb-2" style="font-size: 1.6rem; letter-spacing: 0.1rem;">NRO: {{ creditnote.ticket_code }}</h1>
         {% endif %}
-        
-        <!-- Información del Ticket -->
-        <div class="row mx-2 mb-4 custom-card justify-content-center">
-            <div class="col-10 pt-4 pe-4 mt-sm-3 info-card">
-                <!-- Sale -->
-                {% if sale %}
-                    <h2>VENTA</h2>
-                    <p class="mt-3"><strong>Nro Ticket:</strong> {{ sale.ticket_code.code }}</p>
-                    <p><strong>Fecha:</strong> {{ sale.date_time|date:"d/m/Y H:i" }}</p>
-                    {% if sale.person %}
-                        <p><strong>Cliente:</strong> {{ sale.temporal_name }}</p>
+        <hr>
+
+        {% if messages %}
+        <div class="row gx-4 gx-lg-5 mx-2 mb-2">
+            <div class="col-12 mb-3">
+                {% for message in messages %}
+                    {% if message.tags == 'success' %}
+                        <div class="alert alert-success text-center">{{ message }}</div>
                     {% else %}
-                        <p><strong>Cliente:</strong> -</p>
+                        <div class="alert alert-danger text-center">{{ message }}</div>
                     {% endif %}
-                    <p><strong>Estado de Entrega:</strong> 
-                        {% if sale.delivery_status == 'PE' %}<span style="color: #da7a21;">Pendiente</span>
-                        {% elif sale.delivery_status == 'CO' %}<span style="color: #14ae2e;">Completado</span>
-                        {% elif sale.delivery_status == 'IN' %}<span style="color: #a10202;">Incompleto</span>
-                        {% endif %}
-                    </p>
-                    <p><strong>Estado de Pago:</strong>
-                        {% if sale.payment_status == 'PE' %}<span style="color: #da7a21;">Pendiente</span>
-                        {% elif sale.payment_status == 'PP' %}<span style="color: #da7a21;">Pago Parcial</span>
-                        {% elif sale.payment_status == 'PA' %}<span style="color: #14ae2e;">Pagado</span>
-                        {% endif %}
-                    </p>
-                    <p><strong>Método de Pago:</strong> 
-                        {% if sale.payment_method == 'CA' %}Efectivo
-                        {% elif sale.payment_method == 'TR' %}Transferencia
-                        {% elif sale.payment_method == 'CH' %}Cheque
-                        {% elif sale.payment_method == 'AC' %}Cuenta Corriente
-                        {% endif %}
-                    </p>
-                    <p><strong>Usuario:</strong> {{ sale.user_created.username }}</p>
-                
-                <!-- Purchase -->
-                {% elif purchase %}
-                    <h2>COMPRA</h2>
-                    <p class="mt-3"><strong>Nro Ticket:</strong> {{ purchase.ticket_code.code }}</p>
-                    <p><strong>Fecha:</strong> {{ purchase.date_time|date:"d/m/Y H:i" }}</p>
-                    {% if purchase.person %}
-                        <p><strong>Proveedor:</strong> {{ purchase.temporal_name }}</p>
-                    {% else %}
-                        <p><strong>Proveedor:</strong> -</p>
-                    {% endif %}
-                    <p><strong>Usuario:</strong> {{ purchase.user_created.username }}</p>
-                
-                <!-- Payment -->
-                {% elif payment %}
-                    <h2>PAGO</h2>
-                    <p class="mt-3"><strong>Fecha:</strong> {{ payment.date_time|date:"d/m/Y H:i" }}</p>
-                    <p><strong>Tipo:</strong> 
-                        {% if payment.payment_type == 'I' %}Ingreso
-                        {% elif payment.payment_type == 'E' %}Egreso
-                        {% endif %}
-                    </p>
-                    <p><strong>Método de Pago:</strong> 
-                        {% if payment.payment_method == 'CA' %}Efectivo
-                        {% elif payment.payment_method == 'TR' %}Transferencia
-                        {% elif payment.payment_method == 'CH' %}Cheque
-                        {% elif payment.payment_method == 'AC' %}Cuenta Corriente
-                        {% endif %}
-                    </p>
-                    {% if payment.person %}
-                        <p><strong>Persona:</strong> 
-                            {% if payment.person.client %}
-                                {{ payment.person.client.first_name }} {{ payment.person.client.last_name }}
-                            {% elif payment.person.supplier %}
-                                {{ payment.person.supplier.company }}
-                            {% endif %}
-                        </p>
-                    {% else %}
-                        <p><strong>Persona:</strong> -</p>
-                    {% endif %}
-                    <p><strong>Usuario:</strong> {{ payment.user_created.username }}</p>
-                
-                <!-- CreditNote -->
-                {% elif creditnote %}
-                    <h2>NOTA DE CRÉDITO</h2>
-                    <p class="mt-3"><strong>Nro Ticket:</strong> {{ creditnote.ticket_code.code }}</p>
-                    <p><strong>Fecha:</strong> {{ creditnote.date_time|date:"d/m/Y H:i" }}</p>
-                    <p><strong>Tipo:</strong> 
-                        {% if creditnote.note_type == 'S' %}Venta
-                        {% elif creditnote.note_type == 'P' %}Compra
-                        {% endif %}
-                    </p>
-                    {% if creditnote.person %}
-                        <p><strong>Persona:</strong> 
-                            {% if creditnote.person.client %}
-                                {{ creditnote.person.client.first_name }} {{ creditnote.person.client.last_name }}
-                            {% elif creditnote.person.supplier %}
-                                {{ creditnote.person.supplier.company }}
-                            {% endif %}
-                        </p>
-                    {% else %}
-                        <p><strong>Persona:</strong> -</p>
-                    {% endif %}
-                    <p><strong>Descripción:</strong> {{ creditnote.description|default:'-' }}</p>
-                    <p><strong>Estado:</strong> 
-                        {% if creditnote.status == 'PE' %}Pendiente
-                        {% elif creditnote.status == 'CA' %}Cancelada
-                        {% elif creditnote.status == 'CC' %}Cuenta Corriente
-                        {% elif creditnote.status == 'PA' %}Pagado
-                        {% elif creditnote.status == 'CO' %}Completado
-                        {% endif %}
-                    </p>
-                    <p><strong>Usuario:</strong> {{ creditnote.user_created.username }}</p>
-                {% endif %}
+                {% endfor %}
             </div>
-            
-            {% if request.user.is_superuser %}
-            <div class="col-1 mt-sm-3 justify-content-around">
-                <div class="my-2">
-                    {% if sale %}
-                        <a href="{% url 'UpdateSale' pk=sale.pk %}" title="Editar"><i class="bi bi-pen"></i></a>
-                    {% elif purchase %}
-                        <a href="{% url 'UpdatePurchase' pk=purchase.pk %}" title="Editar"><i class="bi bi-pen"></i></a>
-                    {% elif payment %}
-                        <a href="{% url 'UpdatePayment' pk=payment.pk %}" title="Editar"><i class="bi bi-pen"></i></a>
-                    {% elif creditnote %}
-                        <a href="{% url 'UpdateCreditNote' pk=creditnote.pk %}" title="Editar"><i class="bi bi-pen"></i></a>
-                    {% endif %}
-                </div>
-            </div>
-            {% endif %}
         </div>
-        
-        <!-- Items (solo para Sale y Purchase) -->
-        {% if sale or purchase %}
-        <div class="row mx-2 mb-4 custom-card justify-content-center">
-            <div class="col-12 pt-4 info-card">
-                <h2 class="text-start mb-3">Productos:</h2>
-                
-                <div class="table-responsive">
-                    <table class="table table-dark table-hover">
+        {% endif %}
+
+        <div class="row mx-2 mb-2 custom-card justify-content-center">
+
+            <!-- Contenido principal -->
+            <div class="col-11 pt-2">
+
+                <!-- ============================================================ -->
+                <!-- HEADER: Fecha + Estado de entrega (Sale / Purchase)          -->
+                <!-- ============================================================ -->
+                {% if sale or purchase %}
+                <div class="row info-card align-items-center py-3 my-2 mx-0">
+                    <div class="col-6 text-start">
+                        <p><strong>
+                            {% if sale %}{{ sale.date_time|date:"d/m/Y H:i" }}
+                            {% elif purchase %}{{ purchase.date_time|date:"d/m/Y H:i" }}{% endif %}
+                        </strong></p>
+                    </div>
+                    <div class="col-6 text-end">
+                        <p><strong>
+                            {% if sale %}
+                                {% if sale.delivery_status == 'PE' %}<span class="status-pendiente">Pendiente de Entrega</span>
+                                {% elif sale.delivery_status == 'CO' %}<span class="status-completado">Completado</span>
+                                {% elif sale.delivery_status == 'IN' %}<span class="status-incompleto">Incompleto</span>
+                                {% endif %}
+                            {% elif purchase %}
+                                {% if purchase.delivery_status == 'PE' %}<span class="status-pendiente">Pendiente de Entrega</span>
+                                {% elif purchase.delivery_status == 'CO' %}<span class="status-completado">Completado</span>
+                                {% elif purchase.delivery_status == 'IN' %}<span class="status-incompleto">Incompleto</span>
+                                {% endif %}
+                            {% endif %}
+                        </strong></p>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- ============================================================ -->
+                <!-- SECCIÓN: Datos Cliente / Proveedor / Persona                 -->
+                <!-- ============================================================ -->
+                <div class="section-card row info-card align-items-center py-3 my-3 mx-0">
+                    <div class="row align-items-center mb-2">
+                        <h2 class="col-12 text-start ps-4" style="font-size: 1.8rem; letter-spacing: 0rem;">
+                            {% if sale %}Datos Cliente:
+                            {% elif purchase %}Datos Proveedor:
+                            {% elif payment %}Datos del Pago:
+                            {% elif creditnote %}Datos de la Nota:
+                            {% endif %}
+                        </h2>
+                    </div>
+                    <hr style="width:98%;">
+                    <div class="col-12 ps-4 text-start">
+
+                        {% if sale %}
+                            {% if sale.person %}
+                                <p style="font-size: 1.6rem;">Nombre/Empresa: {{ sale.person.get_full_name|default:"-" }}</p>
+                                <p style="font-size: 1.6rem;">CUIT: {{ sale.person.cuit|default:"-" }}</p>
+                                <p style="font-size: 1.6rem;">Teléfono: {{ sale.person.phone|default:"-" }}</p>
+                                <p style="font-size: 1.6rem;">Ciudad: {{ sale.person.city|default:"-" }}</p>
+                                <p style="font-size: 1.6rem;">Cta Cte: {{ sale.current_account.account_number|default:"—" }}</p>
+                            {% elif sale.temporal_name %}
+                                <p style="font-size: 1.6rem;">Nombre: {{ sale.temporal_name }}</p>
+                                <p style="font-size: 1.6rem;">Cta Cte: —</p>
+                            {% else %}
+                                <p><em>Sin cliente asignado</em></p>
+                            {% endif %}
+                            <p style="font-size: 1.6rem;">Usuario: {{ sale.user_created.username }}</p>
+
+                        {% elif purchase %}
+                            {% if purchase.person %}
+                                <p style="font-size: 1.6rem;">Nombre/Empresa: {{ purchase.person.get_full_name|default:"-" }}</p>
+                                <p style="font-size: 1.6rem;">CUIT: {{ purchase.person.cuit|default:"-" }}</p>
+                                <p style="font-size: 1.6rem;">Teléfono: {{ purchase.person.phone|default:"-" }}</p>
+                                <p style="font-size: 1.6rem;">Ciudad: {{ purchase.person.city|default:"-" }}</p>
+                            {% elif purchase.temporal_name %}
+                                <p style="font-size: 1.6rem;">Nombre: {{ purchase.temporal_name }}</p>
+                            {% else %}
+                                <p><em>Sin proveedor asignado</em></p>
+                            {% endif %}
+                            <p style="font-size: 1.6rem;">Usuario: {{ purchase.user_created.username }}</p>
+
+                        {% elif payment %}
+                            <p style="font-size: 1.6rem;">Fecha: {{ payment.date_time|date:"d/m/Y H:i" }}</p>
+                            <p style="font-size: 1.6rem;">Tipo:
+                                {% if payment.payment_type == 'I' %}Ingreso
+                                {% elif payment.payment_type == 'E' %}Egreso{% endif %}
+                            </p>
+                            <p style="font-size: 1.6rem;">Método:
+                                {% if payment.payment_method == 'CA' %}Efectivo
+                                {% elif payment.payment_method == 'TR' %}Transferencia
+                                {% elif payment.payment_method == 'CH' %}Cheque
+                                {% elif payment.payment_method == 'AC' %}Cuenta Corriente{% endif %}
+                            </p>
+                            {% if payment.person %}
+                                <p style="font-size: 1.6rem;">Persona:
+                                    {% if payment.person.client %}{{ payment.person.client.first_name }} {{ payment.person.client.last_name }}
+                                    {% elif payment.person.supplier %}{{ payment.person.supplier.company }}{% endif %}
+                                </p>
+                            {% else %}
+                                <p style="font-size: 1.6rem;">Persona: —</p>
+                            {% endif %}
+                            <p style="font-size: 1.6rem;">Monto: <strong>${{ payment.amount|floatformat:2 }}</strong></p>
+                            <p style="font-size: 1.6rem;">Usuario: {{ payment.user_created.username }}</p>
+
+                        {% elif creditnote %}
+                            <p style="font-size: 1.6rem;">Fecha: {{ creditnote.date_time|date:"d/m/Y H:i" }}</p>
+                            <p style="font-size: 1.6rem;">Tipo:
+                                {% if creditnote.note_type == 'S' %}Venta
+                                {% elif creditnote.note_type == 'P' %}Compra{% endif %}
+                            </p>
+                            {% if creditnote.person %}
+                                <p style="font-size: 1.6rem;">Persona:
+                                    {% if creditnote.person.client %}{{ creditnote.person.client.first_name }} {{ creditnote.person.client.last_name }}
+                                    {% elif creditnote.person.supplier %}{{ creditnote.person.supplier.company }}{% endif %}
+                                </p>
+                            {% else %}
+                                <p style="font-size: 1.6rem;">Persona: —</p>
+                            {% endif %}
+                            <p style="font-size: 1.6rem;">Descripción: {{ creditnote.description|default:'-' }}</p>
+                            <p style="font-size: 1.6rem;">Estado:
+                                {% if creditnote.status == 'PE' %}Pendiente
+                                {% elif creditnote.status == 'CA' %}Cancelada
+                                {% elif creditnote.status == 'CC' %}Cuenta Corriente
+                                {% elif creditnote.status == 'PA' %}Pagado
+                                {% elif creditnote.status == 'CO' %}Completado{% endif %}
+                            </p>
+                            <p style="font-size: 1.6rem;">Monto: <strong>${{ creditnote.amount|floatformat:2 }}</strong></p>
+                            <p style="font-size: 1.6rem;">Usuario: {{ creditnote.user_created.username }}</p>
+                        {% endif %}
+
+                    </div>
+                </div>
+
+                <!-- ============================================================ -->
+                <!-- SECCIÓN: Ítems (Sale / Purchase)                             -->
+                <!-- ============================================================ -->
+                {% if sale or purchase %}
+                <div class="section-card row info-card align-items-center py-3 my-3 mx-0">
+                    <div class="row align-items-center mb-2">
+                        <h2 class="col-12 text-start ps-4" style="font-size: 1.8rem; letter-spacing: 0rem;">Ítems:</h2>
+                    </div>
+                    <hr style="width:98%;">
+                    <table class="w-100">
                         <thead>
                             <tr>
-                                <th>Producto</th>
-                                <th class="text-center">Cantidad</th>
-                                <th class="text-end">Precio Unit.</th>
-                                <th class="text-end">Subtotal</th>
+                                <th class="col-2">Cant</th>
+                                <th class="col-4">Producto</th>
+                                <th class="col-3 text-end">Precio</th>
+                                <th class="col-3 text-end">Subtotal</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% if sale %}
                                 {% for item in sale.items.all %}
                                 <tr>
+                                    <td>{{ item.quantity }}</td>
                                     <td>{{ item.product_name_cache }}</td>
-                                    <td class="text-center">{{ item.quantity }}</td>
                                     <td class="text-end">${{ item.price|floatformat:2 }}</td>
                                     <td class="text-end">${{ item.subtotal|floatformat:2 }}</td>
                                 </tr>
@@ -182,8 +194,8 @@
                             {% elif purchase %}
                                 {% for item in purchase.items.all %}
                                 <tr>
+                                    <td>{{ item.quantity }}</td>
                                     <td>{{ item.product_name_cache }}</td>
-                                    <td class="text-center">{{ item.quantity }}</td>
                                     <td class="text-end">${{ item.price|floatformat:2 }}</td>
                                     <td class="text-end">${{ item.subtotal|floatformat:2 }}</td>
                                 </tr>
@@ -191,37 +203,99 @@
                             {% endif %}
                         </tbody>
                     </table>
+                    <div class="text-end me-4 pe-4 mt-2">
+                        <label style="font-size:1.7rem;">Total:
+                            <strong>
+                                {% if sale %}${{ sale.amount|floatformat:2 }}
+                                {% elif purchase %}${{ purchase.amount|floatformat:2 }}{% endif %}
+                            </strong>
+                        </label>
+                    </div>
                 </div>
-            </div>
-        </div>
-        {% endif %}
-        
-        <!-- Total -->
-        <div class="row mx-2 mb-4">
-            <div class="col-12 info-card py-3">
-                <h3>Total: 
-                    <span style="color: #14ae2e;">
-                        {% if sale %}
-                            ${{ sale.amount|floatformat:2 }}
-                        {% elif purchase %}
-                            ${{ purchase.amount|floatformat:2 }}
-                        {% elif payment %}
-                            ${{ payment.amount|floatformat:2 }}
-                        {% elif creditnote %}
-                            ${{ creditnote.amount|floatformat:2 }}
-                        {% endif %}
-                    </span>
-                </h3>
-            </div>
-        </div>
-        
-        <div class="row justify-content-around mt-4">
-            <a class="btn btn-outline-green col-10 col-md-5 my-3 mx-2" href="javascript:history.back()">Volver</a>
+                {% endif %}
+
+                <!-- ============================================================ -->
+                <!-- SECCIÓN: Pagos (Solo Sale)                                   -->
+                <!-- ============================================================ -->
+                {% if sale %}
+                <div class="section-card row info-card align-items-center py-3 my-3 mx-0">
+                    <div class="row align-items-center mb-2">
+                        <h2 class="col-12 text-start ps-4" style="font-size: 1.8rem; letter-spacing: 0rem;">
+                            <span class="{% if sale.payment_status == 'PA' %}status-completado{% elif sale.payment_status == 'PP' %}status-parcial{% else %}status-pendiente{% endif %}">
+                                {{ sale.get_payment_status_display }}
+                            </span>
+                        </h2>
+                    </div>
+                    <hr style="width:98%;">
+                    {% with pds=sale.payment_details.all %}
+                    {% if pds %}
+                    <table class="w-100">
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Método</th>
+                                <th class="text-end">Monto</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for pd in pds %}
+                            {% if not pd.is_reverted %}
+                            <tr>
+                                <td>{{ pd.created_at|date:"d/m/Y H:i" }}</td>
+                                <td><span style="color:#14ae2e;">{{ pd.get_payment_method_display }}</span></td>
+                                <td class="text-end" style="color:#14ae2e;">${{ pd.amount|floatformat:2 }}</td>
+                            </tr>
+                            {% endif %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    <div class="text-end me-4 pe-4 mt-2">
+                        <label style="font-size:1.7rem;">Total Pagado:
+                            <strong>${{ sale.get_total_paid|floatformat:2 }}</strong>
+                        </label>
+                    </div>
+                    {% else %}
+                    <p class="text-center fst-italic mt-2">Sin pagos registrados</p>
+                    {% endif %}
+                    {% endwith %}
+                </div>
+                {% endif %}
+
+            </div><!-- /col-11 contenido -->
+
+            <!-- ============================================================ -->
+            <!-- ACCIONES: Editar / Anular / PDF (solo superuser)             -->
+            <!-- ============================================================ -->
             {% if request.user.is_superuser %}
-                <a class="btn btn-outline-orange col-10 col-md-5 my-3 mx-2" href="{% url 'Tickets' %}">Ver Todos los Tickets</a>
+            <div class="col-1 mt-sm-3 d-flex flex-column align-items-center pt-4 gap-3">
+                <a class="orange-icon"
+                    href="{% if sale %}{% url 'UpdateSale' pk=sale.pk %}{% elif purchase %}{% url 'UpdatePurchase' pk=purchase.pk %}{% elif payment %}{% url 'UpdatePayment' pk=payment.pk %}{% elif creditnote %}{% url 'UpdateCreditNote' pk=creditnote.pk %}{% endif %}"
+                    title="Editar">
+                    <i class="bi bi-pen" style="font-size: 2.5rem;"></i>
+                </a>
+                <a class="green-icon" href="#" title="Exportar PDF">
+                    <i class="bi bi-cloud-arrow-down" style="font-size: 2.5rem;"></i>
+                </a>
+                <a class="red-icon"
+                    href="{% if sale %}{% url 'CancelSale' pk=sale.pk %}{% elif purchase %}{% url 'DeletePurchase' pk=purchase.pk %}{% elif payment %}{% url 'DeletePayment' pk=payment.pk %}{% elif creditnote %}{% url 'DeleteCreditNote' pk=creditnote.pk %}{% endif %}"
+                    title="Anular">
+                    <i class="bi bi-x-circle" style="font-size: 2.5rem;"></i>
+                </a>
+            </div>
             {% endif %}
-        </div>
+
+        </div><!-- /custom-card row -->
+
+        <a class="btn btn-outline-green col-10 col-md-5 my-3 mt-4" href="javascript:history.back()">Volver</a>
+
     </div>
 </section>
+
+<style>
+    .status-completado  { color: #14ae2e !important; }
+    .status-pendiente   { color: #da7a21 !important; }
+    .status-incompleto  { color: #a10202 !important; }
+    .status-parcial     { color: #e8c000 !important; }
+</style>
 
 {% endblock %}
