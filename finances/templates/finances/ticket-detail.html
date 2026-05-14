@@ -48,18 +48,42 @@
                             {% if sale %}{{ sale.date_time|date:"d/m/Y H:i" }}
                             {% elif purchase %}{{ purchase.date_time|date:"d/m/Y H:i" }}{% endif %}
                         </strong></p>
+                        {% if sale %}
+                            <p>Usuario: {{ sale.user_created.username }}</p>
+                        {% elif purchase %}
+                            <p>Usuario: {{ purchase.user_created.username }}</p>
+                        {% elif payment %}
+                            <p>Usuario: {{ payment.user_created.username }}</p>
+                        {% elif creditnote %}
+                            <p>Usuario: {{ creditnote.user_created.username }}</p>
+                        {% endif %}
+
                     </div>
+
                     <div class="col-6 text-end">
                         <p><strong>
                             {% if sale %}
-                                {% if sale.delivery_status == 'PE' %}<span class="status-pendiente">Pendiente de Entrega</span>
+                                {% if sale.status == 'CA' %}<span class="status-incompleto">Cancelado</span>
+                                {% elif sale.delivery_status == 'PE' %}<span class="status-pendiente">Pendiente de Entrega</span>
                                 {% elif sale.delivery_status == 'CO' %}<span class="status-completado">Completado</span>
                                 {% elif sale.delivery_status == 'IN' %}<span class="status-incompleto">Incompleto</span>
                                 {% endif %}
                             {% elif purchase %}
-                                {% if purchase.delivery_status == 'PE' %}<span class="status-pendiente">Pendiente de Entrega</span>
+                                {% if purchase.status == 'CA' %}<span class="status-incompleto">Cancelado</span>
+                                {% elif purchase.delivery_status == 'PE' %}<span class="status-pendiente">Pendiente de Entrega</span>
                                 {% elif purchase.delivery_status == 'CO' %}<span class="status-completado">Completado</span>
                                 {% elif purchase.delivery_status == 'IN' %}<span class="status-incompleto">Incompleto</span>
+                                {% endif %}
+                            {% endif %}
+                        </strong></p>
+                        <p class="text-end"><strong>
+                            {% if sale %}
+                                {% if sale.status == 'CA' %}
+                                    <span class="status-incompleto">Cancelado</span>
+                                {% else %}
+                                    <span class="{% if sale.payment_status == 'PA' %}status-completado{% elif sale.payment_status == 'PP' %}status-parcial{% else %}status-pendiente{% endif %}">
+                                        {{ sale.get_payment_status_display }}
+                                    </span>
                                 {% endif %}
                             {% endif %}
                         </strong></p>
@@ -96,7 +120,6 @@
                             {% else %}
                                 <p><em>Sin cliente asignado</em></p>
                             {% endif %}
-                            <p style="font-size: 1.6rem;">Usuario: {{ sale.user_created.username }}</p>
 
                         {% elif purchase %}
                             {% if purchase.person %}
@@ -109,7 +132,6 @@
                             {% else %}
                                 <p><em>Sin proveedor asignado</em></p>
                             {% endif %}
-                            <p style="font-size: 1.6rem;">Usuario: {{ purchase.user_created.username }}</p>
 
                         {% elif payment %}
                             <p style="font-size: 1.6rem;">Fecha: {{ payment.date_time|date:"d/m/Y H:i" }}</p>
@@ -132,7 +154,6 @@
                                 <p style="font-size: 1.6rem;">Persona: —</p>
                             {% endif %}
                             <p style="font-size: 1.6rem;">Monto: <strong>${{ payment.amount|floatformat:2 }}</strong></p>
-                            <p style="font-size: 1.6rem;">Usuario: {{ payment.user_created.username }}</p>
 
                         {% elif creditnote %}
                             <p style="font-size: 1.6rem;">Fecha: {{ creditnote.date_time|date:"d/m/Y H:i" }}</p>
@@ -157,7 +178,6 @@
                                 {% elif creditnote.status == 'CO' %}Completado{% endif %}
                             </p>
                             <p style="font-size: 1.6rem;">Monto: <strong>${{ creditnote.amount|floatformat:2 }}</strong></p>
-                            <p style="font-size: 1.6rem;">Usuario: {{ creditnote.user_created.username }}</p>
                         {% endif %}
 
                     </div>
@@ -221,9 +241,7 @@
                 <div class="section-card row info-card align-items-center py-3 my-3 mx-0">
                     <div class="row align-items-center mb-2">
                         <h2 class="col-12 text-start ps-4" style="font-size: 1.8rem; letter-spacing: 0rem;">
-                            <span class="{% if sale.payment_status == 'PA' %}status-completado{% elif sale.payment_status == 'PP' %}status-parcial{% else %}status-pendiente{% endif %}">
-                                {{ sale.get_payment_status_display }}
-                            </span>
+                            Estado de Pago
                         </h2>
                     </div>
                     <hr style="width:98%;">
@@ -268,25 +286,34 @@
             <!-- ============================================================ -->
             {% if request.user.is_superuser %}
             <div class="col-1 mt-sm-3 d-flex flex-column align-items-center pt-4 gap-3">
-                <a class="orange-icon"
-                    href="{% if sale %}{% url 'UpdateSale' pk=sale.pk %}{% elif purchase %}{% url 'UpdatePurchase' pk=purchase.pk %}{% elif payment %}{% url 'UpdatePayment' pk=payment.pk %}{% elif creditnote %}{% url 'UpdateCreditNote' pk=creditnote.pk %}{% endif %}"
-                    title="Editar">
-                    <i class="bi bi-pen" style="font-size: 2.5rem;"></i>
-                </a>
+                {% if sale.status == 'CA' or purchase.status == 'CA' or payment.status == 'CA' or creditnote.status == 'CA' %}
+                    <a class="green-icon"
+                        href="{% if sale %}{% url 'ReactivateSale' pk=sale.pk %}{% elif purchase %}{% url 'ReactivatePurchase' pk=purchase.pk %}{% elif payment %}{% url 'ReactivatePayment' pk=payment.pk %}{% elif creditnote %}{% url 'ReactivateCreditNote' pk=creditnote.pk %}{% endif %}"
+                        title="Reactivar">
+                        <i class="bi bi-arrow-counterclockwise" style="font-size: 2.5rem;"></i>
+                    </a>
+                {% else %}
+                    <a class="orange-icon"
+                        href="{% if sale %}{% url 'UpdateSale' pk=sale.pk %}{% elif purchase %}{% url 'UpdatePurchase' pk=purchase.pk %}{% elif payment %}{% url 'UpdatePayment' pk=payment.pk %}{% elif creditnote %}{% url 'UpdateCreditNote' pk=creditnote.pk %}{% endif %}"
+                        title="Editar">
+                        <i class="bi bi-pen" style="font-size: 2.5rem;"></i>
+                    </a>
+                    <a class="red-icon"
+                        href="{% if sale %}{% url 'CancelSale' pk=sale.pk %}{% elif purchase %}{% url 'CancelPurchase' pk=purchase.pk %}{% elif payment %}{% url 'CancelPayment' pk=payment.pk %}{% elif creditnote %}{% url 'CancelCreditNote' pk=creditnote.pk %}{% endif %}"
+                        title="Anular">
+                        <i class="bi bi-x-circle" style="font-size: 2.5rem;"></i>
+                    </a>
+                {% endif %}
                 <a class="green-icon" href="#" title="Exportar PDF">
                     <i class="bi bi-cloud-arrow-down" style="font-size: 2.5rem;"></i>
-                </a>
-                <a class="red-icon"
-                    href="{% if sale %}{% url 'CancelSale' pk=sale.pk %}{% elif purchase %}{% url 'DeletePurchase' pk=purchase.pk %}{% elif payment %}{% url 'DeletePayment' pk=payment.pk %}{% elif creditnote %}{% url 'DeleteCreditNote' pk=creditnote.pk %}{% endif %}"
-                    title="Anular">
-                    <i class="bi bi-x-circle" style="font-size: 2.5rem;"></i>
                 </a>
             </div>
             {% endif %}
 
         </div><!-- /custom-card row -->
 
-        <a class="btn btn-outline-green col-10 col-md-5 my-3 mt-4" href="javascript:history.back()">Volver</a>
+        <a class="btn btn-outline-green col-10 col-md-5 my-3 mt-4"
+            href="{% if sale %}{% url 'Sales' %}{% elif purchase %}{% url 'Purchases' %}{% elif payment %}{% url 'Payments' %}{% elif creditnote %}{% url 'CreditNotes' %}{% endif %}">Volver</a>
 
     </div>
 </section>

@@ -1,0 +1,40 @@
+{% extends 'main/base.html' %}
+
+{% block title %} Saturno | Anular Ticket {% endblock title %}
+
+{% block main %}
+
+<section class="page-section">
+    <div class="container container-box py-4 px-lg-5 text-white text-center">
+        <h1 class="pb-4">ANULAR TICKET</h1>
+        <hr>
+        <div class="row mx-2 mb-2 custom-card justify-content-center">
+            {% if messages %}
+                <div class="col-12 mb-3 mt-3">
+                    {% for message in messages %}
+                        {% if message.tags == 'success' %}
+                            <div class="alert alert-success text-center">{{ message }}</div>
+                        {% else %}
+                            <div class="alert alert-danger text-center">{{ message }}</div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <h2 class="col-10 pt-4 pe-4 mt-sm-3">
+                ¿Seguro querés anular el ticket <strong>{{ ticket.ticket_code }}</strong>?
+            </h2>
+
+            <form action="" method="POST" class="pt-2">
+                {% csrf_token %}
+                <div class="col-12 text-center">
+                    <input type="submit" class="btn btn-outline-green col-8 mt-4" value="Confirmar">
+                </div>
+                <br>
+            </form>
+        </div>
+        <a href="{{ back_url }}" class="btn btn-outline-orange col-10 my-3 mt-4">Cancelar</a>
+    </div>
+</section>
+
+{% endblock %}

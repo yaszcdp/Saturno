@@ -1,7 +1,7 @@
 import json
 from decimal import Decimal, InvalidOperation
 from django.shortcuts import render, get_object_or_404, redirect
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse
 from django.views.generic import ListView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.views.generic.detail import DetailView
@@ -416,10 +416,15 @@ class SaleUpdateView(LoginRequiredMixin, UpdateView):
 
 def cancel_sale(request, pk):
     sale = get_object_or_404(Sale, pk=pk)
-    sale.status = 'CA'  # Set the status to 'CA' for 'Canceled'
-    sale.save()
-    messages.success(request, 'Venta cancelada correctamente')
-    return redirect('Tickets')
+    if request.method == 'POST':
+        sale.status = 'CA'
+        sale.save()
+        messages.success(request, 'Venta anulada correctamente')
+        return redirect('DetailSale', pk=pk)
+    return render(request, 'finances/ticket-cancel.html', {
+        'ticket': sale,
+        'back_url': reverse('DetailSale', args=[pk]),
+    })
 
 
 #---------------------------------
@@ -559,10 +564,31 @@ class PurchaseDeleteView(LoginRequiredMixin, DeleteView):
     model = Purchase
     template_name = 'finances/ticket-delete.html'
     success_url = reverse_lazy('Tickets')
-    
+
     def delete(self, request, *args, **kwargs):
         messages.success(self.request, 'Compra eliminada correctamente')
         return super().delete(request, *args, **kwargs)
+
+
+def reactivate_sale(request, pk):
+    sale = get_object_or_404(Sale, pk=pk)
+    sale.status = 'PE'
+    sale.save()
+    messages.success(request, 'Venta reactivada correctamente')
+    return redirect('DetailSale', pk=pk)
+
+
+def cancel_purchase(request, pk):
+    purchase = get_object_or_404(Purchase, pk=pk)
+    if request.method == 'POST':
+        purchase.status = 'CA'
+        purchase.save()
+        messages.success(request, 'Compra anulada correctamente')
+        return redirect('DetailPurchase', pk=pk)
+    return render(request, 'finances/ticket-cancel.html', {
+        'ticket': purchase,
+        'back_url': reverse('DetailPurchase', args=[pk]),
+    })
 
 
 #---------------------------------
@@ -665,10 +691,31 @@ class PaymentDeleteView(LoginRequiredMixin, DeleteView):
     model = Payment
     template_name = 'finances/ticket-delete.html'
     success_url = reverse_lazy('Tickets')
-    
+
     def delete(self, request, *args, **kwargs):
         messages.success(self.request, 'Pago eliminado correctamente')
         return super().delete(request, *args, **kwargs)
+
+
+def reactivate_purchase(request, pk):
+    purchase = get_object_or_404(Purchase, pk=pk)
+    purchase.status = 'PE'
+    purchase.save()
+    messages.success(request, 'Compra reactivada correctamente')
+    return redirect('DetailPurchase', pk=pk)
+
+
+def cancel_payment(request, pk):
+    payment = get_object_or_404(Payment, pk=pk)
+    if request.method == 'POST':
+        payment.status = 'CA'
+        payment.save()
+        messages.success(request, 'Pago anulado correctamente')
+        return redirect('DetailPayment', pk=pk)
+    return render(request, 'finances/ticket-cancel.html', {
+        'ticket': payment,
+        'back_url': reverse('DetailPayment', args=[pk]),
+    })
 
 
 #---------------------------------
@@ -762,6 +809,35 @@ class CreditNoteDeleteView(LoginRequiredMixin, DeleteView):
     def delete(self, request, *args, **kwargs):
         messages.success(self.request, 'Nota de Credito eliminada correctamente')
         return super().delete(request, *args, **kwargs)
+
+
+def reactivate_payment(request, pk):
+    payment = get_object_or_404(Payment, pk=pk)
+    payment.status = 'PE'
+    payment.save()
+    messages.success(request, 'Pago reactivado correctamente')
+    return redirect('DetailPayment', pk=pk)
+
+
+def cancel_creditnote(request, pk):
+    creditnote = get_object_or_404(CreditNote, pk=pk)
+    if request.method == 'POST':
+        creditnote.status = 'CA'
+        creditnote.save()
+        messages.success(request, 'Nota de Crédito anulada correctamente')
+        return redirect('DetailCreditNote', pk=pk)
+    return render(request, 'finances/ticket-cancel.html', {
+        'ticket': creditnote,
+        'back_url': reverse('DetailCreditNote', args=[pk]),
+    })
+
+
+def reactivate_creditnote(request, pk):
+    creditnote = get_object_or_404(CreditNote, pk=pk)
+    creditnote.status = 'PE'
+    creditnote.save()
+    messages.success(request, 'Nota de Crédito reactivada correctamente')
+    return redirect('DetailCreditNote', pk=pk)
 
 
 #-------[ VISTAS CUENTA CORRIENTE ]-------

@@ -63,8 +63,13 @@
                             <th>User</th>
                             <th class="d-none d-sm-none d-md-table-cell">
                                 {% if form_type == 'Ventas' %}
-                                    Estado
-                                {% endif %}        
+                                    Estado de Entrega
+                                {% endif %}
+                            </th>
+                            <th class="d-none d-sm-none d-md-table-cell">
+                                {% if form_type == 'Ventas' %}
+                                    Estado de Pago
+                                {% endif %}
                             </th>
                         </tr>
                     </thead>
@@ -80,15 +85,38 @@
                                 <td class="d-none d-sm-none d-md-table-cell">${{ ticket.amount }}</td>
                                 <td>{{ ticket.user_created.username }}</td>
                                 <td class="d-none d-sm-none d-md-table-cell">
-                                    {% if ticket.status %}
+                                    {% if form_type == 'Ventas' %}
+                                        {% if ticket.status == 'CA' %}
+                                            <span class="status-incompleto">Cancelado</span>
+                                        {% elif ticket.delivery_status == 'PE' %}
+                                            <span class="status-pendiente">Pendiente</span>
+                                        {% elif ticket.delivery_status == 'CO' %}
+                                            <span class="status-completado">Completado</span>
+                                        {% elif ticket.delivery_status == 'IN' %}
+                                            <span class="status-incompleto">Incompleto</span>
+                                        {% endif %}
+                                    {% elif ticket.status %}
                                         {% if ticket.status == 'PE' %}
-                                            <span style="color:#da7a21;">Pendiente</span>
+                                            <span class="status-pendiente">Pendiente</span>
                                         {% elif ticket.status == 'CA' %}
-                                            <span style="color:#a10202;">Cancelado</span>
+                                            <span class="status-incompleto">Cancelado</span>
                                         {% elif ticket.status == 'CC' %}
                                             <span style="color:#4774e9;">Cta Cte</span>
                                         {% elif ticket.status == 'PA' %}
-                                            <span style="color:#14ae2e;">Pagado</span>
+                                            <span class="status-completado">Pagado</span>
+                                        {% endif %}
+                                    {% endif %}
+                                </td>
+                                <td class="d-none d-sm-none d-md-table-cell">
+                                    {% if form_type == 'Ventas' %}
+                                        {% if ticket.status == 'CA' %}
+                                            <span class="status-incompleto">Cancelado</span>
+                                        {% elif ticket.payment_status == 'PE' %}
+                                            <span class="status-pendiente">Pendiente</span>
+                                        {% elif ticket.payment_status == 'PP' %}
+                                            <span class="status-parcial">Pago Parcial</span>
+                                        {% elif ticket.payment_status == 'PA' %}
+                                            <span class="status-completado">Pagado</span>
                                         {% endif %}
                                     {% endif %}
                                 </td>

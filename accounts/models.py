@@ -131,12 +131,18 @@ class CurrentAccount(models.Model):
                 amount = ticket.amount or 0
 
                 if hasattr(ticket, 'sale') and ticket.sale:
+                    if ticket.sale.status == 'CA':
+                        continue
                     trans_type = 'Venta'
                     running_balance += amount
                 elif hasattr(ticket, 'purchase') and ticket.purchase:
+                    if ticket.purchase.status == 'CA':
+                        continue
                     trans_type = 'Compra'
                     running_balance += amount
                 elif hasattr(ticket, 'payment') and ticket.payment:
+                    if ticket.payment.status == 'CA':
+                        continue
                     if ticket.payment.payment_type == 'I':
                         trans_type = 'Pago Recibido'
                         running_balance -= amount
@@ -144,6 +150,8 @@ class CurrentAccount(models.Model):
                         trans_type = 'Pago Realizado'
                         running_balance -= amount
                 elif hasattr(ticket, 'creditnote') and ticket.creditnote:
+                    if ticket.creditnote.status == 'CA':
+                        continue
                     trans_type = 'Nota de Crédito'
                     running_balance -= amount
                 else:

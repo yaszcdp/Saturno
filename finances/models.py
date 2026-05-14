@@ -3,6 +3,7 @@ from accounts.models import Client, Supplier, CurrentAccount
 from products.models import Product
 from django.utils import timezone
 from django.core.exceptions import ValidationError
+from datetime import date
 #from django.db.models.signals import post_save
 #from django.dispatch import receiver
 #from decimal import Decimal
@@ -255,6 +256,44 @@ class PaymentDetail(models.Model):
         super().delete(*args, **kwargs)
         # Actualizar payment_status después de eliminar
         sale.update_payment_status()
+
+
+#----------------[ CHEQUE ]----------------
+
+class Cheque(models.Model):
+    TIPO_CHOICES = [
+        ('RE', 'Recibido'),
+        ('EM', 'Emitido'),
+    ]
+    ESTADO_CHOICES = [
+        ('PE', 'Pendiente'),
+        ('CO', 'Cobrado'),
+        ('RE', 'Rechazado'),
+        ('DV', 'Devuelto'),
+    ]
+
+    payment_detail  = models.OneToOneField(PaymentDetail, on_delete=models.CASCADE, related_name='cheque', null=True, blank=True)
+    tipo            = models.CharField(max_length=2, choices=TIPO_CHOICES, default='RE', verbose_name='Tipo')
+    estado          = models.CharField(max_length=2, choices=ESTADO_CHOICES, default='PE', verbose_name='Estado')
+    numero          = models.CharField(max_length=50, verbose_name='Número')
+    banco           = models.CharField(max_length=100, verbose_name='Banco')
+    fecha_emision   = models.DateField(default=date.today, verbose_name='Fecha de Emisión')
+    fecha_cobro     = models.DateField(verbose_name='Fecha de Cobro')
+    librador_person = models.ForeignKey('accounts.Person', on_delete=models.SET_NULL, null=True, blank=True, related_name='cheques_librados', verbose_name='Librador (Persona)')
+    librador_nombre = models.CharField(max_length=200, verbose_name='Librador')
+    receptor_person = models.ForeignKey('accounts.Person', on_delete=models.SET_NULL, null=True, blank=True, related_name='cheques_recibidos', verbose_name='Receptor (Persona)')
+    receptor_nombre = models.CharField(max_length=200, blank=True, verbose_name='Receptor')
+    notas           = models.TextField(blank=True, verbose_name='Notas')
+    user_created    = models.ForeignKey('auth.User', on_delete=models.SET_NULL, null=True, blank=True, verbose_name='Usuario')
+    created_at      = models.DateTimeField(auto_now_add=True, verbose_name='Fecha de Registro')
+
+    class Meta:
+        verbose_name = 'Cheque'
+        verbose_name_plural = 'Cheques'
+        ordering = ['fecha_cobro']
+
+    def __str__(self):
+        return f'Cheque {self.numero} — {self.banco} — ${self.payment_detail.amount if self.payment_detail else "?"} — {self.get_estado_display()}'
 
 
 #----------------[ ITEM ]----------------
