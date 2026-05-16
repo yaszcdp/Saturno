@@ -8,4 +8,5 @@ urlpatterns = [
     path('update/<int:pk>/', ProductUpdateView.as_view(), name='UpdateProduct'),
     path('delete/<int:pk>/', ProductDeleteView.as_view(), name='DeleteProduct'),
     path('cargar-mercaderia/', LoadMerchandiseView.as_view(), name='LoadMerchandise'),
+    path('create-ajax/', create_product_ajax, name='CreateProductAjax'),
 ]

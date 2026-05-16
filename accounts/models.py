@@ -139,7 +139,7 @@ class CurrentAccount(models.Model):
                     if ticket.purchase.status == 'CA':
                         continue
                     trans_type = 'Compra'
-                    running_balance += amount
+                    running_balance -= amount
                 elif hasattr(ticket, 'payment') and ticket.payment:
                     if ticket.payment.status == 'CA':
                         continue

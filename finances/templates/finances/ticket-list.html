@@ -42,6 +42,19 @@
                         <div class="row mt-3 ms-1">
                             <input id="search-query" type="text" name="query" value="{{ query }}" placeholder="Buscar..." class="ms-2 col-8 col-md-8 d-none">
                             <input id="search-date" type="date" name="date" value="{{ date }}" class="col-6 ms-2 d-none">
+                            <select id="search-status" name="query" class="ms-2 col-8 form-control d-none">
+                                <option value="">Seleccionar...</option>
+                                <optgroup id="delivery-options" label="Estado de Entrega" class="d-none">
+                                    <option value="PE" {% if query == 'PE' %}selected{% endif %}>Pendiente</option>
+                                    <option value="CO" {% if query == 'CO' %}selected{% endif %}>Completado</option>
+                                    <option value="IN" {% if query == 'IN' %}selected{% endif %}>Incompleto</option>
+                                </optgroup>
+                                <optgroup id="payment-options" label="Estado de Pago" class="d-none">
+                                    <option value="PE" {% if query == 'PE' %}selected{% endif %}>Pendiente</option>
+                                    <option value="PP" {% if query == 'PP' %}selected{% endif %}>Pago Parcial</option>
+                                    <option value="PA" {% if query == 'PA' %}selected{% endif %}>Pagado</option>
+                                </optgroup>
+                            </select>
                             <a id="search-button" class="col-1 d-none">
                                 <button class="btn" type="submit">
                                     <i class="bi bi-search-heart"></i>
@@ -67,7 +80,7 @@
                                 {% endif %}
                             </th>
                             <th class="d-none d-sm-none d-md-table-cell">
-                                {% if form_type == 'Ventas' %}
+                                {% if form_type == 'Ventas' or form_type == 'Compras' %}
                                     Estado de Pago
                                 {% endif %}
                             </th>
@@ -108,7 +121,7 @@
                                     {% endif %}
                                 </td>
                                 <td class="d-none d-sm-none d-md-table-cell">
-                                    {% if form_type == 'Ventas' %}
+                                    {% if form_type == 'Ventas' or form_type == 'Compras' %}
                                         {% if ticket.status == 'CA' %}
                                             <span class="status-incompleto">Cancelado</span>
                                         {% elif ticket.payment_status == 'PE' %}
@@ -174,35 +187,56 @@
         const searchBy = document.getElementById('search_by').value;
         const searchDate = document.getElementById('search-date');
         const searchQuery = document.getElementById('search-query');
+        const searchStatus = document.getElementById('search-status');
+        const deliveryOptions = document.getElementById('delivery-options');
+        const paymentOptions = document.getElementById('payment-options');
         const searchButton = document.getElementById('search-button');
         const searchBtn = searchButton.querySelector('button');
 
         searchQuery.classList.add('d-none');
         searchDate.classList.add('d-none');
+        searchStatus.classList.add('d-none');
+        deliveryOptions.classList.add('d-none');
+        paymentOptions.classList.add('d-none');
         searchButton.classList.add('d-none');
-        
-        //Manejo de inputs Name y Date. 
-        if (searchBy === 'client' || searchBy === 'user' || searchBy === 'code') { 
+
+        if (searchBy === 'client' || searchBy === 'user' || searchBy === 'code') {
             searchDate.value = '';
+            searchStatus.value = '';
             searchQuery.classList.remove('d-none');
             searchButton.classList.remove('d-none');
             searchBtn.disabled = false;
         } else if (searchBy === 'date') {
             searchQuery.value = '';
+            searchStatus.value = '';
             searchDate.classList.remove('d-none');
             searchButton.classList.remove('d-none');
             searchBtn.disabled = false;
-        }else { //si no hay searchBy but 
-            if (searchQuery.value){ //hay query... 
+        } else if (searchBy === 'delivery_status') {
+            searchQuery.value = '';
+            searchDate.value = '';
+            deliveryOptions.classList.remove('d-none');
+            searchStatus.classList.remove('d-none');
+            searchButton.classList.remove('d-none');
+            searchBtn.disabled = false;
+        } else if (searchBy === 'payment_status') {
+            searchQuery.value = '';
+            searchDate.value = '';
+            paymentOptions.classList.remove('d-none');
+            searchStatus.classList.remove('d-none');
+            searchButton.classList.remove('d-none');
+            searchBtn.disabled = false;
+        } else {
+            if (searchQuery.value) {
                 searchQuery.classList.remove('d-none');
                 searchButton.classList.remove('d-none');
                 searchBtn.disabled = true;
-            } else if (searchDate.value){
+            } else if (searchDate.value) {
                 searchDate.classList.remove('d-none');
                 searchButton.classList.remove('d-none');
                 searchBtn.disabled = true;
             }
-        }   
+        }
     }
     document.addEventListener('DOMContentLoaded', updateSearchFields);
     document.getElementById('search_by').addEventListener('change', updateSearchFields);

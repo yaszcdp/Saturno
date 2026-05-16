@@ -219,7 +219,14 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         if(!(product in validProducts)){
-            alert("El producto ingresado no existe en el listado.");
+            // Abrir modal pre-llenado
+            document.getElementById('modal-product-name').value = product;
+            document.getElementById('modal-product-price').value = isNaN(price) ? '' : price;
+            document.getElementById('modal-product-unit').value = '';
+            document.getElementById('modal-product-category').value = '';
+            document.getElementById('modal-product-error').style.display = 'none';
+            const modal = new bootstrap.Modal(document.getElementById('modal-nuevo-producto'));
+            modal.show();
             return;
         }
 
@@ -561,6 +568,57 @@ document.addEventListener("DOMContentLoaded", function () {
             console.log("Items JSON:", itemsJson.value);
             form.submit(); // Envía el formulario manualmente
         }
+    });
+
+    // Modal: crear producto nuevo
+    document.getElementById('modal-save-product-btn').addEventListener('click', function () {
+        const name = document.getElementById('modal-product-name').value.trim();
+        const price = document.getElementById('modal-product-price').value.trim();
+        const unit = document.getElementById('modal-product-unit').value.trim();
+        const category = document.getElementById('modal-product-category').value.trim();
+        const errorDiv = document.getElementById('modal-product-error');
+
+        if (!name || !price) {
+            errorDiv.textContent = 'Nombre y precio son obligatorios.';
+            errorDiv.style.display = 'block';
+            return;
+        }
+
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        const formData = new FormData();
+        formData.append('name', name);
+        formData.append('price', price);
+        formData.append('unit', unit);
+        formData.append('category', category);
+        formData.append('csrfmiddlewaretoken', csrfToken);
+
+        fetch('{% url "CreateProductAjax" %}', { method: 'POST', body: formData })
+            .then(r => r.json())
+            .then(data => {
+                if (data.error) {
+                    errorDiv.textContent = data.error;
+                    errorDiv.style.display = 'block';
+                    return;
+                }
+                // Agregar al listado de productos válidos
+                validProducts[data.name] = parseFloat(data.price);
+                const datalist = document.getElementById('productos');
+                const opt = document.createElement('option');
+                opt.value = data.name;
+                datalist.appendChild(opt);
+
+                // Pre-llenar el input de producto y precio
+                productInput.value = data.name;
+                priceInput.value = data.price;
+
+                // Cerrar modal y simular click en confirmar ítem
+                bootstrap.Modal.getInstance(document.getElementById('modal-nuevo-producto')).hide();
+                document.getElementById('confirm-item-btn').click();
+            })
+            .catch(() => {
+                errorDiv.textContent = 'Error al guardar el producto.';
+                errorDiv.style.display = 'block';
+            });
     });
 
     // Exportar items para que los handlers de partials puedan acceder

@@ -95,7 +95,11 @@
                                     {% endif %}
                                 </td>
                                 <td class="d-none d-md-table-cell">{{ entry.type }}</td>
+                                {% if entry.type == 'Compra' %}
+                                <td class="text-end" style="color:#14ae2e;">-${{ entry.amount|floatformat:2 }}</td>
+                                {% else %}
                                 <td class="text-end" style="color:#da7a21;">+${{ entry.amount|floatformat:2 }}</td>
+                                {% endif %}
                                 <td class="text-end" style="color: {% if entry.balance > 0 %}#a10202{% elif entry.balance < 0 %}#14ae2e{% else %}#fff{% endif %};">
                                     ${{ entry.balance|floatformat:2 }}
                                 </td>

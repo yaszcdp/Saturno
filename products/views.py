@@ -6,6 +6,9 @@ from django.views.generic.detail import DetailView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
 from django.utils import timezone
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+from django.contrib.auth.decorators import login_required
 from products.models import Product, ProductBatch
 from products.forms import ProductForm, ProductBatchForm
 from accounts.models import Client, Supplier
@@ -131,10 +134,38 @@ class LoadMerchandiseView(LoginRequiredMixin, View):
             batch_form = ProductBatchForm()
         if not product_form:
             product_form = ProductForm()
-            
+
         context = {
             'batch_form': batch_form,
             'product_form': product_form,
             'suppliers': Supplier.objects.all(),
         }
         return render(request, self.template_name, context)
+
+
+@login_required
+@require_POST
+def create_product_ajax(request):
+    name = request.POST.get('name', '').strip()
+    price = request.POST.get('price', '').strip()
+    unit = request.POST.get('unit', '').strip()
+    category = request.POST.get('category', '').strip()
+
+    if not name or not price:
+        return JsonResponse({'error': 'Nombre y precio son obligatorios.'}, status=400)
+
+    if Product.objects.filter(name__iexact=name).exists():
+        product = Product.objects.get(name__iexact=name)
+        return JsonResponse({'id': product.pk, 'name': product.name, 'price': str(product.price), 'already_exists': True})
+
+    try:
+        product = Product.objects.create(
+            name=name,
+            price=Decimal(price),
+            unit=unit or None,
+            category=category or None,
+        )
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=400)
+
+    return JsonResponse({'id': product.pk, 'name': product.name, 'price': str(product.price), 'already_exists': False})

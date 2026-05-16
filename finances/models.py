@@ -200,6 +200,8 @@ class Sale(Ticket):
 class Purchase(Ticket):
     ticket_code = models.OneToOneField(NumTicket, on_delete=models.CASCADE, null=True, blank=True)
     temporal_name = models.CharField(max_length=100, null=True, blank=True)
+    status = models.CharField(max_length=2, choices=STATUS_CHOICES, null=True, blank=True)
+    payment_status = models.CharField(max_length=2, choices=PAYMENT_STATUS_CHOICES, default='PE', verbose_name='Estado de Pago')
 
     def calculate_total(self):
         total = sum(item.price * item.quantity for item in self.items.all())

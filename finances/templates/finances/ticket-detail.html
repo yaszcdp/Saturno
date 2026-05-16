@@ -70,9 +70,6 @@
                                 {% endif %}
                             {% elif purchase %}
                                 {% if purchase.status == 'CA' %}<span class="status-incompleto">Cancelado</span>
-                                {% elif purchase.delivery_status == 'PE' %}<span class="status-pendiente">Pendiente de Entrega</span>
-                                {% elif purchase.delivery_status == 'CO' %}<span class="status-completado">Completado</span>
-                                {% elif purchase.delivery_status == 'IN' %}<span class="status-incompleto">Incompleto</span>
                                 {% endif %}
                             {% endif %}
                         </strong></p>
@@ -83,6 +80,14 @@
                                 {% else %}
                                     <span class="{% if sale.payment_status == 'PA' %}status-completado{% elif sale.payment_status == 'PP' %}status-parcial{% else %}status-pendiente{% endif %}">
                                         {{ sale.get_payment_status_display }}
+                                    </span>
+                                {% endif %}
+                            {% elif purchase %}
+                                {% if purchase.status == 'CA' %}
+                                    <span class="status-incompleto">Cancelado</span>
+                                {% else %}
+                                    <span class="{% if purchase.payment_status == 'PA' %}status-completado{% elif purchase.payment_status == 'PP' %}status-parcial{% else %}status-pendiente{% endif %}">
+                                        {{ purchase.get_payment_status_display }}
                                     </span>
                                 {% endif %}
                             {% endif %}
@@ -318,11 +323,5 @@
     </div>
 </section>
 
-<style>
-    .status-completado  { color: #14ae2e !important; }
-    .status-pendiente   { color: #da7a21 !important; }
-    .status-incompleto  { color: #a10202 !important; }
-    .status-parcial     { color: #e8c000 !important; }
-</style>
 
 {% endblock %}

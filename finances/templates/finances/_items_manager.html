@@ -62,3 +62,39 @@
 </div>
 
 <input type="hidden" name="items_json" id="items-json">
+
+<!-- Modal: Agregar producto nuevo -->
+<div class="modal fade" id="modal-nuevo-producto" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="background:#1a1a1a; color:white; border:1px solid #444;">
+            <div class="modal-header" style="border-bottom:1px solid #444;">
+                <h5 class="modal-title">Producto no encontrado</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p style="color:#aaa; font-size:0.9rem;">El producto no existe en el listado. Podés crearlo ahora.</p>
+                <div class="mb-3">
+                    <label class="form-label">Nombre *</label>
+                    <input type="text" id="modal-product-name" class="form-control">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Precio referencia *</label>
+                    <input type="number" id="modal-product-price" class="form-control" step="any">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Unidad <span style="color:#aaa;">(ej: kg, bolsa, unidad)</span></label>
+                    <input type="text" id="modal-product-unit" class="form-control">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Categoría</label>
+                    <input type="text" id="modal-product-category" class="form-control">
+                </div>
+                <div id="modal-product-error" class="text-danger" style="display:none;"></div>
+            </div>
+            <div class="modal-footer" style="border-top:1px solid #444;">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" id="modal-save-product-btn" class="btn btn-outline-green">Guardar y agregar</button>
+            </div>
+        </div>
+    </div>
+</div>

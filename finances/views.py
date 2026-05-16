@@ -83,6 +83,10 @@ class SaleListView(LoginRequiredMixin, ListView):
                 qs = qs.filter(date_time__date=date)
             elif search_by == 'code' and query:
                 qs = qs.filter(ticket_code__code__icontains=query)
+            elif search_by == 'delivery_status' and query:
+                qs = qs.filter(delivery_status=query)
+            elif search_by == 'payment_status' and query:
+                qs = qs.filter(payment_status=query)
         
         return qs
 
@@ -94,7 +98,9 @@ class SaleListView(LoginRequiredMixin, ListView):
             {'value': 'client', 'label': 'Cliente'},
             {'value': 'user', 'label': 'Usuario'},
             {'value': 'date', 'label': 'Fecha'},
-            {'value': 'code', 'label': 'Nro de Comprobante'}
+            {'value': 'code', 'label': 'Nro de Comprobante'},
+            {'value': 'delivery_status', 'label': 'Estado de Entrega'},
+            {'value': 'payment_status', 'label': 'Estado de Pago'},
         ]
         context['query'] = self.request.GET.get('query', '')
         context['date'] = self.request.GET.get('date', '')
@@ -434,13 +440,48 @@ class PurchaseListView(LoginRequiredMixin, ListView):
     model = Purchase
     context_object_name = 'tickets'
     template_name = 'finances/ticket-list.html'
+    paginate_by = 10
+
+    def get_queryset(self):
+        qs = Purchase.objects.all().order_by('-date_time')
+        search_by = self.request.GET.get('search_by', '')
+        query = self.request.GET.get('query', '')
+        date = self.request.GET.get('date', '')
+
+        if not search_by and query:
+            return Purchase.objects.none()
+        else:
+            if search_by == 'client' and query:
+                qs = qs.filter(temporal_name__icontains=query)
+            elif search_by == 'user' and query:
+                qs = qs.filter(user_created__username__icontains=query)
+            elif search_by == 'date' and date:
+                qs = qs.filter(date_time__date=date)
+            elif search_by == 'code' and query:
+                qs = qs.filter(ticket_code__code__icontains=query)
+            elif search_by == 'payment_status' and query:
+                qs = qs.filter(payment_status=query)
+
+        return qs
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['form_type'] = 'Compras'
-        context['update_url'] = 'UpdatePurchase'
-        context['detail_url'] = 'DetailPurchase'
-        context['cancel_url'] = 'CancelPurchase'
+        context['search_by'] = self.request.GET.get('search_by', '')
+        context['search_options'] = [
+            {'value': 'client', 'label': 'Proveedor'},
+            {'value': 'user', 'label': 'Usuario'},
+            {'value': 'date', 'label': 'Fecha'},
+            {'value': 'code', 'label': 'Nro de Comprobante'},
+            {'value': 'payment_status', 'label': 'Estado de Pago'},
+        ]
+        context['query'] = self.request.GET.get('query', '')
+        context['date'] = self.request.GET.get('date', '')
+        params = self.request.GET.copy()
+        if params.get('page'):
+            del params['page']
+        context['params'] = params.urlencode()
+        return context
 
 class PurchaseDetailView(LoginRequiredMixin, DetailView):
     model = Purchase
